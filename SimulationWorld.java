@@ -19,6 +19,10 @@ public class SimulationWorld extends World {
 	public static final int PATH_WIDTH = 50;
 	public static final java.awt.Color PATH_COLOR = new java.awt.Color(64, 64, 64);
 
+	private static final int BACKGROUND_PATTERN_WIDTH = 128;
+	private static final java.awt.Color BACKGROUND_PATTERN_COLOR_1 = new java.awt.Color(255, 200, 155);
+	private static final java.awt.Color BACKGROUND_PATTERN_COLOR_2 = new java.awt.Color(255, 190, 140);
+
 	// Background image drawing facilities
 	private BufferedImage canvas;
 	private Graphics2D graphics;
@@ -28,11 +32,16 @@ public class SimulationWorld extends World {
 	private int prevMouseX;
 	private int prevMouseY;
 
+	// Animate the background pattern by shifting it horizontally
+	private int patternShift = 0;
+
 	/**
 	 * Create a new simulation world.
 	 */
 	public SimulationWorld() {
 		super(WIDTH, HEIGHT, 1, false);
+
+		Greenfoot.setSpeed(50);
 
 		// Set up facilities to render graphics to background image
 		GreenfootImage background = getBackground();
@@ -44,9 +53,11 @@ public class SimulationWorld extends World {
 		graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		graphics.setStroke(new BasicStroke(PATH_WIDTH, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 		graphics.setBackground(new java.awt.Color(0, true));
-		graphics.setColor(PATH_COLOR);
 
 		paths = new ArrayList<Path2D.Double>();
+
+		// Draw initial background image so this world isn't blank on reset
+		updateBackground();
 	}
 
 	/**
@@ -92,6 +103,27 @@ public class SimulationWorld extends World {
 	 */
 	private void updateBackground() {
 		graphics.clearRect(0, 0, WIDTH, HEIGHT);
+
+		// Draw background pattern
+		graphics.setColor(BACKGROUND_PATTERN_COLOR_1);
+		for (int x1 = -patternShift; x1 < WIDTH + HEIGHT; x1 += BACKGROUND_PATTERN_WIDTH * 2) {
+			int x2 = x1 + BACKGROUND_PATTERN_WIDTH;
+			int x3 = x2 - HEIGHT;
+			int x4 = x1 - HEIGHT;
+			graphics.fillPolygon(new int[] {x1, x2, x3, x4}, new int[] {0, 0, HEIGHT, HEIGHT}, 4);
+		}
+		graphics.setColor(BACKGROUND_PATTERN_COLOR_2);
+		for (int x1 = BACKGROUND_PATTERN_WIDTH - patternShift; x1 < WIDTH + HEIGHT; x1 += BACKGROUND_PATTERN_WIDTH * 2) {
+			int x2 = x1 + BACKGROUND_PATTERN_WIDTH;
+			int x3 = x2 - HEIGHT;
+			int x4 = x1 - HEIGHT;
+			graphics.fillPolygon(new int[] {x1, x2, x3, x4}, new int[] {0, 0, HEIGHT, HEIGHT}, 4);
+		}
+		// Shift the background pattern for the next act
+		patternShift = (patternShift + 1) % (BACKGROUND_PATTERN_WIDTH * 2);
+
+		// Draw paths
+		graphics.setColor(PATH_COLOR);
 		for (Path2D.Double path : paths) {
 			graphics.draw(path);
 		}
