@@ -3,6 +3,7 @@ import java.awt.image.BufferedImage;
 import java.awt.Graphics2D;
 import java.awt.BasicStroke;
 import java.awt.geom.Path2D;
+import java.util.ArrayList;
 
 /**
  * ICS4U Vehicle Simulation
@@ -20,7 +21,7 @@ public class SimulationWorld extends World {
 	// Background image drawing facilities
 	private BufferedImage canvas;
 	private Graphics2D graphics;
-	private Path2D.Double path;
+	private ArrayList<Path2D.Double> paths;
 
 	// Keep track of the last position of the mouse in order to control path curves
 	private int prevMouseX;
@@ -31,49 +32,63 @@ public class SimulationWorld extends World {
 	 */
 	public SimulationWorld() {
 		super(WIDTH, HEIGHT, 1, false);
-		
+
 		// Set up facilities to render graphics to background image
 		GreenfootImage background = getBackground();
 		canvas = background.getAwtImage();
 		graphics = canvas.createGraphics();
 		graphics.setStroke(new BasicStroke(PATH_WIDTH, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+		graphics.setBackground(new java.awt.Color(0, true));
 		graphics.setColor(PATH_COLOR);
-		path = new Path2D.Double();
+
+		paths = new ArrayList<Path2D.Double>();
 	}
-	
+
 	/**
 	 * Update this world.
 	 */
 	public void act() {
-		updateDrawing();
+		updatePaths();
+		updateBackground();
 	}
-	
+
 	/**
-	 * Update the background image of the world based on mouse events, allowing the user to draw.
+	 * Update the paths in this world based on mouse events, allowing the user to draw.
 	 */
-	private void updateDrawing() {
+	private void updatePaths() {
 		// Use position of mouse to add a point to the path
 		MouseInfo mouse = Greenfoot.getMouseInfo();
 		if (mouse == null) {
 			return;
 		}
 
-		// When mouse changed from non-pressed to pressed state, begin a new path
 		if (Greenfoot.mousePressed(null)) {
-			path = new Path2D.Double();
+			// When mouse changed from non-pressed to pressed state, begin a new path
+			Path2D.Double path = new Path2D.Double();
 			// Set starting point of path to initial mouse position
 			path.moveTo(mouse.getX(), mouse.getY());
-		} else if (mouse.getButton() != 0) {
-			// Mouse is currently being dragged -> add a new point to the path
+			paths.add(path);
+		} else if (mouse.getButton() != 0 && paths.size() > 0) {
+			// Mouse is currently being dragged -> add a new point to the current path
+			Path2D.Double path = paths.get(paths.size() - 1);
 			// Use quadratic curves to smoothen the lines, connecting midpoints
 			// of mouse positions with actual positions as control points
 			int midx = (mouse.getX() + prevMouseX) / 2;
 			int midy = (mouse.getY() + prevMouseY) / 2;
 			path.quadTo(prevMouseX, prevMouseY, midx, midy);
 		}
-		graphics.draw(path);
 
 		prevMouseX = mouse.getX();
 		prevMouseY = mouse.getY();
+	}
+
+	/**
+	 * Update this world's background image.
+	 */
+	private void updateBackground() {
+		graphics.clearRect(0, 0, WIDTH, HEIGHT);
+		for (Path2D.Double path : paths) {
+			graphics.draw(path);
+		}
 	}
 }
