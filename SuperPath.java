@@ -4,6 +4,7 @@ import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.QuadCurve2D;
+import java.awt.geom.PathIterator;
 import java.awt.Color;
 import java.util.ArrayList;
 
@@ -125,5 +126,30 @@ public class SuperPath {
 
 			prevSegment = segment;
 		}
+
+		// TODO: temporary
+		graphics.setColor(Color.RED);
+		double[] coords = new double[6];
+		Point2D.Double prevPoint = null;
+		for (PathTraceIterator pi = getPathTraceIterator(); !pi.isDone(); pi.next(50.0)) {
+			pi.currentSegment(coords);
+			if (prevPoint != null) {
+				graphics.setStroke(new BasicStroke(1));
+				graphics.drawLine((int) prevPoint.getX(), (int) prevPoint.getY(), (int) coords[0], (int) coords[1]);
+			}
+			graphics.setStroke(new BasicStroke(10));
+			graphics.drawLine((int) coords[0], (int) coords[1], (int) coords[0], (int) coords[1]);
+			prevPoint = new Point2D.Double(coords[0], coords[1]);
+		}
+	}
+
+	/**
+	 * Get an iterator object that can trace this SuperPath in segments of specific lengths.
+	 *
+	 * @return a new PathTraceIterator that independently traverses this SuperPath
+	 */
+	public PathTraceIterator getPathTraceIterator() {
+		PathIterator pi = path.getPathIterator(null, PathTraceIterator.FLATNESS);
+		return new PathTraceIterator(pi);
 	}
 }
