@@ -66,9 +66,10 @@ public class SuperPath {
 			// This is the first point -> begin the path by setting its location
 			path.moveTo(x, y);
 
-			// Add a segment of one point in order to have something to draw
+			// Add a line segment of one point in order to have something to draw
 			Path2D.Double point = new Path2D.Double();
 			point.moveTo(x, y);
+			point.lineTo(x, y);
 			segments.add(point);
 		} else {
 			// Use quadratic curves to smoothen the lines, connecting midpoints
