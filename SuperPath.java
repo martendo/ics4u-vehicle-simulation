@@ -5,7 +5,6 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.QuadCurve2D;
 import java.awt.geom.PathIterator;
-import java.awt.Color;
 import java.util.ArrayList;
 
 /**
@@ -28,8 +27,8 @@ public class SuperPath {
 	// Visual parameters
 	public static final int PATH_WIDTH = 50;
 	public static final int PATH_OUTLINE_WIDTH = 16;
-	public static final Color PATH_COLOR = new Color(64, 64, 64);
-	public static final Color PATH_OUTLINE_COLOR = Color.YELLOW;
+	public static final java.awt.Color PATH_COLOR = new java.awt.Color(64, 64, 64);
+	public static final java.awt.Color PATH_OUTLINE_COLOR = java.awt.Color.YELLOW;
 
 	// The distance below which to consider points as part of a filled segment
 	public static final double FILL_THRESHOLD = PATH_OUTLINE_WIDTH;
@@ -129,7 +128,7 @@ public class SuperPath {
 		}
 
 		// TODO: temporary
-		graphics.setColor(Color.RED);
+		graphics.setColor(java.awt.Color.RED);
 		double[] coords = new double[6];
 		Point2D.Double prevPoint = null;
 		for (PathTraceIterator pi = getPathTraceIterator(); !pi.isDone(); pi.next(50.0)) {
