@@ -9,6 +9,7 @@ import java.awt.geom.PathIterator;
 import java.awt.geom.QuadCurve2D;
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
+import java.util.ListIterator;
 
 /**
  * ICS4U Vehicle Simulation
@@ -32,6 +33,8 @@ public class SimulationWorld extends World {
 	// Animate the background pattern by shifting it horizontally
 	private int patternShift = 0;
 
+	private ArrayList<SuperActor> actors;
+
 	/**
 	 * Create a new simulation world.
 	 */
@@ -52,6 +55,8 @@ public class SimulationWorld extends World {
 
 		paths = new ArrayList<SuperPath>();
 
+		actors = new ArrayList<SuperActor>();
+
 		// Draw initial background image so this world isn't blank on reset
 		updateBackground();
 	}
@@ -62,6 +67,23 @@ public class SimulationWorld extends World {
 	public void act() {
 		updatePaths();
 		updateBackground();
+
+		// Add desserts to the last path when mouse is right-clicked
+		MouseInfo mouse = Greenfoot.getMouseInfo();
+		if (Greenfoot.mousePressed(null) && mouse.getButton() == 3 && paths.size() > 0) {
+			actors.add(new Dessert(this, paths.get(paths.size() - 1)));
+		}
+
+		// Update and draw actors
+		// Use a ListIterator to be able to remove dead actors from the list during iteration
+		for (ListIterator<SuperActor> iter = actors.listIterator(); iter.hasNext();) {
+			SuperActor actor = iter.next();
+			actor.act();
+			if (actor.isDead()) {
+				iter.remove();
+			}
+			actor.drawUsingGraphics(graphics);
+		}
 	}
 
 	/**
@@ -75,11 +97,11 @@ public class SimulationWorld extends World {
 		}
 
 		SuperPath path;
-		if (Greenfoot.mousePressed(null)) {
+		if (Greenfoot.mousePressed(null) && mouse.getButton() == 1) {
 			// When mouse changed from non-pressed to pressed state, begin a new path
 			path = new SuperPath();
 			paths.add(path);
-		} else if (mouse.getButton() != 0 && paths.size() > 0) {
+		} else if (mouse.getButton() == 1 && paths.size() > 0) {
 			// Mouse is currently being dragged -> add a new point to the current path
 			path = paths.get(paths.size() - 1);
 		} else {
