@@ -4,6 +4,7 @@ import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.QuadCurve2D;
+import java.awt.geom.Line2D;
 import java.awt.geom.PathIterator;
 import java.util.ArrayList;
 
@@ -15,11 +16,6 @@ import java.util.ArrayList;
  * The division of SuperPaths into segments allows them to be drawn with a
  * stroked outline that follows the path, even when a SuperPath overlaps itself,
  * where later segments are drawn on top of earlier segments.
- *
- * Note: SuperPaths use integer coordinates in order to improve their appearance
- * when drawn with Graphics2D contexts. (The use of doubles creates artifacts
- * along paths, particularly at corners, where line joins are sometimes
- * missing.)
  *
  * @author Martin Baldwin
  */
@@ -42,8 +38,8 @@ public class SuperPath {
 	private ArrayList<Shape> segments;
 
 	// Variables to keep track of the last given point in order to control path curves
-	private int prevx;
-	private int prevy;
+	private double prevx;
+	private double prevy;
 
 	/**
 	 * Create a new SuperPath.
@@ -59,7 +55,7 @@ public class SuperPath {
 	 * @param x the x coordinate of the point
 	 * @param y the y coordinate of the point
 	 */
-	public void addPoint(int x, int y) {
+	public void addPoint(double x, double y) {
 		Point2D prevPoint = path.getCurrentPoint();
 		if (prevPoint == null) {
 			// This is the first point -> begin the path by setting its location
@@ -73,8 +69,8 @@ public class SuperPath {
 		} else {
 			// Use quadratic curves to smoothen the lines, connecting midpoints
 			// of given points with actual points as control points
-			int midx = (x + prevx) / 2;
-			int midy = (y + prevy) / 2;
+			double midx = (x + prevx) / 2.0;
+			double midy = (y + prevy) / 2.0;
 			path.quadTo(prevx, prevy, midx, midy);
 
 			// Update segments
@@ -104,7 +100,7 @@ public class SuperPath {
 	/**
 	 * Draw this SuperPath using a given graphics context.
 	 *
-	 * @param graphics the Graphics2D context on which to draw this SuperPath.
+	 * @param graphics the Graphics2D context on which to draw this SuperPath
 	 */
 	public void drawUsingGraphics(Graphics2D graphics) {
 		Shape prevSegment = null;
@@ -112,7 +108,7 @@ public class SuperPath {
 			// Draw path outline stroke around this path segment
 			graphics.setColor(PATH_OUTLINE_COLOR);
 			graphics.setStroke(PATH_OUTLINE_STROKE);
-			graphics.draw(segment);
+			strokeSegmentUsingGraphics(graphics, segment);
 
 			// Fill in this path segment
 			graphics.setColor(PATH_COLOR);
@@ -120,26 +116,58 @@ public class SuperPath {
 			if (prevSegment != null) {
 				// Draw the preceeding segment over the round cap of this segment's outline
 				// (hide outline showing in between segments)
-				graphics.draw(prevSegment);
+				strokeSegmentUsingGraphics(graphics, prevSegment);
 			}
-			graphics.draw(segment);
+			strokeSegmentUsingGraphics(graphics, segment);
 
 			prevSegment = segment;
 		}
+	}
 
-		// TODO: temporary
-		graphics.setColor(java.awt.Color.RED);
-		double[] coords = new double[6];
-		Point2D.Double prevPoint = null;
-		for (PathTraceIterator pi = getPathTraceIterator(); !pi.isDone(); pi.next(50.0)) {
-			pi.currentSegment(coords);
-			if (prevPoint != null) {
-				graphics.setStroke(new BasicStroke(1));
-				graphics.drawLine((int) prevPoint.getX(), (int) prevPoint.getY(), (int) coords[0], (int) coords[1]);
+	/**
+	 * A helper method to improve the visual quality of SuperPaths.
+	 *
+	 * Ideally, all calls to this method should be replaceable with
+	 * graphics.draw(segment), but there are often visual artifacts when drawing
+	 * "filled" segments (which are objects of the Path2D.Double class),
+	 * particularly at corners, where line joins are sometimes missing.
+	 *
+	 * If the given segment is a "filled" segment, separate it into its
+	 * component curves and draw them individually using QuadCurve2D objects.
+	 * Otherwise, draw the segment as-is.
+	 *
+	 * @param graphics the Graphics2D context on which to draw the segment
+	 * @param segment the Shape to be drawn
+	 */
+	private void strokeSegmentUsingGraphics(Graphics2D graphics, Shape segment) {
+		if (segment instanceof Path2D.Double) {
+			double[] coords = new double[6];
+			double lastx = 0.0;
+			double lasty = 0.0;
+			for (PathIterator pi = segment.getPathIterator(null); !pi.isDone(); pi.next()) {
+				switch (pi.currentSegment(coords)) {
+				case PathIterator.SEG_MOVETO:
+					lastx = coords[0];
+					lasty = coords[1];
+					break;
+				case PathIterator.SEG_LINETO:
+					Line2D.Double line = new Line2D.Double(lastx, lasty, coords[0], coords[1]);
+					graphics.draw(line);
+					lastx = coords[0];
+					lasty = coords[1];
+					break;
+				case PathIterator.SEG_QUADTO:
+					QuadCurve2D.Double curve = new QuadCurve2D.Double(lastx, lasty, coords[0], coords[1], coords[2], coords[3]);
+					graphics.draw(curve);
+					lastx = coords[2];
+					lasty = coords[3];
+					break;
+				default:
+					throw new UnsupportedOperationException("Path2D objects within a SuperPath must only consist of segments of type SEG_MOVETO, SEG_LINETO, or SEG_QUADTO");
+				}
 			}
-			graphics.setStroke(new BasicStroke(10));
-			graphics.drawLine((int) coords[0], (int) coords[1], (int) coords[0], (int) coords[1]);
-			prevPoint = new Point2D.Double(coords[0], coords[1]);
+		} else {
+			graphics.draw(segment);
 		}
 	}
 
