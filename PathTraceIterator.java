@@ -17,7 +17,6 @@ public class PathTraceIterator {
 	private Point2D.Double lastPathPoint;
 	// Current point that is tracing the path
 	private Point2D.Double currentPoint;
-	private boolean hasReadEnd;
 
 	/**
 	 * Create a new PathTraceIterator using the path defined by the supplied path iterator.
@@ -28,7 +27,6 @@ public class PathTraceIterator {
 		originalpi = pi;
 		lastPathPoint = null;
 		currentPoint = null;
-		hasReadEnd = false;
 	}
 
 	/**
@@ -60,7 +58,7 @@ public class PathTraceIterator {
 	 * @return true if all segments have been read; false otherwise
 	 */
 	public boolean isDone() {
-		return hasReadEnd;
+		return originalpi.isDone();
 	}
 
 	/**
@@ -81,13 +79,6 @@ public class PathTraceIterator {
 	 * @throws UnsupportedOperationException if any segment type from the original PathIterator other than SEG_MOVETO and SEG_LINETO is encountered
 	 */
 	public void next(double distance) {
-		// Allow this method to be called one last time before marking this path
-		// exhausted in order to return the end point of the path
-		if (originalpi.isDone()) {
-			hasReadEnd = true;
-			return;
-		}
-
 		double[] coords = new double[6];
 		// Loop through segments in case one alone cannot cover the requested distance
 		double distRemain = distance;
