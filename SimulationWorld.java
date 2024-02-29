@@ -119,14 +119,9 @@ public class SimulationWorld extends World {
 
 		// Draw background pattern
 		graphics.setColor(BACKGROUND_PATTERN_COLOR_1);
-		for (int x1 = -patternShift; x1 < WIDTH + HEIGHT; x1 += BACKGROUND_PATTERN_WIDTH * 2) {
-			int x2 = x1 + BACKGROUND_PATTERN_WIDTH;
-			int x3 = x2 - HEIGHT;
-			int x4 = x1 - HEIGHT;
-			graphics.fillPolygon(new int[] {x1, x2, x3, x4}, new int[] {0, 0, HEIGHT, HEIGHT}, 4);
-		}
+		graphics.fillRect(0, 0, WIDTH, HEIGHT);
 		graphics.setColor(BACKGROUND_PATTERN_COLOR_2);
-		for (int x1 = BACKGROUND_PATTERN_WIDTH - patternShift; x1 < WIDTH + HEIGHT; x1 += BACKGROUND_PATTERN_WIDTH * 2) {
+		for (int x1 = -patternShift; x1 < WIDTH + HEIGHT; x1 += BACKGROUND_PATTERN_WIDTH * 2) {
 			int x2 = x1 + BACKGROUND_PATTERN_WIDTH;
 			int x3 = x2 - HEIGHT;
 			int x4 = x1 - HEIGHT;
