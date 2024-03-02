@@ -67,16 +67,30 @@ public class SimulationWorld extends World {
 		actors = new ArrayList<SuperActor>();
 
 		// Set up path-editing buttons
-		addObject(new Button(64, 64, new GreenfootImage("images/pencil.png"), new Callback() {
+		SelectButton[] buttons = new SelectButton[2];
+		buttons[0] = new SelectButton(new GreenfootImage("images/pencil.png"), new Callback() {
 			public void run() {
 				pathEditMode = PathEditMode.DRAW;
+				buttons[0].select();
+				for (int i = 1; i < buttons.length; i++) {
+					buttons[i].deselect();
+				}
 			}
-		}), 20 + 32, HEIGHT - 20 - 32);
-		addObject(new Button(64, 64, new GreenfootImage("images/eraser.png"), new Callback() {
+		}, true);
+		buttons[1] = new SelectButton(new GreenfootImage("images/eraser.png"), new Callback() {
 			public void run() {
 				pathEditMode = PathEditMode.ERASE;
+				buttons[1].select();
+				for (int i = 0; i < buttons.length; i++) {
+					if (i != 1) {
+						buttons[i].deselect();
+					}
+				}
 			}
-		}), 20 + 64 + 20 + 32, HEIGHT - 20 - 32);
+		}, false);
+		for (int i = 0; i < buttons.length; i++) {
+			addObject(buttons[i], 20 * (i + 1) + (SelectButton.WIDTH * i) + SelectButton.WIDTH / 2, HEIGHT - 20 - SelectButton.HEIGHT / 2);
+		}
 
 		// Draw initial background image so this world isn't blank on reset
 		updateBackground();

@@ -7,7 +7,10 @@ import greenfoot.*;
  *
  * @author Martin Baldwin
  */
-public class Button extends Actor {
+public class SelectButton extends Actor {
+	public static final int WIDTH = 64;
+	public static final int HEIGHT = 64;
+
 	private static final Color BORDER_COLOR = Color.BLACK;
 	private static final int BORDER_WIDTH = 3;
 
@@ -17,11 +20,13 @@ public class Button extends Actor {
 	 * NORMAL: This button is not being interacted with
 	 * HOVER: The mouse cursor is on top of this button, but the mouse buttons are not pressed
 	 * ACTIVE: The mouse cursor is on top of this button and a mouse button is currently pressed ("click")
+	 * SELECTED: The button is marked as "selected" (state controlled by select() and deselect() methods)
 	 */
 	public enum ButtonState {
 		NORMAL(new Color(224, 224, 224)),
 		HOVER(new Color(200, 200, 200)),
-		ACTIVE(new Color(176, 176, 176));
+		ACTIVE(new Color(176, 176, 176)),
+		SELECTED(ButtonState.ACTIVE.backgroundColor);
 
 		public final Color backgroundColor;
 
@@ -30,12 +35,11 @@ public class Button extends Actor {
 		}
 	}
 
-	private int width;
-	private int height;
 	private GreenfootImage icon;
 	private int iconX;
 	private int iconY;
 	private boolean isClicking;
+	private boolean isSelected;
 
 	// Final image of this button as an actor
 	private GreenfootImage image;
@@ -54,48 +58,75 @@ public class Button extends Actor {
 	 * @param icon the image to place in the center of this button
 	 * @param callback the action to perform when this button is clicked
 	 */
-	public Button(int width, int height, GreenfootImage icon, Callback callback) {
+	public SelectButton(GreenfootImage icon, Callback callback, boolean isSelected) {
 		super();
-		this.width = width;
-		this.height = height;
 		this.icon = icon;
-		iconX = width / 2 - icon.getWidth() / 2;
-		iconY = height / 2 - icon.getHeight() / 2;
+		iconX = WIDTH / 2 - icon.getWidth() / 2;
+		iconY = HEIGHT / 2 - icon.getHeight() / 2;
+		this.callback = callback;
 
 		// Default button state
-		state = ButtonState.NORMAL;
-		prevState = null;
-		this.callback = callback;
 		isClicking = false;
+		this.isSelected = isSelected;
+		if (isSelected) {
+			state = ButtonState.SELECTED;
+		} else {
+			state = ButtonState.NORMAL;
+		}
+		prevState = null;
 
 		// Initialize image for this button actor
-		image = new GreenfootImage(width, height);
+		image = new GreenfootImage(WIDTH, HEIGHT);
 		setImage(image);
 		updateImage();
 	}
 
 	/**
-	 * Update this button's image according to mouse interaction and run the callback method if clicked.
+	 * Mark this button as selected. The button will be drawn with a darker background permanently until deselected.
+	 */
+	public void select() {
+		isSelected = true;
+	}
+
+	/**
+	 * Stop treating this button as selected. Background color will return to being determined by mouse interaction.
+	 */
+	public void deselect() {
+		isSelected = false;
+	}
+
+	/**
+	 * Update this button's image according to selection and mouse interaction and run the callback method if clicked.
 	 */
 	public void act() {
-		MouseInfo mouse = Greenfoot.getMouseInfo();
-		if (mouse != null && isUnderPoint(mouse.getX(), mouse.getY())) {
-			// Run the callback method when the mouse button is released on this button
-			if (Greenfoot.mouseClicked(this)) {
-				callback.run();
-				// End the active state (effect takes place in next if block)
-				isClicking = false;
-			}
-			if (Greenfoot.mousePressed(this)) {
-				// Mouse was just pressed -> change to active state
-				isClicking = true;
-				state = ButtonState.ACTIVE;
-			} else if (!isClicking) {
-				state = ButtonState.HOVER;
-			}
+		if (isSelected) {
+			state = ButtonState.SELECTED;
 		} else {
-			isClicking = false;
-			state = ButtonState.NORMAL;
+			MouseInfo mouse = Greenfoot.getMouseInfo();
+			if (mouse != null && isUnderPoint(mouse.getX(), mouse.getY())) {
+				if (Greenfoot.mousePressed(this)) {
+					// Mouse was just pressed on this button -> change to active state
+					isClicking = true;
+					state = ButtonState.ACTIVE;
+				} else if (!isClicking) {
+					state = ButtonState.HOVER;
+				}
+				// Run the callback method when the mouse button is released on this button
+				if (Greenfoot.mouseClicked(this)) {
+					callback.run();
+					// End the active state (effect takes place in next if block)
+					isClicking = false;
+					// Callback could have selected this button
+					if (isSelected) {
+						state = ButtonState.SELECTED;
+					} else {
+						state = ButtonState.HOVER;
+					}
+				}
+			} else {
+				isClicking = false;
+				state = ButtonState.NORMAL;
+			}
 		}
 		updateImage();
 		prevState = state;
@@ -109,9 +140,9 @@ public class Button extends Actor {
 	 * @return true if (px, py) lies on top of this button, false otherwise
 	 */
 	private boolean isUnderPoint(int px, int py) {
-		int x = getX() - width / 2;
-		int y = getY() - height / 2;
-		return px >= x && px < x + width && py >= y && py < y + height;
+		int x = getX() - WIDTH / 2;
+		int y = getY() - HEIGHT / 2;
+		return px >= x && px < x + WIDTH && py >= y && py < y + HEIGHT;
 	}
 
 	/**
@@ -127,10 +158,10 @@ public class Button extends Actor {
 		image.fill();
 		// Draw border of button
 		image.setColor(BORDER_COLOR);
-		image.fillRect(0, 0, width, BORDER_WIDTH);
-		image.fillRect(0, height - BORDER_WIDTH, width, BORDER_WIDTH);
-		image.fillRect(0, 0, BORDER_WIDTH, height);
-		image.fillRect(width - BORDER_WIDTH, 0, BORDER_WIDTH, height);
+		image.fillRect(0, 0, WIDTH, BORDER_WIDTH);
+		image.fillRect(0, HEIGHT - BORDER_WIDTH, WIDTH, BORDER_WIDTH);
+		image.fillRect(0, 0, BORDER_WIDTH, HEIGHT);
+		image.fillRect(WIDTH - BORDER_WIDTH, 0, BORDER_WIDTH, HEIGHT);
 		// Draw button icon
 		image.drawImage(icon, iconX, iconY);
 	}
