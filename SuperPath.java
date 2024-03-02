@@ -67,6 +67,9 @@ public class SuperPath {
 	private ArrayList<Shape> segments;
 	private SuperPathState state;
 
+	// Objects currently on this path
+	private ArrayList<PathTraveller> travellers;
+
 	// Variables to keep track of the last given point in order to control path curves
 	private double prevx;
 	private double prevy;
@@ -77,6 +80,7 @@ public class SuperPath {
 	public SuperPath() {
 		path = new Path2D.Double();
 		segments = new ArrayList<Shape>();
+		travellers = new ArrayList<PathTraveller>();
 		state = SuperPathState.NORMAL;
 	}
 
@@ -209,6 +213,24 @@ public class SuperPath {
 		} else {
 			graphics.draw(segment);
 		}
+	}
+
+	/**
+	 * Add a path traveller to keep track of on this path.
+	 *
+	 * @param object a path traveller object travelling on this path
+	 */
+	public void addTraveller(PathTraveller object) {
+		travellers.add(object);
+	}
+
+	/**
+	 * Remove a path traveller from this path.
+	 *
+	 * @param object the path traveller object to remove from this path
+	 */
+	public void removeTraveller(PathTraveller object) {
+		travellers.remove(object);
 	}
 
 	/**

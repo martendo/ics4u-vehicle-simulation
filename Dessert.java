@@ -6,43 +6,21 @@ import java.awt.Graphics2D;
  *
  * @author Martin Baldwin
  */
-public class Dessert extends SuperActor {
-	// Distance to travel along a path per act
-	public static final double SPEED = 1.0;
-
-	// The iterator used to travel along this dessert's path
-	private PathTraceIterator pathIter;
-
+public class Dessert extends PathTraveller {
 	/**
 	 * Create a new dessert that follows the given path.
 	 *
 	 * @param path the path for this dessert to travel along
 	 */
 	public Dessert(SuperPath path) {
-		super();
-		pathIter = path.getPathTraceIterator();
-		double[] coords = new double[6];
-		pathIter.currentSegment(coords);
-		x = coords[0];
-		y = coords[0];
+		super(path);
 	}
 
 	/**
-	 * Update this dessert.
+	 * Kill this dessert when it reached the end of its path.
 	 */
-	public void act() {
-		// Move along the path a distance equal to dessert speed
-		pathIter.next(SPEED);
-		//
-		if (pathIter.isDone()) {
-			die();
-			return;
-		}
-		// Set this dessert's location to the end point of the iterator's current line segment
-		double[] coords = new double[6];
-		pathIter.currentSegment(coords);
-		x = coords[0];
-		y = coords[1];
+	protected void endTravel() {
+		die();
 	}
 
 	/**
