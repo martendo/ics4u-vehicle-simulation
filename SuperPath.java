@@ -234,6 +234,16 @@ public class SuperPath {
 	}
 
 	/**
+	 * Kill all path travellers on this path and clear this path's traveller list.
+	 */
+	public void killAllTravellers() {
+		// Path travellers will remove themselves from the list when killed
+		while (travellers.size() > 0) {
+			travellers.get(0).die();
+		}
+	}
+
+	/**
 	 * Get an iterator object that can trace this SuperPath in segments of specific lengths.
 	 *
 	 * @return a new PathTraceIterator that independently traverses this SuperPath

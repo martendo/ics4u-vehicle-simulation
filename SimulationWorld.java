@@ -29,6 +29,11 @@ public class SimulationWorld extends World {
 	public enum PathEditMode {
 		DRAW, SELECT
 	}
+	private SelectButton[] buttons;
+	private ArrayList<SelectButton> shownButtons;
+	private static final int BUTTON_INDEX_DRAW = 0;
+	private static final int BUTTON_INDEX_SELECT = 1;
+	private static final int BUTTON_INDEX_DELETE = 2;
 
 	// Background image drawing facilities
 	private BufferedImage canvas;
@@ -71,8 +76,8 @@ public class SimulationWorld extends World {
 		actors = new ArrayList<SuperActor>();
 
 		// Set up path-editing buttons
-		SelectButton[] buttons = new SelectButton[2];
-		buttons[0] = new SelectButton(new GreenfootImage("images/pencil.png"), new Callback() {
+		buttons = new SelectButton[3];
+		buttons[BUTTON_INDEX_DRAW] = new SelectButton(new GreenfootImage("images/pencil.png"), new Callback() {
 			public void run() {
 				pathEditMode = PathEditMode.DRAW;
 				buttons[0].select();
@@ -88,9 +93,11 @@ public class SimulationWorld extends World {
 					selectedPath.unsetState();
 					selectedPath = null;
 				}
+				// Hide path delete button since there are no longer any selected paths
+				hideButton(buttons[BUTTON_INDEX_DELETE]);
 			}
 		}, true);
-		buttons[1] = new SelectButton(new GreenfootImage("images/select.png"), new Callback() {
+		buttons[BUTTON_INDEX_SELECT] = new SelectButton(new GreenfootImage("images/select.png"), new Callback() {
 			public void run() {
 				pathEditMode = PathEditMode.SELECT;
 				buttons[1].select();
@@ -101,9 +108,22 @@ public class SimulationWorld extends World {
 				}
 			}
 		}, false);
-		for (int i = 0; i < buttons.length; i++) {
-			addObject(buttons[i], 20 * (i + 1) + (SelectButton.WIDTH * i) + SelectButton.WIDTH / 2, HEIGHT - 20 - SelectButton.HEIGHT / 2);
-		}
+		buttons[BUTTON_INDEX_DELETE] = new SelectButton(new GreenfootImage("images/trash.png"), new Callback() {
+			public void run() {
+				if (selectedPath == null) {
+					return;
+				}
+				selectedPath.killAllTravellers();
+				selectedPath.unsetState();
+				paths.remove(selectedPath);
+				selectedPath = null;
+				hideButton(buttons[BUTTON_INDEX_DELETE]);
+			}
+		}, false);
+		shownButtons = new ArrayList<SelectButton>();
+		shownButtons.add(buttons[BUTTON_INDEX_DRAW]);
+		shownButtons.add(buttons[BUTTON_INDEX_SELECT]);
+		displayButtons();
 
 		// Draw initial background image so this world isn't blank on reset
 		updateBackground();
@@ -175,6 +195,9 @@ public class SimulationWorld extends World {
 				if (selectedPath != null) {
 					selectedPath.select();
 					hoveredPath = null;
+					showButton(buttons[BUTTON_INDEX_DELETE]);
+				} else {
+					hideButton(buttons[BUTTON_INDEX_DELETE]);
 				}
 			} else if (Greenfoot.mouseMoved(this)) {
 				// Clear hover state on any previously hovered path
@@ -223,6 +246,26 @@ public class SimulationWorld extends World {
 		SuperPath.updatePaints();
 		for (SuperPath path : paths) {
 			path.drawUsingGraphics(graphics);
+		}
+	}
+
+	private void showButton(SelectButton button) {
+		if (shownButtons.contains(button)) {
+			return;
+		}
+		shownButtons.add(button);
+		displayButtons();
+	}
+
+	private void hideButton(SelectButton button) {
+		removeObjects(shownButtons);
+		shownButtons.remove(button);
+		displayButtons();
+	}
+
+	private void displayButtons() {
+		for (int i = 0; i < shownButtons.size(); i++) {
+			addObject(shownButtons.get(i), 20 * (i + 1) + (SelectButton.WIDTH * i) + SelectButton.WIDTH / 2, HEIGHT - 20 - SelectButton.HEIGHT / 2);
 		}
 	}
 }
