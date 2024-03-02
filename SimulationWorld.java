@@ -29,6 +29,7 @@ public class SimulationWorld extends World {
 	private BufferedImage canvas;
 	private Graphics2D graphics;
 	private ArrayList<SuperPath> paths;
+	private boolean isDrawing;
 
 	// Animate the background pattern by shifting it horizontally
 	private int patternShift = 0;
@@ -54,6 +55,7 @@ public class SimulationWorld extends World {
 		graphics.setBackground(new java.awt.Color(0, true));
 
 		paths = new ArrayList<SuperPath>();
+		isDrawing = false;
 
 		actors = new ArrayList<SuperActor>();
 
@@ -70,7 +72,7 @@ public class SimulationWorld extends World {
 
 		// Add desserts to the last path when mouse is right-clicked
 		MouseInfo mouse = Greenfoot.getMouseInfo();
-		if (Greenfoot.mousePressed(null) && mouse.getButton() == 3 && paths.size() > 0) {
+		if (Greenfoot.mousePressed(this) && mouse.getButton() == 3 && paths.size() > 0) {
 			actors.add(new Dessert(paths.get(paths.size() - 1)));
 		}
 
@@ -97,12 +99,16 @@ public class SimulationWorld extends World {
 		}
 
 		SuperPath path;
-		if (Greenfoot.mousePressed(null) && mouse.getButton() == 1) {
+		if (Greenfoot.mousePressed(this) && mouse.getButton() == 1) {
 			// When mouse changed from non-pressed to pressed state, begin a new path
 			path = new SuperPath();
 			paths.add(path);
-		} else if (mouse.getButton() == 1 && paths.size() > 0) {
-			// Mouse is currently being dragged -> add a new point to the current path
+			isDrawing = true;
+		} else if (isDrawing) {
+			// Stop drawing when mouse is released, but still add the release point to the current path
+			if (Greenfoot.mouseClicked(null)) {
+				isDrawing = false;
+			}
 			path = paths.get(paths.size() - 1);
 		} else {
 			// Not drawing, nothing to do
