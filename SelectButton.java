@@ -56,6 +56,7 @@ public class SelectButton extends Actor {
 	 * @param width the width of the button
 	 * @param height the height of the button
 	 * @param icon the image to place in the center of this button
+	 * @param isSelected whether or not this button should begin in a selected state
 	 * @param callback the action to perform when this button is clicked
 	 */
 	public SelectButton(GreenfootImage icon, Callback callback, boolean isSelected) {
@@ -113,10 +114,12 @@ public class SelectButton extends Actor {
 				}
 				// Run the callback method when the mouse button is released on this button
 				if (Greenfoot.mouseClicked(this)) {
-					callback.run();
-					// End the active state (effect takes place in next if block)
-					isClicking = false;
-					// Callback could have selected this button
+					if (isClicking) {
+						callback.run();
+						// End the active state (effect takes place in next if block)
+						isClicking = false;
+					}
+					// Callback could have selected this button, update state to reflect the change
 					if (isSelected) {
 						state = ButtonState.SELECTED;
 					} else {
