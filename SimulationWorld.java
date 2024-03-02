@@ -25,10 +25,16 @@ public class SimulationWorld extends World {
 	private static final java.awt.Color BACKGROUND_PATTERN_COLOR_1 = new java.awt.Color(255, 200, 155);
 	private static final java.awt.Color BACKGROUND_PATTERN_COLOR_2 = new java.awt.Color(255, 190, 140);
 
+	// Mouse actions can correspond to either drawing paths or erasing paths, depending on the selected button
+	public enum PathEditMode {
+		DRAW, ERASE
+	}
+
 	// Background image drawing facilities
 	private BufferedImage canvas;
 	private Graphics2D graphics;
 	private ArrayList<SuperPath> paths;
+	private PathEditMode pathEditMode;
 	private boolean isDrawing;
 
 	// Animate the background pattern by shifting it horizontally
@@ -55,9 +61,22 @@ public class SimulationWorld extends World {
 		graphics.setBackground(new java.awt.Color(0, true));
 
 		paths = new ArrayList<SuperPath>();
+		pathEditMode = PathEditMode.DRAW;
 		isDrawing = false;
 
 		actors = new ArrayList<SuperActor>();
+
+		// Set up path-editing buttons
+		addObject(new Button(64, 64, new GreenfootImage("images/pencil.png"), new Callback() {
+			public void run() {
+				pathEditMode = PathEditMode.DRAW;
+			}
+		}), 20 + 32, HEIGHT - 20 - 32);
+		addObject(new Button(64, 64, new GreenfootImage("images/eraser.png"), new Callback() {
+			public void run() {
+				pathEditMode = PathEditMode.ERASE;
+			}
+		}), 20 + 64 + 20 + 32, HEIGHT - 20 - 32);
 
 		// Draw initial background image so this world isn't blank on reset
 		updateBackground();
@@ -98,23 +117,30 @@ public class SimulationWorld extends World {
 			return;
 		}
 
-		SuperPath path;
-		if (Greenfoot.mousePressed(this) && mouse.getButton() == 1) {
-			// When mouse changed from non-pressed to pressed state, begin a new path
-			path = new SuperPath();
-			paths.add(path);
-			isDrawing = true;
-		} else if (isDrawing) {
-			// Stop drawing when mouse is released, but still add the release point to the current path
-			if (Greenfoot.mouseClicked(null)) {
-				isDrawing = false;
+		switch (pathEditMode) {
+		case DRAW:
+			SuperPath path;
+			if (Greenfoot.mousePressed(this) && mouse.getButton() == 1) {
+				// When mouse changed from non-pressed to pressed state, begin a new path
+				path = new SuperPath();
+				paths.add(path);
+				isDrawing = true;
+			} else if (isDrawing) {
+				// Stop drawing when mouse is released, but still add the release point to the current path
+				if (Greenfoot.mouseClicked(null)) {
+					isDrawing = false;
+				}
+				path = paths.get(paths.size() - 1);
+			} else {
+				// Not drawing, nothing to do
+				return;
 			}
-			path = paths.get(paths.size() - 1);
-		} else {
-			// Not drawing, nothing to do
-			return;
+			path.addPoint(mouse.getX(), mouse.getY());
+			break;
+		case ERASE:
+			// TODO
+			break;
 		}
-		path.addPoint(mouse.getX(), mouse.getY());
 	}
 
 	/**
