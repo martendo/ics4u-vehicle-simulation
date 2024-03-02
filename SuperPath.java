@@ -1,6 +1,10 @@
+import java.awt.image.BufferedImage;
 import java.awt.Graphics2D;
 import java.awt.BasicStroke;
+import java.awt.Paint;
+import java.awt.TexturePaint;
 import java.awt.Shape;
+import java.awt.geom.Rectangle2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.QuadCurve2D;
@@ -26,16 +30,42 @@ public class SuperPath {
 	public static final java.awt.Color PATH_COLOR = new java.awt.Color(64, 64, 64);
 	public static final java.awt.Color PATH_OUTLINE_COLOR = java.awt.Color.YELLOW;
 
+	public static final java.awt.Color HOVER_PATTERN_COLOR_1 = new java.awt.Color(78, 106, 162);
+	public static final java.awt.Color HOVER_PATTERN_COLOR_2 = new java.awt.Color(65, 91, 148);
+	public static final java.awt.Color SELECTED_PATTERN_COLOR_1 = new java.awt.Color(72, 88, 125);
+	public static final java.awt.Color SELECTED_PATTERN_COLOR_2 = new java.awt.Color(64, 79, 116);
+
 	// The distance below which to consider points as part of a filled segment
 	public static final double FILL_THRESHOLD = PATH_OUTLINE_WIDTH;
 
 	private static final BasicStroke PATH_STROKE = new BasicStroke(PATH_WIDTH, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 	private static final BasicStroke PATH_OUTLINE_STROKE = new BasicStroke(PATH_WIDTH + PATH_OUTLINE_WIDTH, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 
+	// Paths may be drawn differently depending on their state
+	public enum SuperPathState {
+		NORMAL, HOVER, SELECTED
+	}
+
+	// Special state textures
+	private static BufferedImage hoverTexture = null;
+	private static BufferedImage selectedTexture = null;
+	// Whether or not textures have been created
+	private static boolean hasTextures = false;
+
+	// Anchor rectangles for special state texture paints, shifted as animation
+	private static double textureRectX = 0.0;
+	private static Rectangle2D.Double hoverTextureRect = null;
+	private static Rectangle2D.Double selectedTextureRect = null;
+
+	// Texture paint objects used in place of PATH_COLOR when path is in a special state
+	private static TexturePaint hoverPaint = null;
+	private static TexturePaint selectedPaint = null;
+
 	// A single path created from all points added to this SuperPath
 	private Path2D.Double path;
 	// Separated segments for drawing
 	private ArrayList<Shape> segments;
+	private SuperPathState state;
 
 	// Variables to keep track of the last given point in order to control path curves
 	private double prevx;
@@ -47,6 +77,7 @@ public class SuperPath {
 	public SuperPath() {
 		path = new Path2D.Double();
 		segments = new ArrayList<Shape>();
+		state = SuperPathState.NORMAL;
 	}
 
 	/**
@@ -103,6 +134,15 @@ public class SuperPath {
 	 * @param graphics the Graphics2D context on which to draw this SuperPath
 	 */
 	public void drawUsingGraphics(Graphics2D graphics) {
+		// Determine how to paint this path depending on state
+		Paint paint;
+		if (state == SuperPathState.HOVER) {
+			paint = hoverPaint;
+		} else if (state == SuperPathState.SELECTED) {
+			paint = selectedPaint;
+		} else {
+			paint = PATH_COLOR;
+		}
 		Shape prevSegment = null;
 		for (Shape segment : segments) {
 			// Draw path outline stroke around this path segment
@@ -111,7 +151,7 @@ public class SuperPath {
 			strokeSegmentUsingGraphics(graphics, segment);
 
 			// Fill in this path segment
-			graphics.setColor(PATH_COLOR);
+			graphics.setPaint(paint);
 			graphics.setStroke(PATH_STROKE);
 			if (prevSegment != null) {
 				// Draw the preceeding segment over the round cap of this segment's outline
@@ -179,5 +219,98 @@ public class SuperPath {
 	public PathTraceIterator getPathTraceIterator() {
 		PathIterator pi = path.getPathIterator(null, PathTraceIterator.FLATNESS);
 		return new PathTraceIterator(pi);
+	}
+
+	/**
+	 * Mark this path so it is drawn with the hover pattern.
+	 */
+	public void markHovered() {
+		state = SuperPathState.HOVER;
+	}
+
+	/**
+	 * Unmark this path as hovered if it is not currently in another state.
+	 */
+	public void unmarkHovered() {
+		if (state == SuperPathState.HOVER) {
+			unsetState();
+		}
+	}
+
+	/**
+	 * Mark this path as selected so it is drawn with the selected pattern.
+	 */
+	public void select() {
+		state = SuperPathState.SELECTED;
+	}
+
+	/**
+	 * Reset this path's state to its default state.
+	 */
+	public void unsetState() {
+		state = SuperPathState.NORMAL;
+	}
+
+	/**
+	 * Test if a point is contained within the shape of this path.
+	 *
+	 * @param x the x-coordinate of the point to test
+	 * @param y the y-coordinate of the point to test
+	 * @return true if the point lies on top of this path, false otherwise
+	 */
+	public boolean isPointTouching(double x, double y) {
+		// The stroke for the path outline is the thickest, thus defining the boundary of this path
+		return PATH_OUTLINE_STROKE.createStrokedShape(path).contains(x, y);
+	}
+
+	/**
+	 * Create the pattern BufferedImages used to paint hovered and selected paths.
+	 */
+	private static void createTextures() {
+		Graphics2D graphics;
+		// Hovered path texture
+		hoverTexture = new BufferedImage(32, 16, BufferedImage.TYPE_INT_RGB);
+		graphics = hoverTexture.createGraphics();
+		graphics.setColor(HOVER_PATTERN_COLOR_1);
+		graphics.fillRect(0, 0, 32, 16);
+		graphics.setColor(HOVER_PATTERN_COLOR_2);
+		for (int x1 = 0; x1 < 32 + 16; x1 += 8 * 2) {
+			int x2 = x1 + 8;
+			int x3 = x2 - 16;
+			int x4 = x1 - 16;
+			graphics.fillPolygon(new int[] {x1, x2, x3, x4}, new int[] {0, 0, 16, 16}, 4);
+		}
+		// Selected path texture
+		selectedTexture = new BufferedImage(32, 16, BufferedImage.TYPE_INT_RGB);
+		graphics = selectedTexture.createGraphics();
+		graphics.setColor(SELECTED_PATTERN_COLOR_1);
+		graphics.fillRect(0, 0, 32, 16);
+		graphics.setColor(SELECTED_PATTERN_COLOR_2);
+		for (int x1 = 0; x1 < 32 + 16; x1 += 8 * 2) {
+			int x2 = x1 + 8;
+			int x3 = x2 - 16;
+			int x4 = x1 - 16;
+			graphics.fillPolygon(new int[] {x1, x2, x3, x4}, new int[] {0, 0, 16, 16}, 4);
+		}
+	}
+
+	/**
+	 * Animate the hovered and selected texture paints. Call this method once per act.
+	 */
+	public static void updatePaints() {
+		if (!hasTextures) {
+			// Textures have never been initialized
+			createTextures();
+			hoverTextureRect = new Rectangle2D.Double(textureRectX, 0.0, 16.0, 16.0);
+			selectedTextureRect = new Rectangle2D.Double(textureRectX, 0.0, 16.0, 16.0);
+			hasTextures = true;
+		}
+		// Make texture paints from the current anchor rectangle positions
+		hoverPaint = new TexturePaint(hoverTexture, hoverTextureRect);
+		selectedPaint = new TexturePaint(selectedTexture, selectedTextureRect);
+		// Shift the anchor rectangles and wrap around when the ends of the patterns are reached
+		textureRectX = (textureRectX + 0.25) % 16.0;
+		hoverTextureRect.setRect(textureRectX, 0.0, 16.0, 16.0);
+		selectedTextureRect.setRect(textureRectX, 0.0, 16.0, 16.0);
 	}
 }

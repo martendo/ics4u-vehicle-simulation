@@ -25,9 +25,9 @@ public class SimulationWorld extends World {
 	private static final java.awt.Color BACKGROUND_PATTERN_COLOR_1 = new java.awt.Color(255, 200, 155);
 	private static final java.awt.Color BACKGROUND_PATTERN_COLOR_2 = new java.awt.Color(255, 190, 140);
 
-	// Mouse actions can correspond to either drawing paths or erasing paths, depending on the selected button
+	// Mouse actions can correspond to different path-editing actions depending on the selected button
 	public enum PathEditMode {
-		DRAW, ERASE
+		DRAW, SELECT
 	}
 
 	// Background image drawing facilities
@@ -36,6 +36,8 @@ public class SimulationWorld extends World {
 	private ArrayList<SuperPath> paths;
 	private PathEditMode pathEditMode;
 	private boolean isDrawing;
+	private SuperPath hoveredPath;
+	private SuperPath selectedPath;
 
 	// Animate the background pattern by shifting it horizontally
 	private int patternShift = 0;
@@ -63,6 +65,8 @@ public class SimulationWorld extends World {
 		paths = new ArrayList<SuperPath>();
 		pathEditMode = PathEditMode.DRAW;
 		isDrawing = false;
+		hoveredPath = null;
+		selectedPath = null;
 
 		actors = new ArrayList<SuperActor>();
 
@@ -75,11 +79,20 @@ public class SimulationWorld extends World {
 				for (int i = 1; i < buttons.length; i++) {
 					buttons[i].deselect();
 				}
+				// Deselect any currently hovered/selected paths
+				if (hoveredPath != null) {
+					hoveredPath.unsetState();
+					hoveredPath = null;
+				}
+				if (selectedPath != null) {
+					selectedPath.unsetState();
+					selectedPath = null;
+				}
 			}
 		}, true);
-		buttons[1] = new SelectButton(new GreenfootImage("images/eraser.png"), new Callback() {
+		buttons[1] = new SelectButton(new GreenfootImage("images/select.png"), new Callback() {
 			public void run() {
-				pathEditMode = PathEditMode.ERASE;
+				pathEditMode = PathEditMode.SELECT;
 				buttons[1].select();
 				for (int i = 0; i < buttons.length; i++) {
 					if (i != 1) {
@@ -131,9 +144,9 @@ public class SimulationWorld extends World {
 			return;
 		}
 
+		SuperPath path;
 		switch (pathEditMode) {
 		case DRAW:
-			SuperPath path;
 			if (Greenfoot.mousePressed(this) && mouse.getButton() == 1) {
 				// When mouse changed from non-pressed to pressed state, begin a new path
 				path = new SuperPath();
@@ -151,8 +164,38 @@ public class SimulationWorld extends World {
 			}
 			path.addPoint(mouse.getX(), mouse.getY());
 			break;
-		case ERASE:
-			// TODO
+		case SELECT:
+			if (Greenfoot.mousePressed(this)) {
+				// Deselect any previously selected path
+				if (selectedPath != null) {
+					selectedPath.unsetState();
+				}
+				// Select the currently hovered path, if any
+				selectedPath = hoveredPath;
+				if (selectedPath != null) {
+					selectedPath.select();
+					hoveredPath = null;
+				}
+			} else if (Greenfoot.mouseMoved(this)) {
+				// Clear hover state on any previously hovered path
+				if (hoveredPath != null) {
+					hoveredPath.unmarkHovered();
+					hoveredPath = null;
+				}
+				// Iterate backwards through paths because later paths appear on top
+				for (ListIterator<SuperPath> iter = paths.listIterator(paths.size()); iter.hasPrevious();) {
+					path = iter.previous();
+					// Don't bother updating the hover state if the path is already selected
+					if (path == selectedPath) {
+						continue;
+					}
+					if (path.isPointTouching(mouse.getX(), mouse.getY())) {
+						path.markHovered();
+						hoveredPath = path;
+						break;
+					}
+				}
+			}
 			break;
 		}
 	}
@@ -177,6 +220,7 @@ public class SimulationWorld extends World {
 		patternShift = (patternShift + 1) % (BACKGROUND_PATTERN_WIDTH * 2);
 
 		// Draw paths
+		SuperPath.updatePaints();
 		for (SuperPath path : paths) {
 			path.drawUsingGraphics(graphics);
 		}
