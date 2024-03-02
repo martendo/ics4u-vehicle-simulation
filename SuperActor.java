@@ -11,34 +11,16 @@ import java.awt.Graphics2D;
  * @author Martin Baldwin
  */
 public abstract class SuperActor {
-	protected SimulationWorld world;
-
-	protected double x;
-	protected double y;
+	protected double x = 0.0;
+	protected double y = 0.0;
 
 	private boolean isDead;
 
 	/**
-	 * Create a new SuperActor in the given world at the given location.
-	 *
-	 * @param world the world to add this actor to
-	 * @param x the x coordinate to place this actor at
-	 * @param y the y coordinate to place this actor at
+	 * Create a new SuperActor.
 	 */
-	public SuperActor(SimulationWorld world, double x, double y) {
-		this.world = world;
-		this.x = x;
-		this.y = y;
+	public SuperActor() {
 		isDead = false;
-	}
-
-	/**
-	 * Create a new SuperActor in the given world. Its location is set to (0.0, 0.0).
-	 *
-	 * @param world the world to add this actor to
-	 */
-	public SuperActor(SimulationWorld world) {
-		this(world, 0.0, 0.0);
 	}
 
 	/**

@@ -14,13 +14,12 @@ public class Dessert extends SuperActor {
 	private PathTraceIterator pathIter;
 
 	/**
-	 * Create a new dessert in the given world that follows the given path.
+	 * Create a new dessert that follows the given path.
 	 *
-	 * @param world the world to add this dessert to
 	 * @param path the path for this dessert to travel along
 	 */
-	public Dessert(SimulationWorld world, SuperPath path) {
-		super(world);
+	public Dessert(SuperPath path) {
+		super();
 		pathIter = path.getPathTraceIterator();
 		double[] coords = new double[6];
 		pathIter.currentSegment(coords);

@@ -71,7 +71,7 @@ public class SimulationWorld extends World {
 		// Add desserts to the last path when mouse is right-clicked
 		MouseInfo mouse = Greenfoot.getMouseInfo();
 		if (Greenfoot.mousePressed(null) && mouse.getButton() == 3 && paths.size() > 0) {
-			actors.add(new Dessert(this, paths.get(paths.size() - 1)));
+			actors.add(new Dessert(paths.get(paths.size() - 1)));
 		}
 
 		// Update and draw actors
