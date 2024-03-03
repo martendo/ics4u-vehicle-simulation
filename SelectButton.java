@@ -6,6 +6,7 @@ import greenfoot.*;
  * they are true Greenfoot Actors).
  *
  * @author Martin Baldwin
+ * @version March 2024
  */
 public class SelectButton extends Actor {
 	public static final int WIDTH = 64;

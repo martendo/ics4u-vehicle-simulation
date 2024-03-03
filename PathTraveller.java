@@ -1,3 +1,9 @@
+/**
+ * An object that travels along a path at a constant speed.
+ *
+ * @author Martin Baldwin
+ * @version March 2024
+ */
 public abstract class PathTraveller extends SuperActor {
 	// Distance to travel along a path per act
 	public static final double SPEED = 1.0;

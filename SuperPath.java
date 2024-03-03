@@ -22,6 +22,7 @@ import java.util.ArrayList;
  * where later segments are drawn on top of earlier segments.
  *
  * @author Martin Baldwin
+ * @version March 2024
  */
 public class SuperPath {
 	// Visual parameters

@@ -9,6 +9,7 @@ import java.awt.Graphics2D;
  * class.
  *
  * @author Martin Baldwin
+ * @version March 2024
  */
 public abstract class SuperActor {
 	protected double x = 0.0;

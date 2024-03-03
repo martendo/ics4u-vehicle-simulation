@@ -15,6 +15,7 @@ import java.util.ListIterator;
  * ICS4U Vehicle Simulation
  *
  * @author Martin Baldwin
+ * @version March 2024
  */
 public class SimulationWorld extends World {
 	// Dimensions of this world

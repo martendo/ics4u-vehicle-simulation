@@ -5,6 +5,7 @@ import java.awt.Graphics2D;
  * The "Vehicle" of the simulation.
  *
  * @author Martin Baldwin
+ * @version March 2024
  */
 public class Dessert extends PathTraveller {
 	/**

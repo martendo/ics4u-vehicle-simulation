@@ -6,6 +6,7 @@ import java.awt.geom.Point2D;
  * defined by another PathIterator.
  *
  * @author Martin Baldwin
+ * @version March 2024
  */
 public class PathTraceIterator {
 	// Suggested flatness to create PathIterators with for tracing
