@@ -203,7 +203,7 @@ public class SimulationWorld extends World {
 				} else {
 					hideButton(buttons[BUTTON_INDEX_DELETE]);
 				}
-			} else if (Greenfoot.mouseMoved(this)) {
+			} else if (Greenfoot.mouseMoved(null)) {
 				// Clear hover state on any previously hovered path
 				if (hoveredPath != null) {
 					hoveredPath.unmarkHovered();
