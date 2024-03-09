@@ -177,6 +177,9 @@ public class SimulationWorld extends World {
 				// Stop drawing when mouse is released, but still add the release point to the current path
 				if (Greenfoot.mouseClicked(null)) {
 					isDrawing = false;
+				} else if (!Greenfoot.mouseDragged(null)) {
+					// Mouse state and position has not changed, nothing to do
+					return;
 				}
 				path = paths.get(paths.size() - 1);
 			} else {
