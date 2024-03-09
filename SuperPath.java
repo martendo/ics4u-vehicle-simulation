@@ -27,6 +27,7 @@ import java.util.ArrayList;
 public class SuperPath {
 	// Settings
 	public static final boolean SHOW_LANE_PATHS = true;
+	public static final boolean SHOW_LANE_KNOTS = false;
 
 	// Visual parameters
 	public static final int PATH_WIDTH = 50;
@@ -140,10 +141,19 @@ public class SuperPath {
 			// of given points with actual points as control points
 			double midx = (x + prevx) / 2.0;
 			double midy = (y + prevy) / 2.0;
-			path.quadTo(prevx, prevy, midx, midy);
-			lanes.offsetQuadTo(prevPoint.x, prevPoint.y, prevx, prevy, midx, midy);
+			double ctrlx;
+			double ctrly;
+			if (prevPoint.x == prevx && prevPoint.y == prevy) {
+				ctrlx = (prevx + midx) / 2.0;
+				ctrly = (prevy + midy) / 2.0;
+			} else {
+				ctrlx = prevx;
+				ctrly = prevy;
+			}
+			path.quadTo(ctrlx, ctrly, midx, midy);
+			lanes.offsetQuadTo(prevPoint.x, prevPoint.y, ctrlx, ctrly, midx, midy);
 			if (laneSeparators != null) {
-				laneSeparators.offsetQuadTo(prevPoint.x, prevPoint.y, prevx, prevy, midx, midy);
+				laneSeparators.offsetQuadTo(prevPoint.x, prevPoint.y, ctrlx, ctrly, midx, midy);
 			}
 
 			// Update segments
@@ -159,10 +169,10 @@ public class SuperPath {
 					fillSegment.moveTo(prevPoint.x, prevPoint.y);
 					segments.add(fillSegment);
 				}
-				fillSegment.quadTo(prevx, prevy, midx, midy);
+				fillSegment.quadTo(ctrlx, ctrly, midx, midy);
 			} else {
 				// This individual curve is long enough to treat as a segment on its own
-				QuadCurve2D.Double curve = new QuadCurve2D.Double(prevPoint.x, prevPoint.y, prevx, prevy, midx, midy);
+				QuadCurve2D.Double curve = new QuadCurve2D.Double(prevPoint.x, prevPoint.y, ctrlx, ctrly, midx, midy);
 				segments.add(curve);
 			}
 		}
@@ -214,13 +224,16 @@ public class SuperPath {
 			}
 		}
 
-		// Draw lane paths and knot removal points
+		// Draw lane paths
 		if (SHOW_LANE_PATHS) {
 			graphics.setStroke(LANE_PATH_STROKE);
 			graphics.setColor(LANE_PATH_COLOR);
 			for (Path2D.Double lane : lanes.getPaths()) {
 				graphics.draw(lane);
 			}
+		}
+		// Draw lane path knot removal points
+		if (SHOW_LANE_KNOTS) {
 			graphics.setStroke(KNOT_STROKE);
 			graphics.setColor(KNOT_COLOR);
 			for (Point2D.Double p : lanes.getKnots()) {

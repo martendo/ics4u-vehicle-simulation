@@ -176,7 +176,7 @@ public class OffsetPathCollection {
 		knots.add(intersection);
 		// End the intersecting part of the path at the point of intersection
 		pathTailLengths[index] -= Math.hypot(trimCurve.x2 - trimCurve.x1, trimCurve.y2 - trimCurve.y1);
-		trimCurve.setCurve(trimCurve.x1, trimCurve.x2, intersection.x, intersection.y, intersection.x, intersection.y);
+		trimCurve.setCurve(trimCurve.x1, trimCurve.y1, (trimCurve.x1 + intersection.x) / 2.0, (trimCurve.y1 + intersection.y) / 2.0, intersection.x, intersection.y);
 		pathTailLengths[index] += Math.hypot(trimCurve.x2 - trimCurve.x1, trimCurve.y2 - trimCurve.y1);
 		// Remove the remainder of the path that follows this part
 		while (pathTails[index].peekLast() != trimCurve) {
@@ -184,12 +184,12 @@ public class OffsetPathCollection {
 			pathTailLengths[index] -= Math.hypot(lastCurve.x2 - lastCurve.x1, lastCurve.y2 - lastCurve.y1);
 		}
 		// Add the given curve to this path, starting at the point of intersection
-		pathTails[index].addLast(new QuadCurve2D.Double(intersection.x, intersection.y, intersection.x, intersection.y, curve.x2, curve.y2));
+		pathTails[index].addLast(new QuadCurve2D.Double(intersection.x, intersection.y, (intersection.x + curve.x2) / 2.0, (intersection.y + curve.y2) / 2.0, curve.x2, curve.y2));
 		pathTailLengths[index] += Math.hypot(curve.x2 - intersection.x, curve.y2 - intersection.y);
 	}
 
 	/**
-	 * Find the point of intersection between two shapes.
+	 * Find the first point of intersection between two shapes.
 	 *
 	 * For simplicity, this method naively iterates over line segments that
 	 * approximate the two given shapes, then tests for intersection between
@@ -244,11 +244,17 @@ public class OffsetPathCollection {
 	/**
 	 * Find the point of intersection between two line segments.
 	 *
+	 * An intersection that is found to lie just outside the boundaries of a
+	 * line segment is still accepted, in order to improve visual consistency of
+	 * paths in this collection.
+	 *
 	 * @param lineA the first line segment
 	 * @param lineB the second line segment
 	 * @return the point where the two line segments intersect, or null if they do not intersect
 	 */
 	private static Point2D.Double getLineIntersection(Line2D.Double lineA, Line2D.Double lineB) {
+		double tThreshold = 5.0 / Math.hypot(lineA.x2 - lineA.x1, lineA.y2 - lineA.y1);
+		double uThreshold = 5.0 / Math.hypot(lineB.x2 - lineB.x1, lineB.y2 - lineB.y1);
 		// See <https://en.wikipedia.org/wiki/Line-line_intersection#Given_two_points_on_each_line_segment>
 		// When representing line segments A and B in terms of first degree Bezier parameters,
 		//   PA = P1A + t*(P2A - P1A), t in [0, 1]
@@ -257,12 +263,12 @@ public class OffsetPathCollection {
 		// (The slope-intercept form representation of lines is not sufficient as it cannot represent vertical lines)
 		double denominator = (lineA.x1 - lineA.x2) * (lineB.y1 - lineB.y2) - (lineA.y1 - lineA.y2) * (lineB.x1 - lineB.x2);
 		double t = ((lineA.x1 - lineB.x1) * (lineB.y1 - lineB.y2) - (lineA.y1 - lineB.y1) * (lineB.x1 - lineB.x2)) / denominator;
-		if (t < 0.0 || t > 1.0) {
+		if (t < 0.0 - tThreshold || t > 1.0 + tThreshold) {
 			// Point of intersection does not lie within lineA
 			return null;
 		}
 		double u = -((lineA.x1 - lineA.x2) * (lineA.y1 - lineB.y1) - (lineA.y1 - lineA.y2) * (lineA.x1 - lineB.x1)) / denominator;
-		if (u < 0.0 || u > 1.0) {
+		if (u < 0.0 - uThreshold || u > 1.0 + uThreshold) {
 			// Point of intersection does not lie within lineB
 			return null;
 		}
