@@ -18,6 +18,10 @@ import java.util.ListIterator;
  * @version March 2024
  */
 public class SimulationWorld extends World {
+	// Settings
+	public static final int MIN_LANE_COUNT = 1;
+	public static final int MAX_LANE_COUNT = 10;
+
 	// Dimensions of this world
 	public static final int WIDTH = 1024;
 	public static final int HEIGHT = 768;
@@ -30,18 +34,28 @@ public class SimulationWorld extends World {
 	public enum PathEditMode {
 		DRAW, SELECT
 	}
+	private ArrayList<Widget> shownWidgets;
 	private SelectButton[] buttons;
-	private ArrayList<SelectButton> shownButtons;
-	private static final int BUTTON_INDEX_DRAW = 0;
-	private static final int BUTTON_INDEX_SELECT = 1;
-	private static final int BUTTON_INDEX_DELETE = 2;
+	private static int BUTTON_COUNT = 0;
+	private static final int BUTTON_INDEX_DRAW = BUTTON_COUNT++;
+	private static final int BUTTON_INDEX_SELECT = BUTTON_COUNT++;
+	private static final int BUTTON_INDEX_DELETE = BUTTON_COUNT++;
+	private static final int BUTTON_INDEX_LANE_MINUS = BUTTON_COUNT++;
+	private static final int BUTTON_INDEX_LANE_PLUS = BUTTON_COUNT++;
+	private Widget[] widgets;
+	private static int WIDGET_COUNT = 0;
+	private static final int WIDGET_INDEX_LANE_COUNT = WIDGET_COUNT++;
 
 	// Background image drawing facilities
 	private BufferedImage canvas;
 	private Graphics2D graphics;
 	private ArrayList<SuperPath> paths;
 	private PathEditMode pathEditMode;
+
+	// Path drawing state
 	private boolean isDrawing;
+	private int drawLaneCount;
+	// Path selecting state
 	private SuperPath hoveredPath;
 	private SuperPath selectedPath;
 
@@ -77,13 +91,15 @@ public class SimulationWorld extends World {
 		actors = new ArrayList<SuperActor>();
 
 		// Set up path-editing buttons
-		buttons = new SelectButton[3];
+		buttons = new SelectButton[BUTTON_COUNT];
 		buttons[BUTTON_INDEX_DRAW] = new SelectButton(new GreenfootImage("images/pencil.png"), new Callback() {
 			public void run() {
 				pathEditMode = PathEditMode.DRAW;
-				buttons[0].select();
-				for (int i = 1; i < buttons.length; i++) {
-					buttons[i].deselect();
+				buttons[BUTTON_INDEX_DRAW].select();
+				for (int i = 0; i < buttons.length; i++) {
+					if (i != BUTTON_INDEX_DRAW) {
+						buttons[i].deselect();
+					}
 				}
 				// Deselect any currently hovered/selected paths
 				if (hoveredPath != null) {
@@ -94,19 +110,25 @@ public class SimulationWorld extends World {
 					selectedPath.unsetState();
 					selectedPath = null;
 				}
+				showWidget(buttons[BUTTON_INDEX_LANE_MINUS]);
+				showWidget(widgets[WIDGET_INDEX_LANE_COUNT]);
+				showWidget(buttons[BUTTON_INDEX_LANE_PLUS]);
 				// Hide path delete button since there are no longer any selected paths
-				hideButton(buttons[BUTTON_INDEX_DELETE]);
+				hideWidget(buttons[BUTTON_INDEX_DELETE]);
 			}
 		}, true);
 		buttons[BUTTON_INDEX_SELECT] = new SelectButton(new GreenfootImage("images/select.png"), new Callback() {
 			public void run() {
 				pathEditMode = PathEditMode.SELECT;
-				buttons[1].select();
+				buttons[BUTTON_INDEX_SELECT].select();
 				for (int i = 0; i < buttons.length; i++) {
-					if (i != 1) {
+					if (i != BUTTON_INDEX_SELECT) {
 						buttons[i].deselect();
 					}
 				}
+				hideWidget(buttons[BUTTON_INDEX_LANE_MINUS]);
+				hideWidget(widgets[WIDGET_INDEX_LANE_COUNT]);
+				hideWidget(buttons[BUTTON_INDEX_LANE_PLUS]);
 			}
 		}, false);
 		buttons[BUTTON_INDEX_DELETE] = new SelectButton(new GreenfootImage("images/trash.png"), new Callback() {
@@ -118,13 +140,33 @@ public class SimulationWorld extends World {
 				selectedPath.unsetState();
 				paths.remove(selectedPath);
 				selectedPath = null;
-				hideButton(buttons[BUTTON_INDEX_DELETE]);
+				hideWidget(buttons[BUTTON_INDEX_DELETE]);
 			}
 		}, false);
-		shownButtons = new ArrayList<SelectButton>();
-		shownButtons.add(buttons[BUTTON_INDEX_DRAW]);
-		shownButtons.add(buttons[BUTTON_INDEX_SELECT]);
-		displayButtons();
+		buttons[BUTTON_INDEX_LANE_MINUS] = new SelectButton(new GreenfootImage("images/minus.png"), new Callback() {
+			public void run() {
+				setDrawLaneCount(drawLaneCount - 1);
+			}
+		}, false);
+		buttons[BUTTON_INDEX_LANE_PLUS] = new SelectButton(new GreenfootImage("images/plus.png"), new Callback() {
+			public void run() {
+				setDrawLaneCount(drawLaneCount + 1);
+			}
+		}, false);
+
+		// Set up other widgets
+		widgets = new Widget[WIDGET_COUNT];
+		widgets[WIDGET_INDEX_LANE_COUNT] = new Widget(null);
+		setDrawLaneCount(2);
+
+		// Display initial widgets
+		shownWidgets = new ArrayList<Widget>();
+		shownWidgets.add(buttons[BUTTON_INDEX_DRAW]);
+		shownWidgets.add(buttons[BUTTON_INDEX_SELECT]);
+		shownWidgets.add(buttons[BUTTON_INDEX_LANE_MINUS]);
+		shownWidgets.add(widgets[WIDGET_INDEX_LANE_COUNT]);
+		shownWidgets.add(buttons[BUTTON_INDEX_LANE_PLUS]);
+		displayWidgets();
 
 		// Draw initial background image so this world isn't blank on reset
 		updateBackground();
@@ -170,7 +212,7 @@ public class SimulationWorld extends World {
 		case DRAW:
 			if (Greenfoot.mousePressed(this) && mouse.getButton() == 1) {
 				// When mouse changed from non-pressed to pressed state, begin a new path
-				path = new SuperPath(3);
+				path = new SuperPath(drawLaneCount);
 				paths.add(path);
 				isDrawing = true;
 			} else if (isDrawing) {
@@ -199,9 +241,9 @@ public class SimulationWorld extends World {
 				if (selectedPath != null) {
 					selectedPath.select();
 					hoveredPath = null;
-					showButton(buttons[BUTTON_INDEX_DELETE]);
+					showWidget(buttons[BUTTON_INDEX_DELETE]);
 				} else {
-					hideButton(buttons[BUTTON_INDEX_DELETE]);
+					hideWidget(buttons[BUTTON_INDEX_DELETE]);
 				}
 			} else if (Greenfoot.mouseMoved(null)) {
 				// Clear hover state on any previously hovered path
@@ -253,23 +295,50 @@ public class SimulationWorld extends World {
 		}
 	}
 
-	private void showButton(SelectButton button) {
-		if (shownButtons.contains(button)) {
+	/**
+	 * Set the number of lanes to draw new paths with, and update the widget
+	 * that displays this number. The value is clamped to be at least
+	 * MIN_LANE_COUNT and at most MAX_LANE_COUNT.
+	 *
+	 * @param count the value to request to set the current lane count for drawing
+	 */
+	private void setDrawLaneCount(int count) {
+		drawLaneCount = Math.max(MIN_LANE_COUNT, Math.min(MAX_LANE_COUNT, count));
+		Widget widget = widgets[WIDGET_INDEX_LANE_COUNT];
+		widget.setIcon(new GreenfootImage(String.valueOf(drawLaneCount), 48, Color.BLACK, Color.WHITE));
+	}
+
+	/**
+	 * Add a widget to be shown to the user. It will appear in the rightmost position.
+	 *
+	 * @param widget the widget to show
+	 */
+	private void showWidget(Widget widget) {
+		if (shownWidgets.contains(widget)) {
 			return;
 		}
-		shownButtons.add(button);
-		displayButtons();
+		shownWidgets.add(widget);
+		displayWidgets();
 	}
 
-	private void hideButton(SelectButton button) {
-		removeObjects(shownButtons);
-		shownButtons.remove(button);
-		displayButtons();
+	/**
+	 * Remove a widget from the list of widgets being shown to the user.
+	 *
+	 * @param widget the widget to hide
+	 */
+	private void hideWidget(Widget widget) {
+		// Order of widgets will change, remove them before adding again
+		removeObjects(shownWidgets);
+		shownWidgets.remove(widget);
+		displayWidgets();
 	}
 
-	private void displayButtons() {
-		for (int i = 0; i < shownButtons.size(); i++) {
-			addObject(shownButtons.get(i), 20 * (i + 1) + (SelectButton.WIDTH * i) + SelectButton.WIDTH / 2, HEIGHT - 20 - SelectButton.HEIGHT / 2);
+	/**
+	 * Add all widgets in the list of widgets to be shown to the user to this world.
+	 */
+	private void displayWidgets() {
+		for (int i = 0; i < shownWidgets.size(); i++) {
+			addObject(shownWidgets.get(i), 20 * (i + 1) + (Widget.WIDTH * i) + Widget.WIDTH / 2, HEIGHT - 20 - Widget.HEIGHT / 2);
 		}
 	}
 }

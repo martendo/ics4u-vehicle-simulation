@@ -31,20 +31,20 @@ public class SuperPath {
 	// Visual parameters
 	public static final int PATH_WIDTH = 50;
 	public static final int PATH_OUTLINE_WIDTH = 16;
-	public static final java.awt.Color PATH_COLOR = new java.awt.Color(64, 64, 64);
-	public static final java.awt.Color PATH_OUTLINE_COLOR = java.awt.Color.YELLOW;
-	public static final java.awt.Color LANE_SEPARATOR_COLOR = java.awt.Color.WHITE;
-	public static final java.awt.Color LANE_PATH_COLOR = java.awt.Color.RED;
-	public static final java.awt.Color KNOT_COLOR = java.awt.Color.PINK;
+	private static final java.awt.Color PATH_COLOR = new java.awt.Color(64, 64, 64);
+	private static final java.awt.Color PATH_OUTLINE_COLOR = java.awt.Color.YELLOW;
+	private static final java.awt.Color LANE_SEPARATOR_COLOR = java.awt.Color.WHITE;
+	private static final java.awt.Color LANE_PATH_COLOR = java.awt.Color.RED;
+	private static final java.awt.Color KNOT_COLOR = java.awt.Color.PINK;
 
 	private static final BasicStroke LANE_SEPARATOR_STROKE = new BasicStroke(5.0f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_ROUND, 0.0f, new float[] {15.0f, 30.0f}, 0.0f);
 	private static final BasicStroke LANE_PATH_STROKE = new BasicStroke(1.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 	private static final BasicStroke KNOT_STROKE = new BasicStroke(10.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 
-	public static final java.awt.Color HOVER_PATTERN_COLOR_1 = new java.awt.Color(78, 106, 162);
-	public static final java.awt.Color HOVER_PATTERN_COLOR_2 = new java.awt.Color(65, 91, 148);
-	public static final java.awt.Color SELECTED_PATTERN_COLOR_1 = new java.awt.Color(72, 88, 125);
-	public static final java.awt.Color SELECTED_PATTERN_COLOR_2 = new java.awt.Color(64, 79, 116);
+	private static final java.awt.Color HOVER_PATTERN_COLOR_1 = new java.awt.Color(78, 106, 162);
+	private static final java.awt.Color HOVER_PATTERN_COLOR_2 = new java.awt.Color(65, 91, 148);
+	private static final java.awt.Color SELECTED_PATTERN_COLOR_1 = new java.awt.Color(72, 88, 125);
+	private static final java.awt.Color SELECTED_PATTERN_COLOR_2 = new java.awt.Color(64, 79, 116);
 
 	// The distance below which to consider points as part of a filled segment
 	public static final double FILL_THRESHOLD = PATH_OUTLINE_WIDTH;

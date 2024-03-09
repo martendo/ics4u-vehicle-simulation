@@ -8,10 +8,7 @@ import greenfoot.*;
  * @author Martin Baldwin
  * @version March 2024
  */
-public class SelectButton extends Actor {
-	public static final int WIDTH = 64;
-	public static final int HEIGHT = 64;
-
+public class SelectButton extends Widget {
 	private static final Color BORDER_COLOR = Color.BLACK;
 	private static final int BORDER_WIDTH = 3;
 
@@ -36,14 +33,8 @@ public class SelectButton extends Actor {
 		}
 	}
 
-	private GreenfootImage icon;
-	private int iconX;
-	private int iconY;
 	private boolean isClicking;
 	private boolean isSelected;
-
-	// Final image of this button as an actor
-	private GreenfootImage image;
 
 	// Keep track of button state for drawing
 	private ButtonState state;
@@ -54,17 +45,12 @@ public class SelectButton extends Actor {
 	/**
 	 * Create a new button.
 	 *
-	 * @param width the width of the button
-	 * @param height the height of the button
 	 * @param icon the image to place in the center of this button
-	 * @param isSelected whether or not this button should begin in a selected state
 	 * @param callback the action to perform when this button is clicked
+	 * @param isSelected whether or not this button should begin in a selected state
 	 */
 	public SelectButton(GreenfootImage icon, Callback callback, boolean isSelected) {
-		super();
-		this.icon = icon;
-		iconX = WIDTH / 2 - icon.getWidth() / 2;
-		iconY = HEIGHT / 2 - icon.getHeight() / 2;
+		super(icon);
 		this.callback = callback;
 
 		// Default button state
@@ -76,10 +62,6 @@ public class SelectButton extends Actor {
 			state = ButtonState.NORMAL;
 		}
 		prevState = null;
-
-		// Initialize image for this button actor
-		image = new GreenfootImage(WIDTH, HEIGHT);
-		setImage(image);
 		updateImage();
 	}
 
@@ -152,7 +134,7 @@ public class SelectButton extends Actor {
 	/**
 	 * Redraw this button's image with the appropriate background color if this button's state has changed.
 	 */
-	private void updateImage() {
+	protected void updateImage() {
 		if (state == prevState) {
 			// State has not changed: image will be the same as before, nothing to do
 			return;
@@ -166,7 +148,6 @@ public class SelectButton extends Actor {
 		image.fillRect(0, HEIGHT - BORDER_WIDTH, WIDTH, BORDER_WIDTH);
 		image.fillRect(0, 0, BORDER_WIDTH, HEIGHT);
 		image.fillRect(WIDTH - BORDER_WIDTH, 0, BORDER_WIDTH, HEIGHT);
-		// Draw button icon
-		image.drawImage(icon, iconX, iconY);
+		drawIcon();
 	}
 }
