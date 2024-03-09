@@ -170,7 +170,7 @@ public class SimulationWorld extends World {
 		case DRAW:
 			if (Greenfoot.mousePressed(this) && mouse.getButton() == 1) {
 				// When mouse changed from non-pressed to pressed state, begin a new path
-				path = new SuperPath();
+				path = new SuperPath(3);
 				paths.add(path);
 				isDrawing = true;
 			} else if (isDrawing) {
