@@ -13,13 +13,13 @@ public abstract class PathTraveller extends SuperActor {
 	private PathTraceIterator pathIter;
 
 	/**
-	 * Create a new traveller actor that follows the given path.
+	 * Create a new traveller actor that follows the given lane of the given path.
 	 *
 	 * @param path the path for this actor to travel along
 	 */
-	public PathTraveller(SuperPath path) {
+	public PathTraveller(SuperPath path, int laneNum) {
 		this.path = path;
-		pathIter = path.getPathTraceIterator();
+		pathIter = path.getLaneTraceIterator(laneNum);
 		double[] coords = new double[6];
 		pathIter.currentSegment(coords);
 		x = coords[0];

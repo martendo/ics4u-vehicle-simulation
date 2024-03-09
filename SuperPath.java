@@ -81,6 +81,7 @@ public class SuperPath {
 	private SuperPathState state;
 
 	// Paths for individual lanes
+	private int laneCount;
 	private OffsetPathCollection lanes;
 	private OffsetPathCollection laneSeparators;
 
@@ -107,6 +108,7 @@ public class SuperPath {
 		travellers = new ArrayList<PathTraveller>();
 
 		// Paths for lanes and lane separators
+		this.laneCount = laneCount;
 		lanes = new OffsetPathCollection(laneCount, PATH_WIDTH);
 		if (laneCount > 1) {
 			laneSeparators = new OffsetPathCollection(laneCount - 1, PATH_WIDTH);
@@ -323,12 +325,20 @@ public class SuperPath {
 	}
 
 	/**
-	 * Get an iterator object that can trace this SuperPath in segments of specific lengths.
-	 *
-	 * @return a new PathTraceIterator that independently traverses this SuperPath
+	 * Get the number of lanes in this SuperPath.
 	 */
-	public PathTraceIterator getPathTraceIterator() {
-		PathIterator pi = path.getPathIterator(null, PathTraceIterator.FLATNESS);
+	public int getLaneCount() {
+		return laneCount;
+	}
+
+	/**
+	 * Get an iterator object that can trace a lane of this SuperPath in
+	 * segments of specific lengths.
+	 *
+	 * @return a new PathTraceIterator that independently traverses the specified lane of this SuperPath
+	 */
+	public PathTraceIterator getLaneTraceIterator(int laneNum) {
+		PathIterator pi = lanes.getPath(laneNum).getPathIterator(null, PathTraceIterator.FLATNESS);
 		return new PathTraceIterator(pi);
 	}
 

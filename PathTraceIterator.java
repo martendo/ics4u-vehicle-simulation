@@ -2,8 +2,8 @@ import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 
 /**
- * A PathIterator that returns points at specific distances along the path
- * defined by another PathIterator.
+ * A PathIterator-like class that returns points at specific distances along the
+ * path defined by another PathIterator.
  *
  * @author Martin Baldwin
  * @version March 2024

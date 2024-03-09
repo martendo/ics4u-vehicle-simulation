@@ -9,12 +9,10 @@ import java.awt.Graphics2D;
  */
 public class Dessert extends PathTraveller {
 	/**
-	 * Create a new dessert that follows the given path.
-	 *
-	 * @param path the path for this dessert to travel along
+	 * Create a new dessert.
 	 */
-	public Dessert(SuperPath path) {
-		super(path);
+	public Dessert(SuperPath path, int laneNum) {
+		super(path, laneNum);
 	}
 
 	/**
@@ -29,6 +27,6 @@ public class Dessert extends PathTraveller {
 	 */
 	public void drawUsingGraphics(Graphics2D graphics) {
 		graphics.setColor(java.awt.Color.GREEN);
-		graphics.fillRect((int) x - 30, (int) y - 30, 60, 60);
+		graphics.fillRect((int) x - 10, (int) y - 10, 20, 20);
 	}
 }
