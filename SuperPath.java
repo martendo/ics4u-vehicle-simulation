@@ -578,7 +578,7 @@ public class SuperPath {
 		hoverPaint = new TexturePaint(hoverTexture, hoverTextureRect);
 		selectedPaint = new TexturePaint(selectedTexture, selectedTextureRect);
 		// Shift the anchor rectangles and wrap around when the ends of the patterns are reached
-		textureRectX = (textureRectX + 0.25) % 16.0;
+		textureRectX = (textureRectX + 0.5) % 16.0;
 		hoverTextureRect.setRect(textureRectX, 0.0, 16.0, 16.0);
 		selectedTextureRect.setRect(textureRectX, 0.0, 16.0, 16.0);
 	}
