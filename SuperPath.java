@@ -28,7 +28,6 @@ import java.util.ArrayList;
 public class SuperPath {
 	// Settings
 	public static final boolean SHOW_LANE_PATHS = false;
-	public static final boolean SHOW_LANE_KNOTS = false;
 
 	// Flatness of curves to enforce when looking for intersections in paths
 	private static final double INTERSECTION_TEST_FLATNESS = 1.0;
@@ -228,19 +227,6 @@ public class SuperPath {
 			graphics.setStroke(LANE_PATH_STROKE);
 			for (Path2D.Double lane : lanes.getPaths()) {
 				graphics.draw(lane);
-			}
-		}
-		// Draw lane path knot removal points
-		if (SHOW_LANE_KNOTS) {
-			graphics.setColor(KNOT_COLOR);
-			graphics.setStroke(KNOT_STROKE);
-			for (Point2D.Double p : lanes.getKnots()) {
-				graphics.drawLine((int) p.x, (int) p.y, (int) p.x, (int) p.y);
-			}
-			if (laneSeparators != null) {
-				for (Point2D.Double p : laneSeparators.getKnots()) {
-					graphics.drawLine((int) p.x, (int) p.y, (int) p.x, (int) p.y);
-				}
 			}
 		}
 	}

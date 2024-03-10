@@ -1,7 +1,6 @@
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.QuadCurve2D;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.ArrayDeque;
 
@@ -33,9 +32,6 @@ public class OffsetPathCollection {
 	// Current (approximate) length of the paths stored in pathTails
 	private double[] pathTailLengths;
 
-	// All points where knots have been removed from paths in this collection
-	private ArrayList<Point2D.Double> knots;
-
 	// Whether or not the Path2D objects in paths can be considered to be complete paths (path tail is empty)
 	private boolean isComplete;
 
@@ -61,7 +57,6 @@ public class OffsetPathCollection {
 			pathTails[i] = new ArrayDeque<QuadCurve2D.Double>();
 			pathTailLengths[i] = 0.0;
 		}
-		knots = new ArrayList<Point2D.Double>();
 		isComplete = false;
 	}
 
@@ -106,13 +101,6 @@ public class OffsetPathCollection {
 			}
 		}
 		isComplete = true;
-	}
-
-	/**
-	 * Return a list of points where knots have been removed in this collection.
-	 */
-	public List<Point2D.Double> getKnots() {
-		return knots;
 	}
 
 	/**
@@ -194,7 +182,6 @@ public class OffsetPathCollection {
 			return;
 		}
 
-		knots.add(intersection);
 		// End the intersecting part of the path at the point of intersection
 		pathTailLengths[index] -= Math.hypot(trimCurve.x2 - trimCurve.x1, trimCurve.y2 - trimCurve.y1);
 		trimCurve.setCurve(trimCurve.x1, trimCurve.y1, (trimCurve.x1 + intersection.x) / 2.0, (trimCurve.y1 + intersection.y) / 2.0, intersection.x, intersection.y);
