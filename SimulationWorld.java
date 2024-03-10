@@ -137,7 +137,6 @@ public class SimulationWorld extends World {
 					return;
 				}
 				selectedPath.killAllTravellers();
-				selectedPath.unsetState();
 				paths.remove(selectedPath);
 				selectedPath = null;
 				hideWidget(buttons[BUTTON_INDEX_DELETE]);
@@ -173,31 +172,34 @@ public class SimulationWorld extends World {
 	}
 
 	/**
+	 * Add a SuperActor to this world.
+	 *
+	 * @param actor the SuperActor object to add
+	 */
+	public void addActor(SuperActor actor) {
+		actors.add(actor);
+	}
+
+	/**
 	 * Update this world.
 	 */
 	public void act() {
-		updatePaths();
+		updatePathEditing();
 
-		// Add desserts to the last path when mouse is right-clicked
-		MouseInfo mouse = Greenfoot.getMouseInfo();
-		if (Greenfoot.mousePressed(this) && mouse.getButton() == 3 && paths.size() > 0) {
-			SuperPath path = paths.get(paths.size() - 1);
-			for (int i = 0; i < path.getLaneCount(); i++) {
-				Dessert dessert = new Dessert();
-				path.addTraveller(dessert, i);
-				actors.add(dessert);
-			}
-
+		// Update paths' spawners
+		for (SuperPath path : paths) {
+			path.actSpawners();
 		}
 
 		// Update actors
 		// Use a ListIterator to be able to remove dead actors from the list during iteration
 		for (ListIterator<SuperActor> iter = actors.listIterator(); iter.hasNext();) {
 			SuperActor actor = iter.next();
-			actor.act();
 			if (actor.isDead()) {
 				iter.remove();
+				continue;
 			}
+			actor.act();
 		}
 
 		// Render
@@ -207,7 +209,7 @@ public class SimulationWorld extends World {
 	/**
 	 * Update the paths in this world based on mouse events, allowing the user to draw.
 	 */
-	private void updatePaths() {
+	private void updatePathEditing() {
 		// Use position of mouse to add a point to the path
 		MouseInfo mouse = Greenfoot.getMouseInfo();
 		if (mouse == null) {
@@ -229,6 +231,7 @@ public class SimulationWorld extends World {
 					isDrawing = false;
 					path.addPoint(mouse.getX(), mouse.getY());
 					path.complete();
+					path.createSpawners(this);
 				} else if (Greenfoot.mouseDragged(null)) {
 					path.addPoint(mouse.getX(), mouse.getY());
 				}

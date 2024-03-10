@@ -27,7 +27,7 @@ import java.util.ArrayList;
  */
 public class SuperPath {
 	// Settings
-	public static final boolean SHOW_LANE_PATHS = true;
+	public static final boolean SHOW_LANE_PATHS = false;
 	public static final boolean SHOW_LANE_KNOTS = false;
 
 	// Flatness of curves to enforce when looking for intersections in paths
@@ -88,6 +88,8 @@ public class SuperPath {
 
 	// Objects currently on this path
 	private ArrayList<PathTraveller> travellers;
+	// Spawners for each lane of this path
+	private Spawner[] spawners;
 
 	// Variables to keep track of the last given point in order to control path curves
 	private double prevx;
@@ -107,6 +109,7 @@ public class SuperPath {
 		intersections = new ArrayList<Point2D.Double>();
 		state = SuperPathState.NORMAL;
 		travellers = new ArrayList<PathTraveller>();
+		spawners = null;
 
 		// Paths for lanes and lane separators
 		this.laneCount = laneCount;
@@ -120,6 +123,13 @@ public class SuperPath {
 		// Strokes for drawing this path
 		pathStroke = new BasicStroke(PATH_WIDTH * laneCount, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 		pathOutlineStroke = new BasicStroke(PATH_WIDTH * laneCount + PATH_OUTLINE_WIDTH, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+	}
+
+	/**
+	 * Get the number of lanes in this SuperPath.
+	 */
+	public int getLaneCount() {
+		return laneCount;
 	}
 
 	/**
@@ -168,16 +178,6 @@ public class SuperPath {
 		}
 		prevx = x;
 		prevy = y;
-	}
-
-	/**
-	 * Commit all lane path tails to their respective lane paths for more efficient accessing.
-	 */
-	public void complete() {
-		lanes.complete();
-		if (laneSeparators != null) {
-			laneSeparators.complete();
-		}
 	}
 
 	/**
@@ -287,6 +287,45 @@ public class SuperPath {
 	}
 
 	/**
+	 * Commit all lane path tails to their respective lane paths for more efficient accessing.
+	 */
+	public void complete() {
+		lanes.complete();
+		if (laneSeparators != null) {
+			laneSeparators.complete();
+		}
+	}
+
+	/**
+	 * Create dessert spawners for each lane of this path.
+	 */
+	public void createSpawners(SimulationWorld world) {
+		spawners = new Spawner[laneCount];
+		for (int i = 0; i < laneCount; i++) {
+			final int laneNum = i;
+			spawners[laneNum] = new Spawner(60, 240) {
+				public void spawn() {
+					Dessert dessert = new Dessert();
+					addTraveller(dessert, laneNum);
+					world.addActor(dessert);
+				}
+			};
+		}
+	}
+
+	/**
+	 * Update this path's dessert spawners.
+	 */
+	public void actSpawners() {
+		if (spawners == null) {
+			return;
+		}
+		for (Spawner spawner : spawners) {
+			spawner.act();
+		}
+	}
+
+	/**
 	 * Return a list of path travellers on this path.
 	 */
 	public List<PathTraveller> getTravellers() {
@@ -321,13 +360,6 @@ public class SuperPath {
 		while (travellers.size() > 0) {
 			travellers.get(0).die();
 		}
-	}
-
-	/**
-	 * Get the number of lanes in this SuperPath.
-	 */
-	public int getLaneCount() {
-		return laneCount;
 	}
 
 	/**
