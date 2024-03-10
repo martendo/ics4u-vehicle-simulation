@@ -1,4 +1,4 @@
-import greenfoot.World;
+import java.awt.image.BufferedImage;
 import java.awt.Graphics2D;
 
 /**
@@ -8,18 +8,25 @@ import java.awt.Graphics2D;
  * @version March 2024
  */
 public class Dessert extends PathTraveller {
+	private BufferedImage image;
+
+	public Dessert() {
+		super();
+		image = new BufferedImage(20, 20, BufferedImage.TYPE_INT_ARGB_PRE);
+		Graphics2D graphics = image.createGraphics();
+		graphics.setColor(java.awt.Color.GREEN);
+		graphics.fillRect(0, 0, 20, 20);
+		graphics.dispose();
+	}
+
 	/**
-	 * Kill this dessert when it reached the end of its path.
+	 * Kill this dessert when it reaches the end of its path.
 	 */
 	protected void endTravel() {
 		die();
 	}
 
-	/**
-	 * Draw this dessert.
-	 */
-	public void drawUsingGraphics(Graphics2D graphics) {
-		graphics.setColor(java.awt.Color.GREEN);
-		graphics.fillRect((int) x - 10, (int) y - 10, 20, 20);
+	public BufferedImage getImage() {
+		return image;
 	}
 }

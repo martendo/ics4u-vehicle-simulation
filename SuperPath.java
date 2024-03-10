@@ -1,5 +1,6 @@
 import java.awt.image.BufferedImage;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.BasicStroke;
 import java.awt.Paint;
 import java.awt.TexturePaint;
@@ -78,7 +79,17 @@ public class SuperPath {
 	private Path2D.Double path;
 	// All points where this SuperPath intersects itself
 	private ArrayList<Point2D.Double> intersections;
+	// Whether or not this path is being hovered or selected
 	private SuperPathState state;
+	// Whether or not this path will change
+	private boolean isComplete;
+
+	// Stored image of this path for more efficient drawing
+	private BufferedImage image;
+	// Graphics context of this path's image
+	private Graphics2D graphics;
+	// Signal that this path has changed and needs to be redrawn
+	private boolean needsRedraw;
 
 	// Paths for individual lanes
 	private int laneCount;
@@ -107,6 +118,16 @@ public class SuperPath {
 		path = new Path2D.Double();
 		intersections = new ArrayList<Point2D.Double>();
 		state = SuperPathState.NORMAL;
+		isComplete = false;
+		image = new BufferedImage(SimulationWorld.WIDTH, SimulationWorld.HEIGHT, BufferedImage.TYPE_INT_ARGB_PRE);
+		graphics = image.createGraphics();
+		// Normalize strokes to avoid strange visual artifacts in specific scenarios
+		graphics.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_NORMALIZE);
+		// Turning on antialiasing gives smoother-looking graphics
+		graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		graphics.setBackground(new java.awt.Color(0, true));
+		needsRedraw = true;
+
 		travellers = new ArrayList<PathTraveller>();
 		spawners = null;
 
@@ -177,14 +198,14 @@ public class SuperPath {
 		}
 		prevx = x;
 		prevy = y;
+		needsRedraw = true;
 	}
 
 	/**
-	 * Draw this SuperPath using a given graphics context.
-	 *
-	 * @param graphics the Graphics2D context on which to draw this SuperPath
+	 * Draw this SuperPath onto its image object.
 	 */
-	public void drawUsingGraphics(Graphics2D graphics) {
+	private void redraw() {
+		graphics.clearRect(0, 0, image.getWidth(), image.getHeight());
 		// Determine how to paint this path depending on state
 		Paint paint;
 		if (state == SuperPathState.HOVER) {
@@ -197,11 +218,11 @@ public class SuperPath {
 		// Draw outline of path behind path
 		graphics.setColor(PATH_OUTLINE_COLOR);
 		graphics.setStroke(pathOutlineStroke);
-		strokePathUsingGraphics(graphics);
+		strokePath();
 		// Draw path surface
 		graphics.setPaint(paint);
 		graphics.setStroke(pathStroke);
-		strokePathUsingGraphics(graphics);
+		strokePath();
 
 		// Draw lane separators on top of path
 		if (laneSeparators != null) {
@@ -229,6 +250,21 @@ public class SuperPath {
 				graphics.draw(lane);
 			}
 		}
+
+		// When in a special state, this path's image changes constantly (animated paint)
+		if (state == SuperPathState.NORMAL) {
+			needsRedraw = false;
+		}
+	}
+
+	/**
+	 * Return this path's image, redrawing it beforehand if necessary.
+	 */
+	public BufferedImage getImage() {
+		if (needsRedraw) {
+			redraw();
+		}
+		return image;
 	}
 
 	/**
@@ -244,7 +280,7 @@ public class SuperPath {
 	 *
 	 * @param graphics the Graphics2D context on which to draw the segment
 	 */
-	private void strokePathUsingGraphics(Graphics2D graphics) {
+	private void strokePath() {
 		double[] coords = new double[6];
 		double lastx = 0.0;
 		double lasty = 0.0;
@@ -364,6 +400,7 @@ public class SuperPath {
 	 */
 	public void markHovered() {
 		state = SuperPathState.HOVER;
+		needsRedraw = true;
 	}
 
 	/**
@@ -380,6 +417,7 @@ public class SuperPath {
 	 */
 	public void select() {
 		state = SuperPathState.SELECTED;
+		needsRedraw = true;
 	}
 
 	/**
@@ -387,6 +425,7 @@ public class SuperPath {
 	 */
 	public void unsetState() {
 		state = SuperPathState.NORMAL;
+		needsRedraw = true;
 	}
 
 	/**

@@ -1,4 +1,4 @@
-import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 
 /**
  * A class for objects in a SimulationWorld.
@@ -46,9 +46,23 @@ public abstract class SuperActor {
 	public abstract void act();
 
 	/**
-	 * Draw this SuperActor using a given graphics context.
-	 *
-	 * @param graphics the Graphics2D context on which to draw this SuperActor
+	 * Return the image of this SuperActor for drawing.
 	 */
-	public abstract void drawUsingGraphics(Graphics2D graphics);
+	public abstract BufferedImage getImage();
+
+	/**
+	 * Return the X position of the left side of this SuperActor's image if the
+	 * center of its image were to be placed at its internal coordinates.
+	 */
+	public int getX() {
+		return (int) x - (getImage().getWidth() / 2);
+	}
+
+	/**
+	 * Return the Y position of the top side of this SuperActor's image if the
+	 * center of its image were to be placed at its internal coordinates.
+	 */
+	public int getY() {
+		return (int) y - (getImage().getHeight() / 2);
+	}
 }

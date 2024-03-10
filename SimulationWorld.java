@@ -298,9 +298,9 @@ public class SimulationWorld extends World {
 		// Draw paths
 		SuperPath.updatePaints();
 		for (SuperPath path : paths) {
-			path.drawUsingGraphics(graphics);
+			graphics.drawImage(path.getImage(), 0, 0, null);
 			for (PathTraveller object : path.getTravellers()) {
-				object.drawUsingGraphics(graphics);
+				graphics.drawImage(object.getImage(), object.getX(), object.getY(), null);
 			}
 		}
 	}
