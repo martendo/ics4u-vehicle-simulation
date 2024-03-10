@@ -14,12 +14,12 @@ import java.util.ArrayList;
 
 /**
  * A path that is automatically smoothened with quadratic curves between points
- * and divided into segments to create "filled" portions when points are close
- * enough together.
+ * and that updates a collection of parallel lanes that follow it while
+ * recording all points of self-intersection.
  *
- * The division of SuperPaths into segments allows them to be drawn with a
- * stroked outline that follows the path, even when a SuperPath overlaps itself,
- * where later segments are drawn on top of earlier segments.
+ * A SuperPath maintains two OffsetPathCollection objects: one for the paths of
+ * lanes for PathTraveller actors to follow, and one for the path of lane
+ * separators for visuals.
  *
  * @author Martin Baldwin
  * @version March 2024
@@ -28,6 +28,9 @@ public class SuperPath {
 	// Settings
 	public static final boolean SHOW_LANE_PATHS = true;
 	public static final boolean SHOW_LANE_KNOTS = false;
+
+	// Flatness of curves to enforce when looking for intersections in paths
+	private static final double INTERSECTION_TEST_FLATNESS = 1.0;
 
 	// Visual parameters
 	public static final int PATH_WIDTH = 50;
@@ -46,9 +49,6 @@ public class SuperPath {
 	private static final java.awt.Color HOVER_PATTERN_COLOR_2 = new java.awt.Color(65, 91, 148);
 	private static final java.awt.Color SELECTED_PATTERN_COLOR_1 = new java.awt.Color(72, 88, 125);
 	private static final java.awt.Color SELECTED_PATTERN_COLOR_2 = new java.awt.Color(64, 79, 116);
-
-	// The distance below which to consider points as part of a filled segment
-	public static final double FILL_THRESHOLD = PATH_OUTLINE_WIDTH;
 
 	// Paths may be drawn differently depending on their state
 	public enum SuperPathState {
@@ -76,8 +76,8 @@ public class SuperPath {
 
 	// A single path created from all points added to this SuperPath
 	private Path2D.Double path;
-	// Separated segments for drawing
-	private ArrayList<Shape> segments;
+	// All points where this SuperPath intersects itself
+	private ArrayList<Point2D.Double> intersections;
 	private SuperPathState state;
 
 	// Paths for individual lanes
@@ -103,7 +103,7 @@ public class SuperPath {
 		}
 
 		path = new Path2D.Double();
-		segments = new ArrayList<Shape>();
+		intersections = new ArrayList<Point2D.Double>();
 		state = SuperPathState.NORMAL;
 		travellers = new ArrayList<PathTraveller>();
 
@@ -132,12 +132,8 @@ public class SuperPath {
 		if (prevPoint == null) {
 			// This is the first point -> begin the path by setting its location
 			path.moveTo(x, y);
-
 			// Add a line segment of one point in order to have something to draw
-			Path2D.Double point = new Path2D.Double();
-			point.moveTo(x, y);
-			point.lineTo(x, y);
-			segments.add(point);
+			path.lineTo(x, y);
 		} else {
 			// Use quadratic curves to smoothen the lines, connecting midpoints
 			// of given points with actual points as control points
@@ -146,40 +142,41 @@ public class SuperPath {
 			double ctrlx;
 			double ctrly;
 			if (prevPoint.x == prevx && prevPoint.y == prevy) {
+				// If this curve is a straight line (first curve in path), use
+				// the midpoint between start and end points as the control point
 				ctrlx = (prevx + midx) / 2.0;
 				ctrly = (prevy + midy) / 2.0;
 			} else {
 				ctrlx = prevx;
 				ctrly = prevy;
 			}
-			path.quadTo(ctrlx, ctrly, midx, midy);
-			lanes.offsetQuadTo(prevPoint.x, prevPoint.y, ctrlx, ctrly, midx, midy);
-			if (laneSeparators != null) {
-				laneSeparators.offsetQuadTo(prevPoint.x, prevPoint.y, ctrlx, ctrly, midx, midy);
+			QuadCurve2D.Double curve = new QuadCurve2D.Double(prevPoint.x, prevPoint.y, ctrlx, ctrly, midx, midy);
+			// Add any new intersection from this curve
+			Point2D.Double intersection = getShapeIntersection(path, curve, 1.0, prevPoint);
+			if (intersection != null) {
+				intersections.add(intersection);
 			}
+			// Update path
+			path.quadTo(curve.ctrlx, curve.ctrly, curve.x2, curve.y2);
 
-			// Update segments
-			if (prevPoint.distance(midx, midy) < FILL_THRESHOLD) {
-				// This point is close to the previous point, add it to a fill segment
-				Path2D.Double fillSegment;
-				Shape prevSegment = segments.get(segments.size() - 1);
-				if (prevSegment instanceof Path2D.Double) {
-					fillSegment = (Path2D.Double) prevSegment;
-				} else {
-					// Create a new fill segment if the previous segment isn't one
-					fillSegment = new Path2D.Double();
-					fillSegment.moveTo(prevPoint.x, prevPoint.y);
-					segments.add(fillSegment);
-				}
-				fillSegment.quadTo(ctrlx, ctrly, midx, midy);
-			} else {
-				// This individual curve is long enough to treat as a segment on its own
-				QuadCurve2D.Double curve = new QuadCurve2D.Double(prevPoint.x, prevPoint.y, ctrlx, ctrly, midx, midy);
-				segments.add(curve);
+			// Update lanes
+			lanes.offsetQuadTo(curve.x1, curve.y1, curve.ctrlx, curve.ctrly, curve.x2, curve.y2);
+			if (laneSeparators != null) {
+				laneSeparators.offsetQuadTo(curve.x1, curve.y1, curve.ctrlx, curve.ctrly, curve.x2, curve.y2);
 			}
 		}
 		prevx = x;
 		prevy = y;
+	}
+
+	/**
+	 * Commit all lane path tails to their respective lane paths for more efficient accessing.
+	 */
+	public void complete() {
+		lanes.complete();
+		if (laneSeparators != null) {
+			laneSeparators.complete();
+		}
 	}
 
 	/**
@@ -197,47 +194,45 @@ public class SuperPath {
 		} else {
 			paint = PATH_COLOR;
 		}
-		Shape prevSegment = null;
-		for (Shape segment : segments) {
-			// Draw path outline stroke around this path segment
-			graphics.setColor(PATH_OUTLINE_COLOR);
-			graphics.setStroke(pathOutlineStroke);
-			strokeSegmentUsingGraphics(graphics, segment);
+		// Draw outline of path behind path
+		graphics.setColor(PATH_OUTLINE_COLOR);
+		graphics.setStroke(pathOutlineStroke);
+		strokePathUsingGraphics(graphics);
+		// Draw path surface
+		graphics.setPaint(paint);
+		graphics.setStroke(pathStroke);
+		strokePathUsingGraphics(graphics);
 
-			// Fill in this path segment
-			graphics.setPaint(paint);
-			graphics.setStroke(pathStroke);
-			if (prevSegment != null) {
-				// Draw the preceeding segment over the round cap of this segment's outline
-				// (hide outline showing in between segments)
-				strokeSegmentUsingGraphics(graphics, prevSegment);
-			}
-			strokeSegmentUsingGraphics(graphics, segment);
-
-			prevSegment = segment;
-		}
-
-		// TODO: Draw lanes and lane separators properly
+		// Draw lane separators on top of path
 		if (laneSeparators != null) {
-			graphics.setStroke(LANE_SEPARATOR_STROKE);
 			graphics.setColor(LANE_SEPARATOR_COLOR);
+			graphics.setStroke(LANE_SEPARATOR_STROKE);
 			for (Path2D.Double laneSeparator : laneSeparators.getPaths()) {
 				graphics.draw(laneSeparator);
 			}
 		}
 
+		// Paint over intersections to remove lane separators there (only if there are lane separators)
+		if (laneSeparators != null) {
+			graphics.setPaint(paint);
+			graphics.setStroke(pathStroke);
+			for (Point2D.Double p : intersections) {
+				graphics.drawLine((int) p.x, (int) p.y, (int) p.x, (int) p.y);
+			}
+		}
+
 		// Draw lane paths
 		if (SHOW_LANE_PATHS) {
-			graphics.setStroke(LANE_PATH_STROKE);
 			graphics.setColor(LANE_PATH_COLOR);
+			graphics.setStroke(LANE_PATH_STROKE);
 			for (Path2D.Double lane : lanes.getPaths()) {
 				graphics.draw(lane);
 			}
 		}
 		// Draw lane path knot removal points
 		if (SHOW_LANE_KNOTS) {
-			graphics.setStroke(KNOT_STROKE);
 			graphics.setColor(KNOT_COLOR);
+			graphics.setStroke(KNOT_STROKE);
 			for (Point2D.Double p : lanes.getKnots()) {
 				graphics.drawLine((int) p.x, (int) p.y, (int) p.x, (int) p.y);
 			}
@@ -253,46 +248,40 @@ public class SuperPath {
 	 * A helper method to improve the visual quality of SuperPaths.
 	 *
 	 * Ideally, all calls to this method should be replaceable with
-	 * graphics.draw(segment), but there are often visual artifacts when drawing
-	 * "filled" segments (which are objects of the Path2D.Double class),
-	 * particularly at corners, where line joins are sometimes missing.
+	 * graphics.draw(path), but there are often visual artifacts, particularly
+	 * at corners, where line joins are sometimes missing.
 	 *
-	 * If the given segment is a "filled" segment, separate it into its
-	 * component curves and draw them individually using QuadCurve2D objects.
-	 * Otherwise, draw the segment as-is.
+	 * This method separates this path into its component curves and draws them
+	 * individually using QuadCurve2D (or Line2D, in the case of the start
+	 * point) objects.
 	 *
 	 * @param graphics the Graphics2D context on which to draw the segment
-	 * @param segment the Shape to be drawn
 	 */
-	private void strokeSegmentUsingGraphics(Graphics2D graphics, Shape segment) {
-		if (segment instanceof Path2D.Double) {
-			double[] coords = new double[6];
-			double lastx = 0.0;
-			double lasty = 0.0;
-			for (PathIterator pi = segment.getPathIterator(null); !pi.isDone(); pi.next()) {
-				switch (pi.currentSegment(coords)) {
-				case PathIterator.SEG_MOVETO:
-					lastx = coords[0];
-					lasty = coords[1];
-					break;
-				case PathIterator.SEG_LINETO:
-					Line2D.Double line = new Line2D.Double(lastx, lasty, coords[0], coords[1]);
-					graphics.draw(line);
-					lastx = coords[0];
-					lasty = coords[1];
-					break;
-				case PathIterator.SEG_QUADTO:
-					QuadCurve2D.Double curve = new QuadCurve2D.Double(lastx, lasty, coords[0], coords[1], coords[2], coords[3]);
-					graphics.draw(curve);
-					lastx = coords[2];
-					lasty = coords[3];
-					break;
-				default:
-					throw new UnsupportedOperationException("Path2D objects within a SuperPath must only consist of segments of type SEG_MOVETO, SEG_LINETO, or SEG_QUADTO");
-				}
+	private void strokePathUsingGraphics(Graphics2D graphics) {
+		double[] coords = new double[6];
+		double lastx = 0.0;
+		double lasty = 0.0;
+		for (PathIterator pi = path.getPathIterator(null); !pi.isDone(); pi.next()) {
+			switch (pi.currentSegment(coords)) {
+			case PathIterator.SEG_MOVETO:
+				lastx = coords[0];
+				lasty = coords[1];
+				break;
+			case PathIterator.SEG_LINETO:
+				Line2D.Double line = new Line2D.Double(lastx, lasty, coords[0], coords[1]);
+				graphics.draw(line);
+				lastx = coords[0];
+				lasty = coords[1];
+				break;
+			case PathIterator.SEG_QUADTO:
+				QuadCurve2D.Double curve = new QuadCurve2D.Double(lastx, lasty, coords[0], coords[1], coords[2], coords[3]);
+				graphics.draw(curve);
+				lastx = coords[2];
+				lasty = coords[3];
+				break;
+			default:
+				throw new UnsupportedOperationException("Path2D objects within a SuperPath must only consist of segments of type SEG_MOVETO, SEG_LINETO, or SEG_QUADTO");
 			}
-		} else {
-			graphics.draw(segment);
 		}
 	}
 
@@ -382,6 +371,98 @@ public class SuperPath {
 	public boolean isPointTouching(double x, double y) {
 		// The stroke for the path outline is the thickest, thus defining the boundary of this path
 		return pathOutlineStroke.createStrokedShape(path).contains(x, y);
+	}
+
+	/**
+	 * Find the first point of intersection between two shapes.
+	 *
+	 * For simplicity, this method naively iterates over line segments that
+	 * approximate the two given shapes, then tests for intersection between
+	 * every pair of line segments.
+	 *
+	 * Note: this method iterates over the second shape during iteration of the
+	 * first shape. Thus, it may be more efficient to supply the smaller or less
+	 * complex shape as the second.
+	 *
+	 * @param shapeA the first shape
+	 * @param shapeB the second shape
+	 * @param distance maximum distance from shapes to allow points of intersection to be found
+	 * @param ignorePoint a point that should not be considered an intersection
+	 * @return the first point where the two shapes intersect, or null if none is found
+	 */
+	public static Point2D.Double getShapeIntersection(Shape shapeA, Shape shapeB, double distance, Point2D.Double ignorePoint) {
+		Point2D.Double intersection;
+		double[] coords = new double[6];
+		Line2D.Double lineA = new Line2D.Double();
+		Line2D.Double lineB = new Line2D.Double();
+		// Iterate over line segments in shapeA
+		for (PathIterator iterA = shapeA.getPathIterator(null, INTERSECTION_TEST_FLATNESS); !iterA.isDone(); iterA.next()) {
+			switch (iterA.currentSegment(coords)) {
+			case PathIterator.SEG_MOVETO:
+				lineA.x2 = coords[0];
+				lineA.y2 = coords[1];
+				break;
+			case PathIterator.SEG_LINETO:
+				lineA.setLine(lineA.x2, lineA.y2, coords[0], coords[1]);
+				// Iterate over line segments in shapeB
+				for (PathIterator iterB = shapeB.getPathIterator(null, INTERSECTION_TEST_FLATNESS); !iterB.isDone(); iterB.next()) {
+					switch (iterB.currentSegment(coords)) {
+					case PathIterator.SEG_MOVETO:
+						lineB.x2 = coords[0];
+						lineB.y2 = coords[1];
+						break;
+					case PathIterator.SEG_LINETO:
+						lineB.setLine(lineB.x2, lineB.y2, coords[0], coords[1]);
+						// Test the current pair of line segments
+						intersection = getLineIntersection(lineA, lineB, distance);
+						if (intersection != null && intersection.distance(ignorePoint) >= 1.0) {
+							return intersection;
+						}
+						break;
+					}
+				}
+				break;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Find the point of intersection between two line segments.
+	 *
+	 * An intersection that is found to lie just outside the boundaries of a
+	 * line segment is still accepted (by the amount specified by distance), in
+	 * order to improve visual consistency of paths.
+	 *
+	 * @param lineA the first line segment
+	 * @param lineB the second line segment
+	 * @param distance maximum distance from lines to allow points of intersection to be found
+	 * @return the point where the two line segments intersect, or null if they do not intersect
+	 */
+	private static Point2D.Double getLineIntersection(Line2D.Double lineA, Line2D.Double lineB, double distance) {
+		double tThreshold = distance / Math.hypot(lineA.x2 - lineA.x1, lineA.y2 - lineA.y1);
+		double uThreshold = distance / Math.hypot(lineB.x2 - lineB.x1, lineB.y2 - lineB.y1);
+		// See <https://en.wikipedia.org/wiki/Line-line_intersection#Given_two_points_on_each_line_segment>
+		// When representing line segments A and B in terms of first degree Bezier parameters,
+		//   PA = P1A + t*(P2A - P1A), t in [0, 1]
+		//   PB = P1B + u*(P2B - P1B), u in [0, 1]
+		// solve for t and u where PA = PB.
+		// (The slope-intercept form representation of lines is not sufficient as it cannot represent vertical lines)
+		double denominator = (lineA.x1 - lineA.x2) * (lineB.y1 - lineB.y2) - (lineA.y1 - lineA.y2) * (lineB.x1 - lineB.x2);
+		double t = ((lineA.x1 - lineB.x1) * (lineB.y1 - lineB.y2) - (lineA.y1 - lineB.y1) * (lineB.x1 - lineB.x2)) / denominator;
+		if (t < 0.0 - tThreshold || t > 1.0 + tThreshold) {
+			// Point of intersection does not lie within lineA
+			return null;
+		}
+		double u = -((lineA.x1 - lineA.x2) * (lineA.y1 - lineB.y1) - (lineA.y1 - lineA.y2) * (lineA.x1 - lineB.x1)) / denominator;
+		if (u < 0.0 - uThreshold || u > 1.0 + uThreshold) {
+			// Point of intersection does not lie within lineB
+			return null;
+		}
+		// Substitute t to find coordinates of intersection
+		double x = lineA.x1 + t * (lineA.x2 - lineA.x1);
+		double y = lineA.y1 + t * (lineA.y2 - lineA.y1);
+		return new Point2D.Double(x, y);
 	}
 
 	/**

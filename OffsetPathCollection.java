@@ -1,9 +1,6 @@
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.QuadCurve2D;
-import java.awt.geom.Line2D;
-import java.awt.geom.PathIterator;
-import java.awt.Shape;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.ArrayDeque;
@@ -24,8 +21,6 @@ import java.util.ArrayDeque;
 public class OffsetPathCollection {
 	// Distance from the end of each path to look for knots
 	public static final double KNOT_TEST_DISTANCE = SuperPath.PATH_WIDTH * Math.PI * 2.0;
-	// Flatness of curves to enforce when looking for knots
-	public static final double KNOT_TEST_FLATNESS = 1.0;
 
 	// Number of paths in this collection
 	private int size;
@@ -40,6 +35,9 @@ public class OffsetPathCollection {
 
 	// All points where knots have been removed from paths in this collection
 	private ArrayList<Point2D.Double> knots;
+
+	// Whether or not the Path2D objects in paths can be considered to be complete paths (path tail is empty)
+	private boolean isComplete;
 
 	/**
 	 * Create a new collection of parallel paths spaced at equal distances.
@@ -64,12 +62,17 @@ public class OffsetPathCollection {
 			pathTailLengths[i] = 0.0;
 		}
 		knots = new ArrayList<Point2D.Double>();
+		isComplete = false;
 	}
 
 	/**
 	 * Return an array containing the paths in this collection, including tail queues.
 	 */
 	public Path2D.Double[] getPaths() {
+		if (isComplete) {
+			return paths;
+		}
+		// Need to append uncomitted path tails
 		Path2D.Double[] result = new Path2D.Double[size];
 		for (int i = 0; i < size; i++) {
 			result[i] = getPath(i);
@@ -81,11 +84,28 @@ public class OffsetPathCollection {
 	 * Return the path in this collection at the specified index, including its tail queue.
 	 */
 	public Path2D.Double getPath(int index) {
+		if (isComplete) {
+			return paths[index];
+		}
+		// Need to append uncomitted path tail
 		Path2D.Double path = (Path2D.Double) paths[index].clone();
 		for (QuadCurve2D.Double curve : pathTails[index]) {
 			path.quadTo(curve.ctrlx, curve.ctrly, curve.x2, curve.y2);
 		}
 		return path;
+	}
+
+	/**
+	 * Commit all path tails to their respective paths for more efficient accessing.
+	 */
+	public void complete() {
+		for (int i = 0; i < size; i++) {
+			while (!pathTails[i].isEmpty()) {
+				QuadCurve2D.Double curve = pathTails[i].removeFirst();
+				paths[i].quadTo(curve.ctrlx, curve.ctrly, curve.x2, curve.y2);
+			}
+		}
+		isComplete = true;
 	}
 
 	/**
@@ -116,6 +136,7 @@ public class OffsetPathCollection {
 	 * @param y2 the y-coordinate of the end point
 	 */
 	public void offsetQuadTo(double x1, double y1, double ctrlx, double ctrly, double x2, double y2) {
+		isComplete = false;
 		double startNormal = Math.atan2(ctrly - y1, ctrlx - x1) + Math.PI / 2.0;
 		double endNormal = Math.atan2(y2 - ctrly, x2 - ctrlx) + Math.PI / 2.0;
 		double ctrlAngle = Math.atan2(y2 - y1, x2 - x1) + Math.PI / 2.0;
@@ -123,7 +144,7 @@ public class OffsetPathCollection {
 			// Offset start point by the normal to the first edge of the control polygon
 			double x1Offset = offsets[i] * Math.cos(startNormal);
 			double y1Offset = offsets[i] * Math.sin(startNormal);
-			if (paths[i].getCurrentPoint() == null && pathTails[i].size() == 0) {
+			if (paths[i].getCurrentPoint() == null && pathTails[i].isEmpty()) {
 				paths[i].moveTo(x1 + x1Offset, y1 + y1Offset);
 			}
 			// Offset control point by the normal to the baseline of the control polygon
@@ -159,7 +180,7 @@ public class OffsetPathCollection {
 		Point2D.Double intersection = null;
 		QuadCurve2D.Double trimCurve = null;
 		for (QuadCurve2D.Double pathCurve : pathTails[index]) {
-			intersection = getShapeIntersection(pathCurve, curve, new Point2D.Double(curve.x1, curve.y1));
+			intersection = SuperPath.getShapeIntersection(pathCurve, curve, 5.0, new Point2D.Double(curve.x1, curve.y1));
 			if (intersection != null) {
 				// The curve intersects with this part of the path, prepare to trim it
 				trimCurve = pathCurve;
@@ -186,95 +207,5 @@ public class OffsetPathCollection {
 		// Add the given curve to this path, starting at the point of intersection
 		pathTails[index].addLast(new QuadCurve2D.Double(intersection.x, intersection.y, (intersection.x + curve.x2) / 2.0, (intersection.y + curve.y2) / 2.0, curve.x2, curve.y2));
 		pathTailLengths[index] += Math.hypot(curve.x2 - intersection.x, curve.y2 - intersection.y);
-	}
-
-	/**
-	 * Find the first point of intersection between two shapes.
-	 *
-	 * For simplicity, this method naively iterates over line segments that
-	 * approximate the two given shapes, then tests for intersection between
-	 * every pair of line segments.
-	 *
-	 * Note: this method iterates over the second shape during iteration of the
-	 * first shape. Thus, it may be more efficient to supply the smaller or less
-	 * complex shape as the second.
-	 *
-	 * @param shapeA the first shape
-	 * @param shapeB the second shape
-	 * @param ignorePoint a point that should not be considered an intersection
-	 * @return the first point where the two shapes intersect, or null if none is found
-	 */
-	private static Point2D.Double getShapeIntersection(Shape shapeA, Shape shapeB, Point2D.Double ignorePoint) {
-		Point2D.Double intersection;
-		double[] coords = new double[6];
-		Line2D.Double lineA = new Line2D.Double();
-		Line2D.Double lineB = new Line2D.Double();
-		// Iterate over line segments in shapeA
-		for (PathIterator iterA = shapeA.getPathIterator(null, KNOT_TEST_FLATNESS); !iterA.isDone(); iterA.next()) {
-			switch (iterA.currentSegment(coords)) {
-			case PathIterator.SEG_MOVETO:
-				lineA.x2 = coords[0];
-				lineA.y2 = coords[1];
-				break;
-			case PathIterator.SEG_LINETO:
-				lineA.setLine(lineA.x2, lineA.y2, coords[0], coords[1]);
-				// Iterate over line segments in shapeB
-				for (PathIterator iterB = shapeB.getPathIterator(null, KNOT_TEST_FLATNESS); !iterB.isDone(); iterB.next()) {
-					switch (iterB.currentSegment(coords)) {
-					case PathIterator.SEG_MOVETO:
-						lineB.x2 = coords[0];
-						lineB.y2 = coords[1];
-						break;
-					case PathIterator.SEG_LINETO:
-						lineB.setLine(lineB.x2, lineB.y2, coords[0], coords[1]);
-						// Test the current pair of line segments
-						intersection = getLineIntersection(lineA, lineB);
-						if (intersection != null && intersection.distance(ignorePoint) >= 1.0) {
-							return intersection;
-						}
-						break;
-					}
-				}
-				break;
-			}
-		}
-		return null;
-	}
-
-	/**
-	 * Find the point of intersection between two line segments.
-	 *
-	 * An intersection that is found to lie just outside the boundaries of a
-	 * line segment is still accepted, in order to improve visual consistency of
-	 * paths in this collection.
-	 *
-	 * @param lineA the first line segment
-	 * @param lineB the second line segment
-	 * @return the point where the two line segments intersect, or null if they do not intersect
-	 */
-	private static Point2D.Double getLineIntersection(Line2D.Double lineA, Line2D.Double lineB) {
-		double tThreshold = 5.0 / Math.hypot(lineA.x2 - lineA.x1, lineA.y2 - lineA.y1);
-		double uThreshold = 5.0 / Math.hypot(lineB.x2 - lineB.x1, lineB.y2 - lineB.y1);
-		// See <https://en.wikipedia.org/wiki/Line-line_intersection#Given_two_points_on_each_line_segment>
-		// When representing line segments A and B in terms of first degree Bezier parameters,
-		//   PA = P1A + t*(P2A - P1A), t in [0, 1]
-		//   PB = P1B + u*(P2B - P1B), u in [0, 1]
-		// solve for t and u where PA = PB.
-		// (The slope-intercept form representation of lines is not sufficient as it cannot represent vertical lines)
-		double denominator = (lineA.x1 - lineA.x2) * (lineB.y1 - lineB.y2) - (lineA.y1 - lineA.y2) * (lineB.x1 - lineB.x2);
-		double t = ((lineA.x1 - lineB.x1) * (lineB.y1 - lineB.y2) - (lineA.y1 - lineB.y1) * (lineB.x1 - lineB.x2)) / denominator;
-		if (t < 0.0 - tThreshold || t > 1.0 + tThreshold) {
-			// Point of intersection does not lie within lineA
-			return null;
-		}
-		double u = -((lineA.x1 - lineA.x2) * (lineA.y1 - lineB.y1) - (lineA.y1 - lineA.y2) * (lineA.x1 - lineB.x1)) / denominator;
-		if (u < 0.0 - uThreshold || u > 1.0 + uThreshold) {
-			// Point of intersection does not lie within lineB
-			return null;
-		}
-		// Substitute t to find coordinates of intersection
-		double x = lineA.x1 + t * (lineA.x2 - lineA.x1);
-		double y = lineA.y1 + t * (lineA.y2 - lineA.y1);
-		return new Point2D.Double(x, y);
 	}
 }

@@ -210,28 +210,25 @@ public class SimulationWorld extends World {
 			return;
 		}
 
-		SuperPath path;
 		switch (pathEditMode) {
 		case DRAW:
 			if (Greenfoot.mousePressed(this) && mouse.getButton() == 1) {
 				// When mouse changed from non-pressed to pressed state, begin a new path
-				path = new SuperPath(drawLaneCount);
+				SuperPath path = new SuperPath(drawLaneCount);
+				path.addPoint(mouse.getX(), mouse.getY());
 				paths.add(path);
 				isDrawing = true;
 			} else if (isDrawing) {
+				SuperPath path = paths.get(paths.size() - 1);
 				// Stop drawing when mouse is released, but still add the release point to the current path
 				if (Greenfoot.mouseClicked(null)) {
 					isDrawing = false;
-				} else if (!Greenfoot.mouseDragged(null)) {
-					// Mouse state and position has not changed, nothing to do
-					return;
+					path.addPoint(mouse.getX(), mouse.getY());
+					path.complete();
+				} else if (Greenfoot.mouseDragged(null)) {
+					path.addPoint(mouse.getX(), mouse.getY());
 				}
-				path = paths.get(paths.size() - 1);
-			} else {
-				// Not drawing, nothing to do
-				return;
 			}
-			path.addPoint(mouse.getX(), mouse.getY());
 			break;
 		case SELECT:
 			if (Greenfoot.mousePressed(this)) {
@@ -256,7 +253,7 @@ public class SimulationWorld extends World {
 				}
 				// Iterate backwards through paths because later paths appear on top
 				for (ListIterator<SuperPath> iter = paths.listIterator(paths.size()); iter.hasPrevious();) {
-					path = iter.previous();
+					SuperPath path = iter.previous();
 					// Don't bother updating the hover state if the path is already selected
 					if (path == selectedPath) {
 						continue;
