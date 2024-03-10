@@ -26,6 +26,7 @@ public class SimulationWorld extends World {
 	public static final int WIDTH = 1024;
 	public static final int HEIGHT = 768;
 
+	// Background pattern visual parameters
 	private static final int BACKGROUND_PATTERN_WIDTH = 128;
 	private static final java.awt.Color BACKGROUND_PATTERN_COLOR_1 = new java.awt.Color(255, 200, 155);
 	private static final java.awt.Color BACKGROUND_PATTERN_COLOR_2 = new java.awt.Color(255, 190, 140);
@@ -34,17 +35,23 @@ public class SimulationWorld extends World {
 	public enum PathEditMode {
 		DRAW, SELECT
 	}
+
+	// The list of current widgets being shown to the user
 	private ArrayList<Widget> shownWidgets;
+	// All buttons for this world
 	private SelectButton[] buttons;
+	// Constants for accessing buttons in the buttons array
 	private static int BUTTON_COUNT = 0;
 	private static final int BUTTON_INDEX_DRAW = BUTTON_COUNT++;
 	private static final int BUTTON_INDEX_SELECT = BUTTON_COUNT++;
 	private static final int BUTTON_INDEX_DELETE = BUTTON_COUNT++;
 	private static final int BUTTON_INDEX_LANE_MINUS = BUTTON_COUNT++;
 	private static final int BUTTON_INDEX_LANE_PLUS = BUTTON_COUNT++;
-	private Widget[] widgets;
-	private static int WIDGET_COUNT = 0;
-	private static final int WIDGET_INDEX_LANE_COUNT = WIDGET_COUNT++;
+	// All other widgets for this world
+	private Widget[] otherWidgets;
+	// Constants for accessing other widgets in the widgets array
+	private static int OTHER_WIDGET_COUNT = 0;
+	private static final int WIDGET_INDEX_LANE_COUNT = OTHER_WIDGET_COUNT++;
 
 	// Background image drawing facilities
 	private BufferedImage canvas;
@@ -111,7 +118,7 @@ public class SimulationWorld extends World {
 					selectedPath = null;
 				}
 				showWidget(buttons[BUTTON_INDEX_LANE_MINUS]);
-				showWidget(widgets[WIDGET_INDEX_LANE_COUNT]);
+				showWidget(otherWidgets[WIDGET_INDEX_LANE_COUNT]);
 				showWidget(buttons[BUTTON_INDEX_LANE_PLUS]);
 				// Hide path delete button since there are no longer any selected paths
 				hideWidget(buttons[BUTTON_INDEX_DELETE]);
@@ -127,7 +134,7 @@ public class SimulationWorld extends World {
 					}
 				}
 				hideWidget(buttons[BUTTON_INDEX_LANE_MINUS]);
-				hideWidget(widgets[WIDGET_INDEX_LANE_COUNT]);
+				hideWidget(otherWidgets[WIDGET_INDEX_LANE_COUNT]);
 				hideWidget(buttons[BUTTON_INDEX_LANE_PLUS]);
 			}
 		};
@@ -154,8 +161,8 @@ public class SimulationWorld extends World {
 		};
 
 		// Set up other widgets
-		widgets = new Widget[WIDGET_COUNT];
-		widgets[WIDGET_INDEX_LANE_COUNT] = new Widget(null);
+		otherWidgets = new Widget[OTHER_WIDGET_COUNT];
+		otherWidgets[WIDGET_INDEX_LANE_COUNT] = new Widget(null);
 		setDrawLaneCount(2);
 
 		// Display initial widgets
@@ -163,7 +170,7 @@ public class SimulationWorld extends World {
 		shownWidgets.add(buttons[BUTTON_INDEX_DRAW]);
 		shownWidgets.add(buttons[BUTTON_INDEX_SELECT]);
 		shownWidgets.add(buttons[BUTTON_INDEX_LANE_MINUS]);
-		shownWidgets.add(widgets[WIDGET_INDEX_LANE_COUNT]);
+		shownWidgets.add(otherWidgets[WIDGET_INDEX_LANE_COUNT]);
 		shownWidgets.add(buttons[BUTTON_INDEX_LANE_PLUS]);
 		displayWidgets();
 
@@ -314,7 +321,7 @@ public class SimulationWorld extends World {
 	 */
 	private void setDrawLaneCount(int count) {
 		drawLaneCount = Math.max(MIN_LANE_COUNT, Math.min(MAX_LANE_COUNT, count));
-		Widget widget = widgets[WIDGET_INDEX_LANE_COUNT];
+		Widget widget = otherWidgets[WIDGET_INDEX_LANE_COUNT];
 		widget.setIcon(new GreenfootImage(String.valueOf(drawLaneCount), 48, Color.BLACK, Color.WHITE));
 	}
 
