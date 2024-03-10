@@ -92,8 +92,8 @@ public class SimulationWorld extends World {
 
 		// Set up path-editing buttons
 		buttons = new SelectButton[BUTTON_COUNT];
-		buttons[BUTTON_INDEX_DRAW] = new SelectButton(new GreenfootImage("images/pencil.png"), new Callback() {
-			public void run() {
+		buttons[BUTTON_INDEX_DRAW] = new SelectButton(new GreenfootImage("images/pencil.png"), true) {
+			public void clicked() {
 				pathEditMode = PathEditMode.DRAW;
 				buttons[BUTTON_INDEX_DRAW].select();
 				for (int i = 0; i < buttons.length; i++) {
@@ -116,9 +116,9 @@ public class SimulationWorld extends World {
 				// Hide path delete button since there are no longer any selected paths
 				hideWidget(buttons[BUTTON_INDEX_DELETE]);
 			}
-		}, true);
-		buttons[BUTTON_INDEX_SELECT] = new SelectButton(new GreenfootImage("images/select.png"), new Callback() {
-			public void run() {
+		};
+		buttons[BUTTON_INDEX_SELECT] = new SelectButton(new GreenfootImage("images/select.png"), false) {
+			public void clicked() {
 				pathEditMode = PathEditMode.SELECT;
 				buttons[BUTTON_INDEX_SELECT].select();
 				for (int i = 0; i < buttons.length; i++) {
@@ -130,9 +130,9 @@ public class SimulationWorld extends World {
 				hideWidget(widgets[WIDGET_INDEX_LANE_COUNT]);
 				hideWidget(buttons[BUTTON_INDEX_LANE_PLUS]);
 			}
-		}, false);
-		buttons[BUTTON_INDEX_DELETE] = new SelectButton(new GreenfootImage("images/trash.png"), new Callback() {
-			public void run() {
+		};
+		buttons[BUTTON_INDEX_DELETE] = new SelectButton(new GreenfootImage("images/trash.png"), false) {
+			public void clicked() {
 				if (selectedPath == null) {
 					return;
 				}
@@ -142,17 +142,17 @@ public class SimulationWorld extends World {
 				selectedPath = null;
 				hideWidget(buttons[BUTTON_INDEX_DELETE]);
 			}
-		}, false);
-		buttons[BUTTON_INDEX_LANE_MINUS] = new SelectButton(new GreenfootImage("images/minus.png"), new Callback() {
-			public void run() {
+		};
+		buttons[BUTTON_INDEX_LANE_MINUS] = new SelectButton(new GreenfootImage("images/minus.png"), false) {
+			public void clicked() {
 				setDrawLaneCount(drawLaneCount - 1);
 			}
-		}, false);
-		buttons[BUTTON_INDEX_LANE_PLUS] = new SelectButton(new GreenfootImage("images/plus.png"), new Callback() {
-			public void run() {
+		};
+		buttons[BUTTON_INDEX_LANE_PLUS] = new SelectButton(new GreenfootImage("images/plus.png"), false) {
+			public void clicked() {
 				setDrawLaneCount(drawLaneCount + 1);
 			}
-		}, false);
+		};
 
 		// Set up other widgets
 		widgets = new Widget[WIDGET_COUNT];

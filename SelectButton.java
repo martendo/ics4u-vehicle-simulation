@@ -8,7 +8,7 @@ import greenfoot.*;
  * @author Martin Baldwin
  * @version March 2024
  */
-public class SelectButton extends Widget {
+public abstract class SelectButton extends Widget {
 	private static final Color BORDER_COLOR = Color.BLACK;
 	private static final int BORDER_WIDTH = 3;
 
@@ -39,19 +39,15 @@ public class SelectButton extends Widget {
 	// Keep track of button state for drawing
 	private ButtonState state;
 	private ButtonState prevState;
-	// The action to perform when this button is clicked
-	private Callback callback;
 
 	/**
 	 * Create a new button.
 	 *
 	 * @param icon the image to place in the center of this button
-	 * @param callback the action to perform when this button is clicked
 	 * @param isSelected whether or not this button should begin in a selected state
 	 */
-	public SelectButton(GreenfootImage icon, Callback callback, boolean isSelected) {
+	public SelectButton(GreenfootImage icon, boolean isSelected) {
 		super(icon);
-		this.callback = callback;
 
 		// Default button state
 		isClicking = false;
@@ -98,11 +94,11 @@ public class SelectButton extends Widget {
 				// Run the callback method when the mouse button is released on this button
 				if (Greenfoot.mouseClicked(this)) {
 					if (isClicking) {
-						callback.run();
+						clicked();
 						// End the active state (effect takes place in next if block)
 						isClicking = false;
 					}
-					// Callback could have selected this button, update state to reflect the change
+					// clicked() method could have selected this button, update state to reflect the change
 					if (isSelected) {
 						state = ButtonState.SELECTED;
 					} else {
@@ -117,6 +113,11 @@ public class SelectButton extends Widget {
 		updateImage();
 		prevState = state;
 	}
+
+	/**
+	 * This method is called when the button is clicked.
+	 */
+	public abstract void clicked();
 
 	/**
 	 * Test if the given point is contained within the boundaries of this button.
