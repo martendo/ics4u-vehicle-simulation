@@ -9,13 +9,6 @@ import java.awt.Graphics2D;
  */
 public class Dessert extends PathTraveller {
 	/**
-	 * Create a new dessert.
-	 */
-	public Dessert(SuperPath path, int laneNum) {
-		super(path, laneNum);
-	}
-
-	/**
 	 * Kill this dessert when it reached the end of its path.
 	 */
 	protected void endTravel() {

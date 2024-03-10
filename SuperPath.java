@@ -10,6 +10,7 @@ import java.awt.geom.Path2D;
 import java.awt.geom.QuadCurve2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.PathIterator;
+import java.util.List;
 import java.util.ArrayList;
 
 /**
@@ -286,12 +287,21 @@ public class SuperPath {
 	}
 
 	/**
-	 * Add a path traveller to keep track of on this path.
-	 *
-	 * @param object a path traveller object travelling on this path
+	 * Return a list of path travellers on this path.
 	 */
-	public void addTraveller(PathTraveller object) {
+	public List<PathTraveller> getTravellers() {
+		return travellers;
+	}
+
+	/**
+	 * Add a path traveller to a lane on this path.
+	 *
+	 * @param object a path traveller object to travel on this path
+	 * @param laneNum the index of the lane to travel on
+	 */
+	public void addTraveller(PathTraveller object, int laneNum) {
 		travellers.add(object);
+		object.addedToPath(this, laneNum);
 	}
 
 	/**

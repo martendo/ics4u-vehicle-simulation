@@ -177,18 +177,20 @@ public class SimulationWorld extends World {
 	 */
 	public void act() {
 		updatePaths();
-		updateBackground();
 
 		// Add desserts to the last path when mouse is right-clicked
 		MouseInfo mouse = Greenfoot.getMouseInfo();
 		if (Greenfoot.mousePressed(this) && mouse.getButton() == 3 && paths.size() > 0) {
 			SuperPath path = paths.get(paths.size() - 1);
 			for (int i = 0; i < path.getLaneCount(); i++) {
-				actors.add(new Dessert(path, i));
+				Dessert dessert = new Dessert();
+				path.addTraveller(dessert, i);
+				actors.add(dessert);
 			}
+
 		}
 
-		// Update and draw actors
+		// Update actors
 		// Use a ListIterator to be able to remove dead actors from the list during iteration
 		for (ListIterator<SuperActor> iter = actors.listIterator(); iter.hasNext();) {
 			SuperActor actor = iter.next();
@@ -196,8 +198,10 @@ public class SimulationWorld extends World {
 			if (actor.isDead()) {
 				iter.remove();
 			}
-			actor.drawUsingGraphics(graphics);
 		}
+
+		// Render
+		updateBackground();
 	}
 
 	/**
@@ -292,6 +296,9 @@ public class SimulationWorld extends World {
 		SuperPath.updatePaints();
 		for (SuperPath path : paths) {
 			path.drawUsingGraphics(graphics);
+			for (PathTraveller object : path.getTravellers()) {
+				object.drawUsingGraphics(graphics);
+			}
 		}
 	}
 
