@@ -121,8 +121,6 @@ public class SuperPath {
 		isComplete = false;
 		image = new BufferedImage(SimulationWorld.WIDTH, SimulationWorld.HEIGHT, BufferedImage.TYPE_INT_ARGB_PRE);
 		graphics = image.createGraphics();
-		// Normalize strokes to avoid strange visual artifacts in specific scenarios
-		graphics.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_NORMALIZE);
 		// Turning on antialiasing gives smoother-looking graphics
 		graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		graphics.setBackground(new java.awt.Color(0, true));
