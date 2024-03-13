@@ -12,8 +12,8 @@ import java.awt.image.BufferedImage;
  * @version March 2024
  */
 public abstract class SuperActor {
-	protected double x = 0.0;
-	protected double y = 0.0;
+	protected double x;
+	protected double y;
 
 	private boolean isDead;
 
@@ -21,6 +21,8 @@ public abstract class SuperActor {
 	 * Create a new SuperActor.
 	 */
 	public SuperActor() {
+		x = 0.0;
+		y = 0.0;
 		isDead = false;
 	}
 

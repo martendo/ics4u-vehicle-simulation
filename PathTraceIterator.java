@@ -14,7 +14,7 @@ public class PathTraceIterator {
 	public static final double FLATNESS = 1.0;
 
 	// Tools to work with the original path
-	private PathIterator originalpi;
+	private final PathIterator originalpi;
 	private Point2D.Double lastPathPoint;
 	// Current point that is tracing the path
 	private Point2D.Double currentPoint;

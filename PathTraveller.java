@@ -9,25 +9,14 @@ public abstract class PathTraveller extends SuperActor {
 	// Distance to travel along a path per act
 	public static final double SPEED = 1.0;
 
-	private SuperPath path;
+	private SuperPath path = null;
 	// The iterator used to progressively travel along this traveller's path
-	private PathTraceIterator pathIter;
+	private PathTraceIterator pathIter = null;
 
 	// The exact angle of the current segment of the path
-	private double targetAngle;
+	private double targetAngle = 0.0;
 	// The visually pleasing interpolated angle of this traveller, constantly moving towards targetAngle
-	protected double angle;
-
-	/**
-	 * Create a new traveller actor.
-	 */
-	public PathTraveller() {
-		super();
-		path = null;
-		pathIter = null;
-		targetAngle = 0.0;
-		angle = 0.0;
-	}
+	protected double angle = 0.0;
 
 	/**
 	 * A callback method that is called when this traveller is added to a SuperPath.

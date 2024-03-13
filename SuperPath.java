@@ -45,7 +45,6 @@ public class SuperPath {
 
 	private static final BasicStroke LANE_SEPARATOR_STROKE = new BasicStroke(5.0f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_ROUND, 0.0f, new float[] {15.0f, 30.0f}, 0.0f);
 	private static final BasicStroke LANE_PATH_STROKE = new BasicStroke(1.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
-	private static final BasicStroke KNOT_STROKE = new BasicStroke(10.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 
 	private static final java.awt.Color HOVER_PATTERN_COLOR_1 = new java.awt.Color(78, 106, 162);
 	private static final java.awt.Color HOVER_PATTERN_COLOR_2 = new java.awt.Color(65, 91, 148);
@@ -58,23 +57,17 @@ public class SuperPath {
 	}
 
 	// Special state textures
-	private static BufferedImage hoverTexture = null;
-	private static BufferedImage selectedTexture = null;
-	// Whether or not textures have been created
-	private static boolean hasTextures = false;
+	private static final BufferedImage HOVER_TEXTURE = createHoverTexture();
+	private static final BufferedImage SELECTED_TEXTURE = createSelectedTexture();
 
 	// Anchor rectangles for special state texture paints, shifted as animation
-	private static double textureRectX = 0.0;
-	private static Rectangle2D.Double hoverTextureRect = null;
-	private static Rectangle2D.Double selectedTextureRect = null;
+	private static double textureRectX = 0;
+	private static Rectangle2D.Double hoverTextureRect = new Rectangle2D.Double(textureRectX, 0, 16, 16);
+	private static Rectangle2D.Double selectedTextureRect = new Rectangle2D.Double(textureRectX, 0, 16, 16);
 
 	// Texture paint objects used in place of PATH_COLOR when path is in a special state
 	private static TexturePaint hoverPaint = null;
 	private static TexturePaint selectedPaint = null;
-
-	// Strokes to draw this path, size based on number of lanes
-	private BasicStroke pathStroke;
-	private BasicStroke pathOutlineStroke;
 
 	// All points in this path, for calculating angles
 	private ArrayList<Point2D.Double> points;
@@ -87,27 +80,31 @@ public class SuperPath {
 	// Whether or not this path will change
 	private boolean isComplete;
 
+	// Paths for individual lanes
+	private final int laneCount;
+	private final OffsetPathCollection lanes;
+	private final OffsetPathCollection laneSeparators;
+
 	// Stored image of this path for more efficient drawing
 	private BufferedImage image;
 	// Graphics context of this path's image
-	private Graphics2D graphics;
+	private final Graphics2D graphics;
 	// Signal that this path has changed and needs to be redrawn
 	private boolean needsRedraw;
 	// The rectangle that contains this entire path, for cropping its image for faster drawing
 	private Rectangle2D bounds;
 
-	// Paths for individual lanes
-	private int laneCount;
-	private OffsetPathCollection lanes;
-	private OffsetPathCollection laneSeparators;
+	// Strokes to draw this path, size based on number of lanes
+	private final BasicStroke pathStroke;
+	private final BasicStroke pathOutlineStroke;
 
 	// The world this path belongs to, for adding actors that this path creates
 	private SimulationWorld world;
 	// Objects currently on this path
 	private ArrayList<PathTraveller> travellers;
 	// Machine actors at ends of this path
-	private Machine startMachine;
-	private Machine endMachine;
+	private final Machine startMachine;
+	private final Machine endMachine;
 	// Spawners for each lane of this path
 	private Spawner[] spawners;
 
@@ -649,50 +646,48 @@ public class SuperPath {
 	}
 
 	/**
-	 * Create the pattern BufferedImages used to paint hovered and selected paths.
+	 * Create and return the image used in the texture to paint hovered paths.
 	 */
-	private static void createTextures() {
-		Graphics2D graphics;
-		// Hovered path texture
-		hoverTexture = GraphicsUtilities.createCompatibleImage(32, 16);
-		graphics = hoverTexture.createGraphics();
+	private static BufferedImage createHoverTexture() {
+		BufferedImage image = GraphicsUtilities.createCompatibleImage(32, 16);
+		Graphics2D graphics = image.createGraphics();
 		graphics.setColor(HOVER_PATTERN_COLOR_1);
-		graphics.fillRect(0, 0, 32, 16);
+		graphics.fillRect(0, 0, image.getWidth(), image.getHeight());
 		graphics.setColor(HOVER_PATTERN_COLOR_2);
-		for (int x1 = 0; x1 < 32 + 16; x1 += 8 * 2) {
+		for (int x1 = 0; x1 < image.getWidth() + image.getHeight(); x1 += 8 * 2) {
 			int x2 = x1 + 8;
-			int x3 = x2 - 16;
-			int x4 = x1 - 16;
-			graphics.fillPolygon(new int[] {x1, x2, x3, x4}, new int[] {0, 0, 16, 16}, 4);
+			int x3 = x2 - image.getHeight();
+			int x4 = x1 - image.getHeight();
+			graphics.fillPolygon(new int[] {x1, x2, x3, x4}, new int[] {0, 0, image.getHeight(), image.getHeight()}, 4);
 		}
-		// Selected path texture
-		selectedTexture = GraphicsUtilities.createCompatibleImage(32, 16);
-		graphics = selectedTexture.createGraphics();
+		return image;
+	}
+
+	/**
+	 * Create and return the image used in the texture to paint selected paths.
+	 */
+	private static BufferedImage createSelectedTexture() {
+		BufferedImage image = GraphicsUtilities.createCompatibleImage(32, 16);
+		Graphics2D graphics = image.createGraphics();
 		graphics.setColor(SELECTED_PATTERN_COLOR_1);
-		graphics.fillRect(0, 0, 32, 16);
+		graphics.fillRect(0, 0, image.getWidth(), image.getHeight());
 		graphics.setColor(SELECTED_PATTERN_COLOR_2);
-		for (int x1 = 0; x1 < 32 + 16; x1 += 8 * 2) {
+		for (int x1 = 0; x1 < image.getWidth() + image.getHeight(); x1 += 8 * 2) {
 			int x2 = x1 + 8;
-			int x3 = x2 - 16;
-			int x4 = x1 - 16;
-			graphics.fillPolygon(new int[] {x1, x2, x3, x4}, new int[] {0, 0, 16, 16}, 4);
+			int x3 = x2 - image.getHeight();
+			int x4 = x1 - image.getHeight();
+			graphics.fillPolygon(new int[] {x1, x2, x3, x4}, new int[] {0, 0, image.getHeight(), image.getHeight()}, 4);
 		}
+		return image;
 	}
 
 	/**
 	 * Animate the hovered and selected texture paints. Call this method once per act.
 	 */
 	public static void updatePaints() {
-		if (!hasTextures) {
-			// Textures have never been initialized
-			createTextures();
-			hoverTextureRect = new Rectangle2D.Double(textureRectX, 0.0, 16.0, 16.0);
-			selectedTextureRect = new Rectangle2D.Double(textureRectX, 0.0, 16.0, 16.0);
-			hasTextures = true;
-		}
 		// Make texture paints from the current anchor rectangle positions
-		hoverPaint = new TexturePaint(hoverTexture, hoverTextureRect);
-		selectedPaint = new TexturePaint(selectedTexture, selectedTextureRect);
+		hoverPaint = new TexturePaint(HOVER_TEXTURE, hoverTextureRect);
+		selectedPaint = new TexturePaint(SELECTED_TEXTURE, selectedTextureRect);
 		// Shift the anchor rectangles and wrap around when the ends of the patterns are reached
 		textureRectX = (textureRectX + 0.5) % 16.0;
 		hoverTextureRect.setRect(textureRectX, 0.0, 16.0, 16.0);

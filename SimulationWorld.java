@@ -44,7 +44,7 @@ public class SimulationWorld extends World {
 	// The list of current widgets being shown to the user
 	private ArrayList<Widget> shownWidgets;
 	// All buttons for this world
-	private SelectButton[] buttons;
+	private final SelectButton[] buttons;
 	// Constants for accessing buttons in the buttons array
 	private static int BUTTON_COUNT = 0;
 	private static final int BUTTON_INDEX_DRAW = BUTTON_COUNT++;
@@ -53,14 +53,14 @@ public class SimulationWorld extends World {
 	private static final int BUTTON_INDEX_LANE_MINUS = BUTTON_COUNT++;
 	private static final int BUTTON_INDEX_LANE_PLUS = BUTTON_COUNT++;
 	// All other widgets for this world
-	private Widget[] otherWidgets;
+	private final Widget[] otherWidgets;
 	// Constants for accessing other widgets in the widgets array
 	private static int OTHER_WIDGET_COUNT = 0;
 	private static final int WIDGET_INDEX_LANE_COUNT = OTHER_WIDGET_COUNT++;
 
 	// Background image drawing facilities
-	private BufferedImage canvas;
-	private Graphics2D graphics;
+	private final BufferedImage canvas;
+	private final Graphics2D graphics;
 	private ArrayList<SuperPath> paths;
 	private PathEditMode pathEditMode;
 
@@ -122,6 +122,7 @@ public class SimulationWorld extends World {
 					selectedPath.unsetState();
 					selectedPath = null;
 				}
+				// Show lane count widgets
 				showWidget(buttons[BUTTON_INDEX_LANE_MINUS]);
 				showWidget(otherWidgets[WIDGET_INDEX_LANE_COUNT]);
 				showWidget(buttons[BUTTON_INDEX_LANE_PLUS]);
@@ -138,6 +139,7 @@ public class SimulationWorld extends World {
 						buttons[i].deselect();
 					}
 				}
+				// Hide lane count widgets
 				hideWidget(buttons[BUTTON_INDEX_LANE_MINUS]);
 				hideWidget(otherWidgets[WIDGET_INDEX_LANE_COUNT]);
 				hideWidget(buttons[BUTTON_INDEX_LANE_PLUS]);

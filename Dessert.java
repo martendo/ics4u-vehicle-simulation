@@ -11,9 +11,9 @@ import java.awt.geom.Rectangle2D;
  * @version March 2024
  */
 public class Dessert extends PathTraveller {
-	private BufferedImage image;
-	private Graphics2D graphics;
-	private Rectangle2D.Double shape;
+	private final BufferedImage image;
+	private final Graphics2D graphics;
+	private final Rectangle2D.Double shape;
 
 	public Dessert() {
 		super();

@@ -22,15 +22,15 @@ public class OffsetPathCollection {
 	public static final double KNOT_TEST_DISTANCE = SuperPath.LANE_WIDTH * Math.PI * 2.0;
 
 	// Number of paths in this collection
-	private int size;
+	private final int size;
 	// Path objects
-	private Path2D.Double[] paths;
+	private final Path2D.Double[] paths;
 	// Offset of each path in this collection
-	private double[] offsets;
+	private final double[] offsets;
 	// Queue of curves at the current end of each path for knot testing, uncommitted to the Path2D objects until they are far enough away
-	private ArrayDeque<QuadCurve2D.Double>[] pathTails;
+	private final ArrayDeque<QuadCurve2D.Double>[] pathTails;
 	// Current (approximate) length of the paths stored in pathTails
-	private double[] pathTailLengths;
+	private final double[] pathTailLengths;
 
 	// Whether or not the Path2D objects in paths can be considered to be complete paths (path tail is empty)
 	private boolean isComplete;

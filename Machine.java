@@ -16,13 +16,13 @@ public class Machine extends SuperActor {
 	public static final int WIDTH = 64;
 
 	// The height of this machine, dependent on the width of its path
-	private int height;
+	private final int height;
 	// The path on which this machine appears
-	private SuperPath path;
+	private final SuperPath path;
 
-	private BufferedImage image;
-	private Graphics2D graphics;
-	private Rectangle2D.Double shape;
+	private final BufferedImage image;
+	private final Graphics2D graphics;
+	private final Rectangle2D.Double shape;
 
 	public Machine(SuperPath path) {
 		super();
