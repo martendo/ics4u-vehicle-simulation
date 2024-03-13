@@ -67,8 +67,9 @@ public class SimulationWorld extends World {
 	private SuperPath selectedPath;
 
 	// Animate the background pattern by shifting it horizontally
-	private int patternShift = 0;
+	private int patternShift;
 
+	// All non-Greenfoot actors in this world
 	private ArrayList<SuperActor> actors;
 
 	/**
@@ -85,14 +86,16 @@ public class SimulationWorld extends World {
 		graphics = canvas.createGraphics();
 		// Turning on antialiasing gives smoother-looking graphics
 		graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		graphics.setBackground(new java.awt.Color(0, true));
+		graphics.setBackground(new java.awt.Color(0, 0, 0, 0));
 
+		// Initialize path editing variables
 		paths = new ArrayList<SuperPath>();
 		pathEditMode = PathEditMode.DRAW;
 		isDrawing = false;
 		hoveredPath = null;
 		selectedPath = null;
 
+		patternShift = 0;
 		actors = new ArrayList<SuperActor>();
 
 		// Set up path-editing buttons
@@ -141,7 +144,7 @@ public class SimulationWorld extends World {
 				if (selectedPath == null) {
 					return;
 				}
-				selectedPath.killAllTravellers();
+				selectedPath.die();
 				paths.remove(selectedPath);
 				selectedPath = null;
 				hideWidget(buttons[BUTTON_INDEX_DELETE]);
@@ -183,6 +186,7 @@ public class SimulationWorld extends World {
 	 */
 	public void addActor(SuperActor actor) {
 		actors.add(actor);
+		actor.addedToWorld(this);
 	}
 
 	/**
@@ -228,6 +232,7 @@ public class SimulationWorld extends World {
 				SuperPath path = new SuperPath(drawLaneCount);
 				path.addPoint(mouse.getX(), mouse.getY());
 				paths.add(path);
+				path.addedToWorld(this);
 				isDrawing = true;
 			} else if (isDrawing) {
 				SuperPath path = paths.get(paths.size() - 1);
@@ -236,7 +241,6 @@ public class SimulationWorld extends World {
 					isDrawing = false;
 					path.addPoint(mouse.getX(), mouse.getY());
 					path.complete();
-					path.createSpawners(this);
 				} else if (Greenfoot.mouseDragged(null)) {
 					path.addPoint(mouse.getX(), mouse.getY());
 				}
@@ -304,8 +308,8 @@ public class SimulationWorld extends World {
 		SuperPath.updatePaints();
 		for (SuperPath path : paths) {
 			graphics.drawImage(path.getImage(), 0, 0, null);
-			for (PathTraveller object : path.getTravellers()) {
-				graphics.drawImage(object.getImage(), object.getX(), object.getY(), null);
+			for (SuperActor actor : path.getActors()) {
+				graphics.drawImage(actor.getImage(), actor.getX(), actor.getY(), null);
 			}
 		}
 	}

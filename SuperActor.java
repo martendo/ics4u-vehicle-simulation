@@ -25,6 +25,17 @@ public abstract class SuperActor {
 	}
 
 	/**
+	 * Set this SuperActor's location to the specified coordinates.
+	 *
+	 * @param x the x-coordinate to move this actor to
+	 * @param y the y-coordinate to move this actor to
+	 */
+	public void setLocation(double x, double y) {
+		this.x = x;
+		this.y = y;
+	}
+
+	/**
 	 * Mark this SuperActor as dead; to be removed from the world.
 	 */
 	public void die() {
@@ -41,9 +52,14 @@ public abstract class SuperActor {
 	}
 
 	/**
+	 * This method is called when this SuperActor is added to the SimulationWorld.
+	 */
+	public void addedToWorld(SimulationWorld world) {}
+
+	/**
 	 * Update this SuperActor.
 	 */
-	public abstract void act();
+	public void act() {};
 
 	/**
 	 * Return the image of this SuperActor for drawing.

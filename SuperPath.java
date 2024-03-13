@@ -13,6 +13,7 @@ import java.awt.geom.Line2D;
 import java.awt.geom.PathIterator;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.ListIterator;
 
 /**
  * A path that is automatically smoothened with quadratic curves between points
@@ -34,7 +35,7 @@ public class SuperPath {
 	private static final double INTERSECTION_TEST_FLATNESS = 1.0;
 
 	// Visual parameters
-	public static final int PATH_WIDTH = 50;
+	public static final int LANE_WIDTH = 50;
 	public static final int PATH_OUTLINE_WIDTH = 16;
 	private static final java.awt.Color PATH_COLOR = new java.awt.Color(64, 64, 64);
 	private static final java.awt.Color PATH_OUTLINE_COLOR = java.awt.Color.YELLOW;
@@ -75,6 +76,8 @@ public class SuperPath {
 	private BasicStroke pathStroke;
 	private BasicStroke pathOutlineStroke;
 
+	// All points in this path, for calculating angles
+	private ArrayList<Point2D.Double> points;
 	// A single path created from all points added to this SuperPath
 	private Path2D.Double path;
 	// All points where this SuperPath intersects itself
@@ -96,8 +99,13 @@ public class SuperPath {
 	private OffsetPathCollection lanes;
 	private OffsetPathCollection laneSeparators;
 
+	// The world this path belongs to, for adding actors that this path creates
+	private SimulationWorld world;
 	// Objects currently on this path
 	private ArrayList<PathTraveller> travellers;
+	// Machine actors at ends of this path
+	private Machine startMachine;
+	private Machine endMachine;
 	// Spawners for each lane of this path
 	private Spawner[] spawners;
 
@@ -115,32 +123,50 @@ public class SuperPath {
 			throw new IllegalArgumentException("Number of lanes must be greater than 0");
 		}
 
+		// Initialize all data for this path
+		points = new ArrayList<Point2D.Double>();
 		path = new Path2D.Double();
 		intersections = new ArrayList<Point2D.Double>();
 		state = SuperPathState.NORMAL;
 		isComplete = false;
-		image = new BufferedImage(SimulationWorld.WIDTH, SimulationWorld.HEIGHT, BufferedImage.TYPE_INT_ARGB_PRE);
-		graphics = image.createGraphics();
-		// Turning on antialiasing gives smoother-looking graphics
-		graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		graphics.setBackground(new java.awt.Color(0, true));
-		needsRedraw = true;
-
-		travellers = new ArrayList<PathTraveller>();
-		spawners = null;
 
 		// Paths for lanes and lane separators
 		this.laneCount = laneCount;
-		lanes = new OffsetPathCollection(laneCount, PATH_WIDTH);
+		lanes = new OffsetPathCollection(laneCount, LANE_WIDTH);
 		if (laneCount > 1) {
-			laneSeparators = new OffsetPathCollection(laneCount - 1, PATH_WIDTH);
+			laneSeparators = new OffsetPathCollection(laneCount - 1, LANE_WIDTH);
 		} else {
 			laneSeparators = null;
 		}
 
+		// Set up visuals
+		image = new BufferedImage(SimulationWorld.WIDTH, SimulationWorld.HEIGHT, BufferedImage.TYPE_INT_ARGB_PRE);
+		graphics = image.createGraphics();
+		// Turning on antialiasing gives smoother-looking graphics
+		graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		graphics.setBackground(new java.awt.Color(0, 0, 0, 0));
+		needsRedraw = true;
 		// Strokes for drawing this path
-		pathStroke = new BasicStroke(PATH_WIDTH * laneCount, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
-		pathOutlineStroke = new BasicStroke(PATH_WIDTH * laneCount + PATH_OUTLINE_WIDTH, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+		pathStroke = new BasicStroke(getWidth(), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+		pathOutlineStroke = new BasicStroke(getWidth() + PATH_OUTLINE_WIDTH, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+
+		// Initialize path-related actor variables
+		world = null;
+		travellers = new ArrayList<PathTraveller>();
+		startMachine = new Machine(this);
+		endMachine = new Machine(this);
+		spawners = null;
+	}
+
+	/**
+	 * Set this path's world to the given world and add its machine actors to the world.
+	 *
+	 * @param world the SimulationWorld to add this path and its actors to
+	 */
+	public void addedToWorld(SimulationWorld world) {
+		this.world = world;
+		world.addActor(startMachine);
+		world.addActor(endMachine);
 	}
 
 	/**
@@ -151,6 +177,14 @@ public class SuperPath {
 	}
 
 	/**
+	 * Get the width of this path, defined by the LANE_WIDTH multiplied by the
+	 * number of lanes.
+	 */
+	public int getWidth() {
+		return LANE_WIDTH * laneCount;
+	}
+
+	/**
 	 * Add a new point to this SuperPath.
 	 *
 	 * @param x the x coordinate of the point
@@ -158,11 +192,16 @@ public class SuperPath {
 	 */
 	public void addPoint(double x, double y) {
 		Point2D.Double prevPoint = (Point2D.Double) path.getCurrentPoint();
+		Point2D.Double newPoint = new Point2D.Double();
 		if (prevPoint == null) {
 			// This is the first point -> begin the path by setting its location
 			path.moveTo(x, y);
 			// Add a line segment of one point in order to have something to draw
 			path.lineTo(x, y);
+			newPoint.setLocation(x, y);
+			// Update machine locations
+			startMachine.setLocation(x, y);
+			endMachine.setLocation(x, y);
 		} else {
 			// Use quadratic curves to smoothen the lines, connecting midpoints
 			// of given points with actual points as control points
@@ -187,6 +226,9 @@ public class SuperPath {
 			}
 			// Update path
 			path.quadTo(curve.ctrlx, curve.ctrly, curve.x2, curve.y2);
+			newPoint.setLocation(curve.x2, curve.y2);
+			// Update only end machine location
+			endMachine.setLocation(curve.x2, curve.y2);
 
 			// Update lanes
 			lanes.offsetQuadTo(curve.x1, curve.y1, curve.ctrlx, curve.ctrly, curve.x2, curve.y2);
@@ -194,6 +236,10 @@ public class SuperPath {
 				laneSeparators.offsetQuadTo(curve.x1, curve.y1, curve.ctrlx, curve.ctrly, curve.x2, curve.y2);
 			}
 		}
+		points.add(newPoint);
+		startMachine.setRotation(getStartAngle());
+		endMachine.setRotation(getEndAngle());
+
 		prevx = x;
 		prevy = y;
 		needsRedraw = true;
@@ -256,16 +302,6 @@ public class SuperPath {
 	}
 
 	/**
-	 * Return this path's image, redrawing it beforehand if necessary.
-	 */
-	public BufferedImage getImage() {
-		if (needsRedraw) {
-			redraw();
-		}
-		return image;
-	}
-
-	/**
 	 * A helper method to improve the visual quality of SuperPaths.
 	 *
 	 * Ideally, all calls to this method should be replaceable with
@@ -307,6 +343,16 @@ public class SuperPath {
 	}
 
 	/**
+	 * Return this path's image, redrawing it beforehand if necessary.
+	 */
+	public BufferedImage getImage() {
+		if (needsRedraw) {
+			redraw();
+		}
+		return image;
+	}
+
+	/**
 	 * Commit all lane path tails to their respective lane paths for more efficient accessing.
 	 */
 	public void complete() {
@@ -314,12 +360,7 @@ public class SuperPath {
 		if (laneSeparators != null) {
 			laneSeparators.complete();
 		}
-	}
-
-	/**
-	 * Create dessert spawners for each lane of this path.
-	 */
-	public void createSpawners(SimulationWorld world) {
+		// Create dessert spawners for each lane in this path
 		spawners = new Spawner[laneCount];
 		for (int i = 0; i < laneCount; i++) {
 			final int laneNum = i;
@@ -346,10 +387,14 @@ public class SuperPath {
 	}
 
 	/**
-	 * Return a list of path travellers on this path.
+	 * Return a list of all actors on this path, including path travellers and machines.
 	 */
-	public List<PathTraveller> getTravellers() {
-		return travellers;
+	public List<SuperActor> getActors() {
+		// Append machines so that they are always drawn after (on top of) travellers
+		ArrayList<SuperActor> actors = new ArrayList<SuperActor>(travellers);
+		actors.add(startMachine);
+		actors.add(endMachine);
+		return actors;
 	}
 
 	/**
@@ -373,13 +418,60 @@ public class SuperPath {
 	}
 
 	/**
-	 * Kill all path travellers on this path and clear this path's traveller list.
+	 * Kill all machines and path travellers on this path and clear this path's
+	 * traveller list.
 	 */
-	public void killAllTravellers() {
+	public void die() {
+		startMachine.die();
+		endMachine.die();
 		// Path travellers will remove themselves from the list when killed
 		while (travellers.size() > 0) {
 			travellers.get(0).die();
 		}
+	}
+
+	/**
+	 * Get the average angle of the beginning of this path, taking into account
+	 * a length defined by a machine's height.
+	 */
+	public double getStartAngle() {
+		ListIterator<Point2D.Double> iter = points.listIterator();
+		if (!iter.hasNext()) {
+			return 0.0;
+		}
+		Point2D.Double startPoint = iter.next();
+		// Iterate over points until a certain total length between them has been reached
+		Point2D.Double prevPoint = startPoint;
+		Point2D.Double currentPoint = startPoint;
+		for (double dist = 0.0; dist < Machine.WIDTH && iter.hasNext();) {
+			currentPoint = iter.next();
+			dist += currentPoint.distance(prevPoint);
+			prevPoint = currentPoint;
+		}
+		// Get the angle between the very first point and the first point after a certain length from the start
+		return Math.atan2(currentPoint.y - startPoint.y, currentPoint.x - startPoint.x);
+	}
+
+	/**
+	 * Get the average angle of the end of this path, taking into account a
+	 * length defined by a machine's height.
+	 */
+	public double getEndAngle() {
+		ListIterator<Point2D.Double> iter = points.listIterator(points.size());
+		if (!iter.hasPrevious()) {
+			return 0.0;
+		}
+		Point2D.Double endPoint = iter.previous();
+		// Iterate backwards over points until a certain total length between them has been reached
+		Point2D.Double lastPoint = endPoint;
+		Point2D.Double currentPoint = endPoint;
+		for (double dist = 0.0; dist < Machine.WIDTH && iter.hasPrevious();) {
+			currentPoint = iter.previous();
+			dist += currentPoint.distance(lastPoint);
+			lastPoint = currentPoint;
+		}
+		// Get the angle between the very last point and the first point after a certain length from the end
+		return Math.atan2(endPoint.y - currentPoint.y, endPoint.x - currentPoint.x);
 	}
 
 	/**

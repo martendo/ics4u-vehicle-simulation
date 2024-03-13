@@ -19,7 +19,7 @@ import java.util.ArrayDeque;
  */
 public class OffsetPathCollection {
 	// Distance from the end of each path to look for knots
-	public static final double KNOT_TEST_DISTANCE = SuperPath.PATH_WIDTH * Math.PI * 2.0;
+	public static final double KNOT_TEST_DISTANCE = SuperPath.LANE_WIDTH * Math.PI * 2.0;
 
 	// Number of paths in this collection
 	private int size;
@@ -27,7 +27,7 @@ public class OffsetPathCollection {
 	private Path2D.Double[] paths;
 	// Offset of each path in this collection
 	private double[] offsets;
-	// Queue of curves at the current end of each path, uncommitted to the Path2D objects until they are far enough away in order to test for knots
+	// Queue of curves at the current end of each path for knot testing, uncommitted to the Path2D objects until they are far enough away
 	private ArrayDeque<QuadCurve2D.Double>[] pathTails;
 	// Current (approximate) length of the paths stored in pathTails
 	private double[] pathTailLengths;
@@ -83,7 +83,7 @@ public class OffsetPathCollection {
 			return paths[index];
 		}
 		// Need to append uncomitted path tail
-		Path2D.Double path = (Path2D.Double) paths[index].clone();
+		Path2D.Double path = new Path2D.Double(paths[index]);
 		for (QuadCurve2D.Double curve : pathTails[index]) {
 			path.quadTo(curve.ctrlx, curve.ctrly, curve.x2, curve.y2);
 		}
