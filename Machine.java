@@ -27,7 +27,7 @@ public class Machine extends SuperActor {
 	public Machine(SuperPath path) {
 		super();
 		this.path = path;
-		height = path.getWidth() + 50;
+		height = path.getPathWidth() + 50;
 
 		// Initialize image
 		int imageSize = Math.max(height, WIDTH) * 2;

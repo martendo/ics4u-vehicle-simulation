@@ -335,7 +335,7 @@ public class SimulationWorld extends World {
 			SuperPath.updatePaints();
 		}
 		for (SuperPath path : paths) {
-			graphics.drawImage(path.getImage(), 0, 0, null);
+			graphics.drawImage(path.getImage(), path.getX(), path.getY(), null);
 			for (SuperActor actor : path.getActors()) {
 				graphics.drawImage(actor.getImage(), actor.getX(), actor.getY(), null);
 			}

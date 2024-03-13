@@ -93,6 +93,8 @@ public class SuperPath {
 	private Graphics2D graphics;
 	// Signal that this path has changed and needs to be redrawn
 	private boolean needsRedraw;
+	// The rectangle that contains this entire path, for cropping its image for faster drawing
+	private Rectangle2D bounds;
 
 	// Paths for individual lanes
 	private int laneCount;
@@ -145,9 +147,10 @@ public class SuperPath {
 		graphics.addRenderingHints(SimulationWorld.RENDERING_HINTS);
 		graphics.setBackground(new java.awt.Color(0, 0, 0, 0));
 		needsRedraw = true;
+		bounds = new Rectangle2D.Double(0.0, 0.0, image.getWidth(), image.getHeight());
 		// Strokes for drawing this path
-		pathStroke = new BasicStroke(getWidth(), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
-		pathOutlineStroke = new BasicStroke(getWidth() + PATH_OUTLINE_WIDTH, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+		pathStroke = new BasicStroke(getPathWidth(), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+		pathOutlineStroke = new BasicStroke(getPathWidth() + PATH_OUTLINE_WIDTH, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 
 		// Initialize path-related actor variables
 		world = null;
@@ -179,7 +182,7 @@ public class SuperPath {
 	 * Get the width of this path, defined by the LANE_WIDTH multiplied by the
 	 * number of lanes.
 	 */
-	public int getWidth() {
+	public int getPathWidth() {
 		return LANE_WIDTH * laneCount;
 	}
 
@@ -352,6 +355,20 @@ public class SuperPath {
 	}
 
 	/**
+	 * Return the X position of the left side of this path's image in its world.
+	 */
+	public int getX() {
+		return (int) bounds.getX();
+	}
+
+	/**
+	 * Return the Y position of the top side of this path's image in its world.
+	 */
+	public int getY() {
+		return (int) bounds.getY();
+	}
+
+	/**
 	 * Commit all lane path tails to their respective lane paths for more efficient accessing.
 	 */
 	public void complete() {
@@ -359,6 +376,16 @@ public class SuperPath {
 		if (laneSeparators != null) {
 			laneSeparators.complete();
 		}
+
+		// Crop this path's image to its boundaries for faster drawing
+		bounds = pathOutlineStroke.createStrokedShape(path).getBounds2D();
+		// Grow bounds to include rendered subpixels
+		bounds.setRect(bounds.getX() - 1, bounds.getY() - 1, bounds.getWidth() + 2, bounds.getHeight() + 2);
+		// Clamp bounds to original image dimensions
+		bounds = bounds.createIntersection(new Rectangle2D.Double(0, 0, image.getWidth(), image.getHeight()));
+		// Draw using cropped image (graphics continues to draw on full-size image, coordinates unaffected)
+		image = image.getSubimage(getX(), getY(), (int) bounds.getWidth(), (int) bounds.getHeight());
+
 		// Create dessert spawners for each lane in this path
 		spawners = new Spawner[laneCount];
 		for (int i = 0; i < laneCount; i++) {
