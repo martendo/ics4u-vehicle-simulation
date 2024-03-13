@@ -1,4 +1,5 @@
 import greenfoot.*;
+import greenfoot.util.GraphicsUtilities;
 import java.awt.image.BufferedImage;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -26,10 +27,14 @@ public class SimulationWorld extends World {
 	public static final int WIDTH = 1024;
 	public static final int HEIGHT = 768;
 
+	// Map of rendering hints to be used in all graphics contexts
+	public static final RenderingHints RENDERING_HINTS = createRenderingHints();
+
 	// Background pattern visual parameters
 	private static final int BACKGROUND_PATTERN_WIDTH = 128;
 	private static final java.awt.Color BACKGROUND_PATTERN_COLOR_1 = new java.awt.Color(255, 200, 155);
 	private static final java.awt.Color BACKGROUND_PATTERN_COLOR_2 = new java.awt.Color(255, 190, 140);
+	private static final BufferedImage BACKGROUND_PATTERN = createBackgroundPattern();
 
 	// Mouse actions can correspond to different path-editing actions depending on the selected button
 	public enum PathEditMode {
@@ -84,8 +89,7 @@ public class SimulationWorld extends World {
 		GreenfootImage background = getBackground();
 		canvas = background.getAwtImage();
 		graphics = canvas.createGraphics();
-		// Turning on antialiasing gives smoother-looking graphics
-		graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		graphics.addRenderingHints(RENDERING_HINTS);
 		graphics.setBackground(new java.awt.Color(0, 0, 0, 0));
 
 		// Initialize path editing variables
@@ -176,7 +180,40 @@ public class SimulationWorld extends World {
 		displayWidgets();
 
 		// Draw initial background image so this world isn't blank on reset
-		updateBackground();
+		updateImage();
+	}
+
+	/**
+	 * Create and return the map of rendering hints to be used for all graphics contexts.
+	 */
+	private static RenderingHints createRenderingHints() {
+		// Turning on antialiasing gives smoother-looking graphics
+		RenderingHints hints = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		// Set all other applicable hints to prefer speed
+		hints.put(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
+		hints.put(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
+		hints.put(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_SPEED);
+		hints.put(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_DISABLE);
+		return hints;
+	}
+
+	/**
+	 * Create and return the image to be used as a world's background pattern.
+	 */
+	private static BufferedImage createBackgroundPattern() {
+		BufferedImage image = GraphicsUtilities.createCompatibleImage(WIDTH + BACKGROUND_PATTERN_WIDTH * 2, HEIGHT);
+		Graphics2D graphics = image.createGraphics();
+		graphics.setColor(BACKGROUND_PATTERN_COLOR_1);
+		graphics.fillRect(0, 0, image.getWidth(), image.getHeight());
+		graphics.setColor(BACKGROUND_PATTERN_COLOR_2);
+		for (int x1 = 0; x1 < image.getWidth() + HEIGHT; x1 += BACKGROUND_PATTERN_WIDTH * 2) {
+			int x2 = x1 + BACKGROUND_PATTERN_WIDTH;
+			int x3 = x2 - HEIGHT;
+			int x4 = x1 - HEIGHT;
+			graphics.fillPolygon(new int[] {x1, x2, x3, x4}, new int[] {0, 0, HEIGHT, HEIGHT}, 4);
+		}
+		graphics.dispose();
+		return image;
 	}
 
 	/**
@@ -212,7 +249,7 @@ public class SimulationWorld extends World {
 		}
 
 		// Render
-		updateBackground();
+		updateImage();
 	}
 
 	/**
@@ -288,24 +325,15 @@ public class SimulationWorld extends World {
 	/**
 	 * Update this world's background image.
 	 */
-	private void updateBackground() {
-		graphics.clearRect(0, 0, WIDTH, HEIGHT);
-
-		// Draw background pattern
-		graphics.setColor(BACKGROUND_PATTERN_COLOR_1);
-		graphics.fillRect(0, 0, WIDTH, HEIGHT);
-		graphics.setColor(BACKGROUND_PATTERN_COLOR_2);
-		for (int x1 = -patternShift; x1 < WIDTH + HEIGHT; x1 += BACKGROUND_PATTERN_WIDTH * 2) {
-			int x2 = x1 + BACKGROUND_PATTERN_WIDTH;
-			int x3 = x2 - HEIGHT;
-			int x4 = x1 - HEIGHT;
-			graphics.fillPolygon(new int[] {x1, x2, x3, x4}, new int[] {0, 0, HEIGHT, HEIGHT}, 4);
-		}
+	private void updateImage() {
+		graphics.drawImage(BACKGROUND_PATTERN, -patternShift, 0, null);
 		// Shift the background pattern for the next act
 		patternShift = (patternShift + 1) % (BACKGROUND_PATTERN_WIDTH * 2);
 
 		// Draw paths
-		SuperPath.updatePaints();
+		if (hoveredPath != null || selectedPath != null) {
+			SuperPath.updatePaints();
+		}
 		for (SuperPath path : paths) {
 			graphics.drawImage(path.getImage(), 0, 0, null);
 			for (SuperActor actor : path.getActors()) {

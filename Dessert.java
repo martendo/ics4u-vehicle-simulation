@@ -1,6 +1,6 @@
+import greenfoot.util.GraphicsUtilities;
 import java.awt.image.BufferedImage;
 import java.awt.Graphics2D;
-import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 
@@ -17,11 +17,10 @@ public class Dessert extends PathTraveller {
 
 	public Dessert() {
 		super();
-		image = new BufferedImage(64, 64, BufferedImage.TYPE_INT_ARGB_PRE);
+		image = GraphicsUtilities.createCompatibleTranslucentImage(64, 64);
 		graphics = image.createGraphics();
 		shape = new Rectangle2D.Double(-30, -20 / 2, 30, 20);
-		// Turning on antialiasing gives smoother-looking graphics
-		graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		graphics.addRenderingHints(SimulationWorld.RENDERING_HINTS);
 		graphics.setBackground(new java.awt.Color(0, 0, 0, 0));
 		graphics.setColor(java.awt.Color.GREEN);
 	}

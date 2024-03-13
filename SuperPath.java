@@ -1,6 +1,6 @@
+import greenfoot.util.GraphicsUtilities;
 import java.awt.image.BufferedImage;
 import java.awt.Graphics2D;
-import java.awt.RenderingHints;
 import java.awt.BasicStroke;
 import java.awt.Paint;
 import java.awt.TexturePaint;
@@ -140,10 +140,9 @@ public class SuperPath {
 		}
 
 		// Set up visuals
-		image = new BufferedImage(SimulationWorld.WIDTH, SimulationWorld.HEIGHT, BufferedImage.TYPE_INT_ARGB_PRE);
+		image = GraphicsUtilities.createCompatibleTranslucentImage(SimulationWorld.WIDTH, SimulationWorld.HEIGHT);
 		graphics = image.createGraphics();
-		// Turning on antialiasing gives smoother-looking graphics
-		graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		graphics.addRenderingHints(SimulationWorld.RENDERING_HINTS);
 		graphics.setBackground(new java.awt.Color(0, 0, 0, 0));
 		needsRedraw = true;
 		// Strokes for drawing this path
@@ -628,7 +627,7 @@ public class SuperPath {
 	private static void createTextures() {
 		Graphics2D graphics;
 		// Hovered path texture
-		hoverTexture = new BufferedImage(32, 16, BufferedImage.TYPE_INT_RGB);
+		hoverTexture = GraphicsUtilities.createCompatibleImage(32, 16);
 		graphics = hoverTexture.createGraphics();
 		graphics.setColor(HOVER_PATTERN_COLOR_1);
 		graphics.fillRect(0, 0, 32, 16);
@@ -640,7 +639,7 @@ public class SuperPath {
 			graphics.fillPolygon(new int[] {x1, x2, x3, x4}, new int[] {0, 0, 16, 16}, 4);
 		}
 		// Selected path texture
-		selectedTexture = new BufferedImage(32, 16, BufferedImage.TYPE_INT_RGB);
+		selectedTexture = GraphicsUtilities.createCompatibleImage(32, 16);
 		graphics = selectedTexture.createGraphics();
 		graphics.setColor(SELECTED_PATTERN_COLOR_1);
 		graphics.fillRect(0, 0, 32, 16);

@@ -1,6 +1,6 @@
+import greenfoot.util.GraphicsUtilities;
 import java.awt.image.BufferedImage;
 import java.awt.Graphics2D;
-import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 
@@ -31,11 +31,10 @@ public class Machine extends SuperActor {
 
 		// Initialize image
 		int imageSize = Math.max(height, WIDTH) * 2;
-		image = new BufferedImage(imageSize, imageSize, BufferedImage.TYPE_INT_ARGB_PRE);
+		image = GraphicsUtilities.createCompatibleTranslucentImage(imageSize, imageSize);
 		graphics = image.createGraphics();
 		shape = new Rectangle2D.Double(-WIDTH / 2, -height / 2, WIDTH, height);
-		// Turning on antialiasing gives smoother-looking graphics
-		graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		graphics.addRenderingHints(SimulationWorld.RENDERING_HINTS);
 		graphics.setBackground(new java.awt.Color(0, 0, 0, 0));
 		graphics.setColor(java.awt.Color.MAGENTA);
 		setRotation(0.0);
