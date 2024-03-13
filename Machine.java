@@ -56,6 +56,7 @@ public class Machine extends SuperActor {
 		graphics.setTransform(saveAT);
 	}
 
+	@Override
 	public BufferedImage getImage() {
 		return image;
 	}

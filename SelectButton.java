@@ -78,6 +78,7 @@ public abstract class SelectButton extends Widget {
 	/**
 	 * Update this button's image according to selection and mouse interaction and run the callback method if clicked.
 	 */
+	@Override
 	public void act() {
 		if (isSelected) {
 			state = ButtonState.SELECTED;
@@ -135,6 +136,7 @@ public abstract class SelectButton extends Widget {
 	/**
 	 * Redraw this button's image with the appropriate background color if this button's state has changed.
 	 */
+	@Override
 	protected void updateImage() {
 		if (state == prevState) {
 			// State has not changed: image will be the same as before, nothing to do

@@ -25,12 +25,14 @@ public class Dessert extends PathTraveller {
 		graphics.setColor(java.awt.Color.GREEN);
 	}
 
+	@Override
 	public void addedToPath(SuperPath path, int laneNum) {
 		super.addedToPath(path, laneNum);
 		// Reflect angle change in image
 		updateImage();
 	}
 
+	@Override
 	public void act() {
 		super.act();
 		// Reflect angle change in image
@@ -50,10 +52,12 @@ public class Dessert extends PathTraveller {
 	/**
 	 * Kill this dessert when it reaches the end of its path.
 	 */
+	@Override
 	protected void endTravel() {
 		die();
 	}
 
+	@Override
 	public BufferedImage getImage() {
 		return image;
 	}

@@ -388,6 +388,7 @@ public class SuperPath {
 		for (int i = 0; i < laneCount; i++) {
 			final int laneNum = i;
 			spawners[laneNum] = new Spawner(60, 240) {
+				@Override
 				public void spawn() {
 					Dessert dessert = new Dessert();
 					addTraveller(dessert, laneNum);

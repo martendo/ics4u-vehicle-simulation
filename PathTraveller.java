@@ -40,6 +40,7 @@ public abstract class PathTraveller extends SuperActor {
 	/**
 	 * Move this traveller along its path, and
 	 */
+	@Override
 	public void act() {
 		// Move along the path a distance equal to traveller speed
 		pathIter.next(SPEED);
@@ -68,6 +69,7 @@ public abstract class PathTraveller extends SuperActor {
 	/**
 	 * Kill this traveller and remove it from its path.
 	 */
+	@Override
 	public void die() {
 		super.die();
 		path.removeTraveller(this);

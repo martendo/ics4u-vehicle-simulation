@@ -105,6 +105,7 @@ public class SimulationWorld extends World {
 		// Set up path-editing buttons
 		buttons = new SelectButton[BUTTON_COUNT];
 		buttons[BUTTON_INDEX_DRAW] = new SelectButton(new GreenfootImage("images/pencil.png"), true) {
+			@Override
 			public void clicked() {
 				pathEditMode = PathEditMode.DRAW;
 				buttons[BUTTON_INDEX_DRAW].select();
@@ -131,6 +132,7 @@ public class SimulationWorld extends World {
 			}
 		};
 		buttons[BUTTON_INDEX_SELECT] = new SelectButton(new GreenfootImage("images/select.png"), false) {
+			@Override
 			public void clicked() {
 				pathEditMode = PathEditMode.SELECT;
 				buttons[BUTTON_INDEX_SELECT].select();
@@ -146,6 +148,7 @@ public class SimulationWorld extends World {
 			}
 		};
 		buttons[BUTTON_INDEX_DELETE] = new SelectButton(new GreenfootImage("images/trash.png"), false) {
+			@Override
 			public void clicked() {
 				if (selectedPath == null) {
 					return;
@@ -157,11 +160,13 @@ public class SimulationWorld extends World {
 			}
 		};
 		buttons[BUTTON_INDEX_LANE_MINUS] = new SelectButton(new GreenfootImage("images/minus.png"), false) {
+			@Override
 			public void clicked() {
 				setDrawLaneCount(drawLaneCount - 1);
 			}
 		};
 		buttons[BUTTON_INDEX_LANE_PLUS] = new SelectButton(new GreenfootImage("images/plus.png"), false) {
+			@Override
 			public void clicked() {
 				setDrawLaneCount(drawLaneCount + 1);
 			}
@@ -231,6 +236,7 @@ public class SimulationWorld extends World {
 	/**
 	 * Update this world.
 	 */
+	@Override
 	public void act() {
 		updatePathEditing();
 
