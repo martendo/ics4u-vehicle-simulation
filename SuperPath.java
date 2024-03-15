@@ -36,7 +36,7 @@ public class SuperPath {
 
 	// Visual parameters
 	public static final int LANE_WIDTH = 50;
-	public static final int PATH_OUTLINE_WIDTH = 16;
+	public static final int PATH_OUTLINE_WIDTH = 8;
 	private static final java.awt.Color PATH_COLOR = new java.awt.Color(64, 64, 64);
 	private static final java.awt.Color PATH_OUTLINE_COLOR = java.awt.Color.YELLOW;
 	private static final java.awt.Color LANE_SEPARATOR_COLOR = java.awt.Color.WHITE;
@@ -147,7 +147,7 @@ public class SuperPath {
 		bounds = new Rectangle2D.Double(0, 0, image.getWidth(), image.getHeight());
 		// Strokes for drawing this path
 		pathStroke = new BasicStroke(getPathWidth(), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
-		pathOutlineStroke = new BasicStroke(getPathWidth() + PATH_OUTLINE_WIDTH, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+		pathOutlineStroke = new BasicStroke(getPathWidth() + PATH_OUTLINE_WIDTH * 2, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 
 		// Initialize path-related actor variables
 		world = null;

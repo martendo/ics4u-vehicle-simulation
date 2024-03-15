@@ -42,7 +42,7 @@ public class Machine extends SuperActor {
 		super();
 		this.path = path;
 		// Make sure to cover up the round cap of the path, taking into account the position offset
-		length = (path.getPathWidth() + SuperPath.PATH_OUTLINE_WIDTH) / 2 + POSITION_OFFSET;
+		length = path.getPathWidth() / 2 + SuperPath.PATH_OUTLINE_WIDTH + POSITION_OFFSET;
 		// Hang over the edges of the path a little
 		width = path.getPathWidth() + 50;
 		this.forwards = forwards;
