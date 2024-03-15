@@ -29,9 +29,6 @@ public class Machine extends SuperActor {
 	// Whether or not this machine should cover the path in the direction of its rotation (true) or in the direction opposite to its rotation (false)
 	private final boolean forwards;
 
-	private final BufferedImage image;
-	private final Graphics2D graphics;
-
 	/**
 	 * Create a new machine actor.
 	 *
@@ -47,12 +44,7 @@ public class Machine extends SuperActor {
 		width = path.getPathWidth() + 50;
 		this.forwards = forwards;
 
-		// Initialize image
-		int imageSize = Math.max(length, width) * 2;
-		image = GraphicsUtilities.createCompatibleTranslucentImage(imageSize, imageSize);
-		graphics = image.createGraphics();
-		graphics.addRenderingHints(SimulationWorld.RENDERING_HINTS);
-		graphics.setBackground(new java.awt.Color(0, 0, 0, 0));
+		initImage();
 		setRotation(0.0);
 	}
 
@@ -61,14 +53,23 @@ public class Machine extends SuperActor {
 	 *
 	 * @param angle the angle to have this machine rotated
 	 */
+	@Override
 	public void setRotation(double angle) {
+		super.setRotation(angle);
 		// Rotation is the only time this machine's image will change, so update the image in this method
+		updateImage();
+	}
+
+	@Override
+	public void updateImage() {
+		BufferedImage image = getImage();
+		Graphics2D graphics = getGraphics();
 		graphics.clearRect(0, 0, image.getWidth(), image.getHeight());
 		AffineTransform saveTransform = graphics.getTransform();
 
 		// Rotate about the center of this image
-		graphics.translate(image.getWidth() / 2, image.getHeight() / 2);
-		graphics.rotate(angle);
+		graphics.translate((double) image.getWidth() / 2.0, (double) image.getHeight() / 2.0);
+		graphics.rotate(getRotation());
 		// Place this machine's midleft (if forwards) or midright (if backwards) point at the center of its image
 		// Draw roof
 		graphics.translate(forwards ? POSITION_OFFSET : -(ROOF_LENGTH + POSITION_OFFSET), -(width - ROOF_MARGIN) / 2);
@@ -87,7 +88,12 @@ public class Machine extends SuperActor {
 	}
 
 	@Override
-	public BufferedImage getImage() {
-		return image;
+	protected BufferedImage getSprite() {
+		throw new UnsupportedOperationException("Machine objects do not have sprites");
+	}
+
+	@Override
+	protected int getImageSize() {
+		return Math.max(length, width) * 2;
 	}
 }

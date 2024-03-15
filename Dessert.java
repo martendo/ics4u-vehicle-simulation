@@ -29,11 +29,11 @@ public abstract class Dessert extends PathTraveller {
 		BufferedImage image = getImage();
 		BufferedImage sprite = getSprite();
 		Graphics2D graphics = getGraphics();
-
 		AffineTransform saveTransform = graphics.getTransform();
+
 		// Rotate from the center of this dessert's image
 		graphics.translate(image.getWidth() / 2, image.getHeight() / 2);
-		graphics.rotate(getAngle());
+		graphics.rotate(getRotation());
 		// Draw from the center of the dessert's sprite (which has its midright point at the center of its image)
 		graphics.translate(-sprite.getWidth() / 2, 0);
 		// Draw truck bed
@@ -44,6 +44,7 @@ public abstract class Dessert extends PathTraveller {
 		// Draw plate
 		graphics.setColor(PLATE_COLOR);
 		graphics.fillOval(-PLATE_SIZE / 2, -PLATE_SIZE / 2, PLATE_SIZE, PLATE_SIZE);
+
 		graphics.setTransform(saveTransform);
 	}
 

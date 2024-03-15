@@ -20,30 +20,13 @@ public abstract class PathTraveller extends SuperActor {
 	// Distance to travel along a path per act
 	private double speed;
 
-	// The exact angle of the current segment of the path
+	// The exact angle of the current segment of the path, which this traveller is constantly interpolating towards
 	private double targetAngle = 0.0;
-	// The visually pleasing interpolated angle of this traveller, constantly moving towards targetAngle
-	protected double angle = 0.0;
-
-	private final BufferedImage image;
-	private final Graphics2D graphics;
 
 	public PathTraveller(double speed) {
 		super();
 		this.speed = speed;
-		BufferedImage sprite = getSprite();
-		int size = getImageSize();
-		image = GraphicsUtilities.createCompatibleTranslucentImage(size, size);
-		graphics = image.createGraphics();
-		graphics.addRenderingHints(SimulationWorld.RENDERING_HINTS);
-		graphics.setBackground(new java.awt.Color(0, 0, 0, 0));
-	}
-
-	/**
-	 * Get the current rotation of this traveller.
-	 */
-	public double getAngle() {
-		return angle;
+		initImage();
 	}
 
 	/**
@@ -58,11 +41,10 @@ public abstract class PathTraveller extends SuperActor {
 		// First segment must be PathIterator.SEG_MOVETO
 		double[] coords = new double[6];
 		pathIter.currentSegment(coords);
-		x = coords[0];
-		y = coords[0];
+		setLocation(coords[0], coords[0]);
 		// Start with average angle of path's beginning
 		targetAngle = path.getStartAngle();
-		angle = targetAngle;
+		setRotation(targetAngle);
 		// Reflect angle change in image
 		updateImage();
 	}
@@ -82,7 +64,8 @@ public abstract class PathTraveller extends SuperActor {
 		double[] coords = new double[6];
 		pathIter.currentSegment(coords);
 		// Target angle between previous and new position
-		targetAngle = Math.atan2(coords[1] - y, coords[0] - x);
+		targetAngle = Math.atan2(coords[1] - getY(), coords[0] - getX());
+		double angle = getRotation();
 		// Interpolate angle towards targetAngle, wrapping around when one direction is closer than the current
 		if (Math.abs(targetAngle - angle) > Math.abs(targetAngle - (angle - Math.PI * 2.0))) {
 			angle -= Math.PI * 2.0;
@@ -90,10 +73,10 @@ public abstract class PathTraveller extends SuperActor {
 			angle += Math.PI * 2.0;
 		}
 		angle += (targetAngle - angle) * ANGLE_INTERPOLATION_FACTOR;
+		setRotation(angle);
 
 		// Update position
-		x = coords[0];
-		y = coords[1];
+		setLocation(coords[0], coords[1]);
 
 		// Reflect angle change in image
 		updateImage();
@@ -115,48 +98,5 @@ public abstract class PathTraveller extends SuperActor {
 	 */
 	protected void endTravel() {
 		die();
-	}
-
-	/**
-	 * Return this traveller's graphics context.
-	 */
-	protected Graphics2D getGraphics() {
-		return graphics;
-	}
-
-	/**
-	 * Retrieve the image to draw rotated for this traveller's image.
-	 */
-	protected abstract BufferedImage getSprite();
-
-	protected int getImageSize() {
-		BufferedImage sprite = getSprite();
-		return Math.max(sprite.getWidth(), sprite.getHeight()) * 2;
-	}
-
-	/**
-	 * Set this traveller's image to its sprite image rotated to its current angle.
-	 */
-	private void updateImage() {
-		BufferedImage sprite = getSprite();
-		resetImage();
-		// Rotate from the center of this traveller's image
-		AffineTransform transform = AffineTransform.getTranslateInstance(image.getWidth() / 2, image.getHeight() / 2);
-		transform.rotate(angle);
-		// Place this traveller's sprite so its midright point is at the center of the image
-		transform.translate(-sprite.getWidth(), -sprite.getHeight() / 2);
-		graphics.drawImage(sprite, transform, null);
-	}
-
-	/**
-	 * Prepare this traveller's image for drawing.
-	 */
-	protected void resetImage() {
-		graphics.clearRect(0, 0, image.getWidth(), image.getHeight());
-	}
-
-	@Override
-	public BufferedImage getImage() {
-		return image;
 	}
 }
