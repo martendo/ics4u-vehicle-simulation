@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.ListIterator;
 
@@ -48,7 +49,7 @@ public class SimulationWorld extends World {
 	}
 
 	// The list of current widgets being shown to the user
-	private ArrayList<Widget> shownWidgets;
+	private List<Widget> shownWidgets;
 	// All buttons for this world
 	private final SelectButton[] buttons;
 	// Constants for accessing buttons in the buttons array
@@ -67,7 +68,7 @@ public class SimulationWorld extends World {
 	// Background image drawing facilities
 	private final BufferedImage canvas;
 	private final Graphics2D graphics;
-	private ArrayList<SuperPath> paths;
+	private List<SuperPath> paths;
 	private PathEditMode pathEditMode;
 
 	// Path drawing state
@@ -81,9 +82,9 @@ public class SimulationWorld extends World {
 	private int patternShift;
 
 	// All non-Greenfoot actors in this world
-	private ArrayList<SuperActor> actors;
+	private List<SuperActor> actors;
 	// All spawner objects in this world
-	private ArrayList<Spawner> spawners;
+	private List<Spawner> spawners;
 
 	/**
 	 * Create a new simulation world.

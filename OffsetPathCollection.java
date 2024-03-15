@@ -1,7 +1,7 @@
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.QuadCurve2D;
-import java.util.ArrayList;
+import java.util.Deque;
 import java.util.ArrayDeque;
 
 /**
@@ -28,7 +28,7 @@ public class OffsetPathCollection {
 	// Offset of each path in this collection
 	private final double[] offsets;
 	// Queue of curves at the current end of each path for knot testing, uncommitted to the Path2D objects until they are far enough away
-	private final ArrayDeque<QuadCurve2D.Double>[] pathTails;
+	private final Deque<QuadCurve2D.Double>[] pathTails;
 	// Current (approximate) length of the paths stored in pathTails
 	private final double[] pathTailLengths;
 
@@ -49,7 +49,7 @@ public class OffsetPathCollection {
 		this.size = size;
 		paths = new Path2D.Double[size];
 		offsets = new double[size];
-		pathTails = new ArrayDeque[size];
+		pathTails = new Deque[size];
 		pathTailLengths = new double[size];
 		for (int i = 0; i < size; i++) {
 			paths[i] = new Path2D.Double();

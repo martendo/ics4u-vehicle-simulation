@@ -70,11 +70,11 @@ public class SuperPath {
 	private static TexturePaint selectedPaint = null;
 
 	// All points in this path, for calculating angles
-	private ArrayList<Point2D.Double> points;
+	private List<Point2D.Double> points;
 	// A single path created from all points added to this SuperPath
 	private Path2D.Double path;
 	// All points where this SuperPath intersects itself
-	private ArrayList<Point2D.Double> intersections;
+	private List<Point2D.Double> intersections;
 	// Whether or not this path is being hovered or selected
 	private SuperPathState state;
 	// Whether or not this path will change
@@ -101,9 +101,9 @@ public class SuperPath {
 	// The world this path belongs to, for adding actors that this path creates
 	private SimulationWorld world;
 	// Objects currently on this path
-	private ArrayList<PathTraveller> travellers;
+	private List<PathTraveller> travellers;
 	// All spawners attached to this path, stored for cleaning up
-	private ArrayList<Spawner> spawners;
+	private List<Spawner> spawners;
 	// Machine actors at ends of this path
 	private final Machine startMachine;
 	private final Machine endMachine;
@@ -403,7 +403,7 @@ public class SuperPath {
 	 */
 	public List<SuperActor> getActors() {
 		// Append machines so that they are always drawn after (on top of) travellers
-		ArrayList<SuperActor> actors = new ArrayList<SuperActor>(travellers);
+		List<SuperActor> actors = new ArrayList<SuperActor>(travellers);
 		actors.add(startMachine);
 		actors.add(endMachine);
 		return actors;
