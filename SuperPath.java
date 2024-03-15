@@ -102,11 +102,11 @@ public class SuperPath {
 	private SimulationWorld world;
 	// Objects currently on this path
 	private ArrayList<PathTraveller> travellers;
+	// All spawners attached to this path, stored for cleaning up
+	private ArrayList<Spawner> spawners;
 	// Machine actors at ends of this path
 	private final Machine startMachine;
 	private final Machine endMachine;
-	// Spawners for each lane of this path
-	private Spawner[] spawners;
 
 	// Variables to keep track of the last given point in order to control path curves
 	private double prevx;
@@ -152,9 +152,9 @@ public class SuperPath {
 		// Initialize path-related actor variables
 		world = null;
 		travellers = new ArrayList<PathTraveller>();
+		spawners = new ArrayList<Spawner>();
 		startMachine = new Machine(this);
 		endMachine = new Machine(this);
-		spawners = null;
 	}
 
 	/**
@@ -393,29 +393,30 @@ public class SuperPath {
 		image = image.getSubimage(getX(), getY(), (int) bounds.getWidth(), (int) bounds.getHeight());
 
 		// Create dessert spawners for each lane in this path
-		spawners = new Spawner[laneCount];
 		for (int i = 0; i < laneCount; i++) {
 			final int laneNum = i;
-			spawners[laneNum] = new Spawner(60, 240) {
+			// Spawn trucks to visually lead each dessert
+			Spawner truckSpawner = new RandomSpawner(120, 480) {
 				@Override
 				public void spawn() {
-					Dessert dessert = new Dessert();
-					addTraveller(dessert, laneNum);
-					world.addActor(dessert);
+					Truck truck = new Truck();
+					addTraveller(truck, laneNum);
+					world.addActor(truck);
+					// Spawn the dessert following this truck at a later time
+					Spawner dessertSpawner = new FixedSpawner(55, 1) {
+						@Override
+						public void spawn() {
+							Dessert dessert = new Candy();
+							addTraveller(dessert, laneNum);
+							world.addActor(dessert);
+						}
+					};
+					world.addSpawner(dessertSpawner);
+					spawners.add(dessertSpawner);
 				}
 			};
-		}
-	}
-
-	/**
-	 * Update this path's dessert spawners.
-	 */
-	public void actSpawners() {
-		if (spawners == null) {
-			return;
-		}
-		for (Spawner spawner : spawners) {
-			spawner.act();
+			world.addSpawner(truckSpawner);
+			spawners.add(truckSpawner);
 		}
 	}
 
@@ -451,8 +452,8 @@ public class SuperPath {
 	}
 
 	/**
-	 * Kill all machines and path travellers on this path and clear this path's
-	 * traveller list.
+	 * Kill all machines and path travellers on this path and remove all of its
+	 * spawners from the world.
 	 */
 	public void die() {
 		startMachine.die();
@@ -461,6 +462,11 @@ public class SuperPath {
 		while (travellers.size() > 0) {
 			travellers.get(0).die();
 		}
+		// Remove spawners
+		for (Spawner spawner : spawners) {
+			world.removeSpawner(spawner);
+		}
+		spawners.clear();
 	}
 
 	/**

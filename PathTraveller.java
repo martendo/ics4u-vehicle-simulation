@@ -1,3 +1,8 @@
+import java.awt.image.BufferedImage;
+import greenfoot.util.GraphicsUtilities;
+import java.awt.Graphics2D;
+import java.awt.geom.AffineTransform;
+
 /**
  * An object that travels along a path at a constant speed, rotating to reflect
  * its journey along the path.
@@ -18,6 +23,26 @@ public abstract class PathTraveller extends SuperActor {
 	// The visually pleasing interpolated angle of this traveller, constantly moving towards targetAngle
 	protected double angle = 0.0;
 
+	private final BufferedImage image;
+	private final Graphics2D graphics;
+
+	public PathTraveller() {
+		super();
+		BufferedImage sprite = getSprite();
+		int size = getImageSize();
+		image = GraphicsUtilities.createCompatibleTranslucentImage(size, size);
+		graphics = image.createGraphics();
+		graphics.addRenderingHints(SimulationWorld.RENDERING_HINTS);
+		graphics.setBackground(new java.awt.Color(0, 0, 0, 0));
+	}
+
+	/**
+	 * Get the current rotation of this traveller.
+	 */
+	public double getAngle() {
+		return angle;
+	}
+
 	/**
 	 * A callback method that is called when this traveller is added to a SuperPath.
 	 *
@@ -35,6 +60,8 @@ public abstract class PathTraveller extends SuperActor {
 		// Start with average angle of path's beginning
 		targetAngle = path.getStartAngle();
 		angle = targetAngle;
+		// Reflect angle change in image
+		updateImage();
 	}
 
 	/**
@@ -64,6 +91,9 @@ public abstract class PathTraveller extends SuperActor {
 		// Update position
 		x = coords[0];
 		y = coords[1];
+
+		// Reflect angle change in image
+		updateImage();
 	}
 
 	/**
@@ -77,6 +107,53 @@ public abstract class PathTraveller extends SuperActor {
 
 	/**
 	 * This method is called when this traveller reaches the end of its path.
+	 *
+	 * By default, simply kill this traveller.
 	 */
-	protected abstract void endTravel();
+	protected void endTravel() {
+		die();
+	}
+
+	/**
+	 * Return this traveller's graphics context.
+	 */
+	protected Graphics2D getGraphics() {
+		return graphics;
+	}
+
+	/**
+	 * Retrieve the image to draw rotated for this traveller's image.
+	 */
+	protected abstract BufferedImage getSprite();
+
+	protected int getImageSize() {
+		BufferedImage sprite = getSprite();
+		return Math.max(sprite.getWidth(), sprite.getHeight()) * 2;
+	}
+
+	/**
+	 * Set this traveller's image to its sprite image rotated to its current angle.
+	 */
+	private void updateImage() {
+		BufferedImage sprite = getSprite();
+		resetImage();
+		// Rotate from the center of this traveller's image
+		AffineTransform transform = AffineTransform.getTranslateInstance(image.getWidth() / 2, image.getHeight() / 2);
+		transform.rotate(angle);
+		// Place this traveller's sprite so its midright point is at the center of the image
+		transform.translate(-sprite.getWidth(), -sprite.getHeight() / 2);
+		graphics.drawImage(sprite, transform, null);
+	}
+
+	/**
+	 * Prepare this traveller's image for drawing.
+	 */
+	protected void resetImage() {
+		graphics.clearRect(0, 0, image.getWidth(), image.getHeight());
+	}
+
+	@Override
+	public BufferedImage getImage() {
+		return image;
+	}
 }

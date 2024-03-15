@@ -76,6 +76,8 @@ public class SimulationWorld extends World {
 
 	// All non-Greenfoot actors in this world
 	private ArrayList<SuperActor> actors;
+	// All spawner objects in this world
+	private ArrayList<Spawner> spawners;
 
 	/**
 	 * Create a new simulation world.
@@ -101,6 +103,7 @@ public class SimulationWorld extends World {
 
 		patternShift = 0;
 		actors = new ArrayList<SuperActor>();
+		spawners = new ArrayList<Spawner>();
 
 		// Set up path-editing buttons
 		buttons = new SelectButton[BUTTON_COUNT];
@@ -234,15 +237,38 @@ public class SimulationWorld extends World {
 	}
 
 	/**
+	 * Add a spawner to this world.
+	 *
+	 * @param spawner the spawner object to add
+	 */
+	public void addSpawner(Spawner spawner) {
+		spawners.add(spawner);
+	}
+
+	/**
+	 * Remove a spawner from this world.
+	 *
+	 * @param spawner the spawner object to add
+	 */
+	public void removeSpawner(Spawner spawner) {
+		spawners.remove(spawner);
+	}
+
+	/**
 	 * Update this world.
 	 */
 	@Override
 	public void act() {
 		updatePathEditing();
 
-		// Update paths' spawners
-		for (SuperPath path : paths) {
-			path.actSpawners();
+		// Update spawners
+		// Create a copy of the spawners list to allow adding and removing spawners during iteration
+		for (Spawner spawner : new ArrayList<Spawner>(spawners)) {
+			if (spawner.isDone()) {
+				spawners.remove(spawner);
+				continue;
+			}
+			spawner.act();
 		}
 
 		// Update actors

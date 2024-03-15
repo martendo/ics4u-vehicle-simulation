@@ -1,8 +1,6 @@
-import greenfoot.util.GraphicsUtilities;
 import java.awt.image.BufferedImage;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Rectangle2D;
 
 /**
  * The "Vehicle" of the simulation.
@@ -10,55 +8,43 @@ import java.awt.geom.Rectangle2D;
  * @author Martin Baldwin
  * @version March 2024
  */
-public class Dessert extends PathTraveller {
-	private final BufferedImage image;
-	private final Graphics2D graphics;
-	private final Rectangle2D.Double shape;
+public abstract class Dessert extends PathTraveller {
+	private static final int TRUCK_BED_WIDTH = 32;
+	private static final int TRUCK_BED_LENGTH = 64;
+	private static final int PLATE_SIZE = TRUCK_BED_WIDTH - 5;
 
-	public Dessert() {
-		super();
-		image = GraphicsUtilities.createCompatibleTranslucentImage(64, 64);
-		graphics = image.createGraphics();
-		shape = new Rectangle2D.Double(-30, -20 / 2, 30, 20);
-		graphics.addRenderingHints(SimulationWorld.RENDERING_HINTS);
-		graphics.setBackground(new java.awt.Color(0, 0, 0, 0));
-		graphics.setColor(java.awt.Color.GREEN);
-	}
-
-	@Override
-	public void addedToPath(SuperPath path, int laneNum) {
-		super.addedToPath(path, laneNum);
-		// Reflect angle change in image
-		updateImage();
-	}
-
-	@Override
-	public void act() {
-		super.act();
-		// Reflect angle change in image
-		updateImage();
-	}
-
-	private void updateImage() {
-		graphics.clearRect(0, 0, image.getWidth(), image.getHeight());
-		AffineTransform saveAT = graphics.getTransform();
-		// Rotate about and draw the image from the center of this object
-		graphics.translate(image.getWidth() / 2, image.getHeight() / 2);
-		graphics.rotate(angle);
-		graphics.fill(shape);
-		graphics.setTransform(saveAT);
-	}
+	private static final java.awt.Color TRUCK_BED_COLOR = new java.awt.Color(140, 140, 140);
+	private static final java.awt.Color PLATE_COLOR = java.awt.Color.WHITE;
 
 	/**
-	 * Kill this dessert when it reaches the end of its path.
+	 * Draw a truck bed and plate under the dessert's sprite.
 	 */
 	@Override
-	protected void endTravel() {
-		die();
+	protected void resetImage() {
+		super.resetImage();
+		BufferedImage image = getImage();
+		BufferedImage sprite = getSprite();
+		Graphics2D graphics = getGraphics();
+
+		AffineTransform saveTransform = graphics.getTransform();
+		// Rotate from the center of this dessert's image
+		graphics.translate(image.getWidth() / 2, image.getHeight() / 2);
+		graphics.rotate(getAngle());
+		// Draw from the center of the dessert's sprite (which has its midright point at the center of its image)
+		graphics.translate(-sprite.getWidth() / 2, 0);
+		// Draw truck bed
+		graphics.setColor(TRUCK_BED_COLOR);
+		graphics.fillRect(-TRUCK_BED_LENGTH / 2, -TRUCK_BED_WIDTH / 2 , TRUCK_BED_LENGTH, TRUCK_BED_WIDTH);
+		graphics.setColor(java.awt.Color.BLACK);
+		graphics.drawRect(-TRUCK_BED_LENGTH / 2, -TRUCK_BED_WIDTH / 2 , TRUCK_BED_LENGTH, TRUCK_BED_WIDTH);
+		// Draw plate
+		graphics.setColor(PLATE_COLOR);
+		graphics.fillOval(-PLATE_SIZE / 2, -PLATE_SIZE / 2, PLATE_SIZE, PLATE_SIZE);
+		graphics.setTransform(saveTransform);
 	}
 
 	@Override
-	public BufferedImage getImage() {
-		return image;
+	protected int getImageSize() {
+		return TRUCK_BED_LENGTH * 2;
 	}
 }
