@@ -153,8 +153,8 @@ public class SuperPath {
 		world = null;
 		travellers = new ArrayList<PathTraveller>();
 		spawners = new ArrayList<Spawner>();
-		startMachine = new Machine(this);
-		endMachine = new Machine(this);
+		startMachine = new Machine(this, true);
+		endMachine = new Machine(this, false);
 	}
 
 	/**
@@ -482,7 +482,7 @@ public class SuperPath {
 		// Iterate over points until a certain total length between them has been reached
 		Point2D.Double prevPoint = startPoint;
 		Point2D.Double currentPoint = startPoint;
-		for (double dist = 0.0; dist < Machine.WIDTH && iter.hasNext();) {
+		for (double dist = 0.0; dist < 32.0 && iter.hasNext();) {
 			currentPoint = iter.next();
 			dist += currentPoint.distance(prevPoint);
 			prevPoint = currentPoint;
@@ -504,7 +504,7 @@ public class SuperPath {
 		// Iterate backwards over points until a certain total length between them has been reached
 		Point2D.Double lastPoint = endPoint;
 		Point2D.Double currentPoint = endPoint;
-		for (double dist = 0.0; dist < Machine.WIDTH && iter.hasPrevious();) {
+		for (double dist = 0.0; dist < 32.0 && iter.hasPrevious();) {
 			currentPoint = iter.previous();
 			dist += currentPoint.distance(lastPoint);
 			lastPoint = currentPoint;
