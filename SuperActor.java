@@ -15,6 +15,9 @@ import java.awt.geom.AffineTransform;
  * @version March 2024
  */
 public abstract class SuperActor {
+	// Settings
+	public static final boolean DEBUG_SHOW_IMAGE_BOXES = false;
+
 	private double x;
 	private double y;
 	private double angle;
@@ -137,6 +140,11 @@ public abstract class SuperActor {
 	 * Return the image of this actor for drawing.
 	 */
 	public BufferedImage getImage() {
+		if (DEBUG_SHOW_IMAGE_BOXES) {
+			graphics.setColor(java.awt.Color.WHITE);
+			graphics.drawRect(0, 0, image.getWidth() - 1, image.getHeight() - 1);
+			graphics.fillRect(image.getWidth() / 2 - 5, image.getHeight() / 2 - 5, 10, 10);
+		}
 		return image;
 	}
 
