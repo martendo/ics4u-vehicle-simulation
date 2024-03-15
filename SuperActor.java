@@ -132,7 +132,7 @@ public abstract class SuperActor {
 		AffineTransform transform = AffineTransform.getTranslateInstance((double) image.getWidth() / 2.0, (double) image.getHeight() / 2.0);
 		transform.rotate(angle);
 		// Place this actor's sprite so its midright point is at the center of the image
-		transform.translate(-sprite.getWidth(), -sprite.getHeight() / 2);
+		transform.translate(-sprite.getWidth(), (double) -sprite.getHeight() / 2.0);
 		graphics.drawImage(sprite, transform, null);
 	}
 
