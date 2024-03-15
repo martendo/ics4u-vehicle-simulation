@@ -11,12 +11,14 @@ import java.awt.geom.AffineTransform;
  * @version March 2024
  */
 public abstract class PathTraveller extends SuperActor {
-	// Distance to travel along a path per act
-	public static final double SPEED = 1.0;
+	private static final double ANGLE_INTERPOLATION_FACTOR = 0.1;
 
 	private SuperPath path = null;
 	// The iterator used to progressively travel along this traveller's path
 	private PathTraceIterator pathIter = null;
+
+	// Distance to travel along a path per act
+	private double speed;
 
 	// The exact angle of the current segment of the path
 	private double targetAngle = 0.0;
@@ -26,8 +28,9 @@ public abstract class PathTraveller extends SuperActor {
 	private final BufferedImage image;
 	private final Graphics2D graphics;
 
-	public PathTraveller() {
+	public PathTraveller(double speed) {
 		super();
+		this.speed = speed;
 		BufferedImage sprite = getSprite();
 		int size = getImageSize();
 		image = GraphicsUtilities.createCompatibleTranslucentImage(size, size);
@@ -70,7 +73,7 @@ public abstract class PathTraveller extends SuperActor {
 	@Override
 	public void act() {
 		// Move along the path a distance equal to traveller speed
-		pathIter.next(SPEED);
+		pathIter.next(speed);
 		if (pathIter.isDone()) {
 			endTravel();
 			return;
@@ -86,7 +89,7 @@ public abstract class PathTraveller extends SuperActor {
 		} else if (Math.abs(targetAngle - angle) > Math.abs(targetAngle - (angle + Math.PI * 2.0))) {
 			angle += Math.PI * 2.0;
 		}
-		angle += (targetAngle - angle) * 0.05;
+		angle += (targetAngle - angle) * ANGLE_INTERPOLATION_FACTOR;
 
 		// Update position
 		x = coords[0];

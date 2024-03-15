@@ -403,7 +403,7 @@ public class SuperPath {
 					addTraveller(truck, laneNum);
 					world.addActor(truck);
 					// Spawn the dessert following this truck at a later time
-					Spawner dessertSpawner = new FixedSpawner(55, 1) {
+					Spawner dessertSpawner = new FixedSpawner((int) (55 / Truck.SPEED), 1) {
 						@Override
 						public void spawn() {
 							Dessert dessert = new Candy();

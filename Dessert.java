@@ -16,6 +16,10 @@ public abstract class Dessert extends PathTraveller {
 	private static final java.awt.Color TRUCK_BED_COLOR = new java.awt.Color(140, 140, 140);
 	private static final java.awt.Color PLATE_COLOR = java.awt.Color.WHITE;
 
+	public Dessert() {
+		super(Truck.SPEED);
+	}
+
 	/**
 	 * Draw a truck bed and plate under the dessert's sprite.
 	 */
