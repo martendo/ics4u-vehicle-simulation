@@ -29,7 +29,7 @@ import java.util.ListIterator;
  */
 public class SuperPath {
 	// Settings
-	public static final boolean SHOW_LANE_PATHS = false;
+	public static final boolean DEBUG_SHOW_LANE_PATHS = false;
 
 	// Flatness of curves to enforce when looking for intersections in paths
 	private static final double INTERSECTION_TEST_FLATNESS = 1.0;
@@ -292,7 +292,7 @@ public class SuperPath {
 		}
 
 		// Draw lane paths
-		if (SHOW_LANE_PATHS) {
+		if (DEBUG_SHOW_LANE_PATHS) {
 			graphics.setColor(LANE_PATH_COLOR);
 			graphics.setStroke(LANE_PATH_STROKE);
 			for (Path2D lane : lanes.getPaths()) {
