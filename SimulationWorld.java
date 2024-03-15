@@ -363,6 +363,9 @@ public class SimulationWorld extends World {
 		// Shift the background pattern for the next act
 		patternShift = (patternShift + 1) % (BACKGROUND_PATTERN_WIDTH * 2);
 
+		// Keep track of which actors to draw, as actors on paths are given special priority
+		List<SuperActor> actorsToDraw = new ArrayList<SuperActor>(actors);
+
 		// Draw paths
 		if (hoveredPath != null || selectedPath != null) {
 			SuperPath.updatePaints();
@@ -370,10 +373,25 @@ public class SimulationWorld extends World {
 		for (SuperPath path : paths) {
 			graphics.drawImage(path.getImage(), path.getX(), path.getY(), null);
 			for (SuperActor actor : path.getActors()) {
-				AffineTransform transform = AffineTransform.getTranslateInstance(actor.getPreciseImageX(), actor.getPreciseImageY());
-				graphics.drawImage(actor.getImage(), transform, null);
+				drawActor(actor);
+				// This actor no longer needs to be drawn
+				actorsToDraw.remove(actor);
 			}
 		}
+
+		// Draw all remaining actors that haven't already been drawn when drawing paths
+		for (SuperActor actor : actorsToDraw) {
+			drawActor(actor);
+		}
+	}
+
+	/**
+	 * Draw a SuperActor's image onto this world's background image at the
+	 * actor's image location.
+	 */
+	private void drawActor(SuperActor actor) {
+		AffineTransform transform = AffineTransform.getTranslateInstance(actor.getPreciseImageX(), actor.getPreciseImageY());
+		graphics.drawImage(actor.getImage(), transform, null);
 	}
 
 	/**
