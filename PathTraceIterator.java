@@ -15,9 +15,9 @@ public class PathTraceIterator {
 
 	// Tools to work with the original path
 	private final PathIterator originalpi;
-	private Point2D.Double lastPathPoint;
+	private Point2D lastPathPoint;
 	// Current point that is tracing the path
-	private Point2D.Double currentPoint;
+	private Point2D currentPoint;
 
 	/**
 	 * Create a new PathTraceIterator using the path defined by the supplied path iterator.
@@ -97,8 +97,7 @@ public class PathTraceIterator {
 					double dx = coords[0] - lastPathPoint.getX();
 					double dy = coords[1] - lastPathPoint.getY();
 					double angle = Math.atan2(dy, dx);
-					currentPoint.x += distRemain * Math.cos(angle);
-					currentPoint.y += distRemain * Math.sin(angle);
+					currentPoint.setLocation(currentPoint.getX() + distRemain * Math.cos(angle), currentPoint.getY() + distRemain * Math.sin(angle));
 					distRemain = 0.0;
 				} else {
 					// Need to continue to next segment in order to cover requested distance

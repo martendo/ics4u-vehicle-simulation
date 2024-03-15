@@ -24,11 +24,11 @@ public class OffsetPathCollection {
 	// Number of paths in this collection
 	private final int size;
 	// Path objects
-	private final Path2D.Double[] paths;
+	private final Path2D[] paths;
 	// Offset of each path in this collection
 	private final double[] offsets;
 	// Queue of curves at the current end of each path for knot testing, uncommitted to the Path2D objects until they are far enough away
-	private final Deque<QuadCurve2D.Double>[] pathTails;
+	private final Deque<QuadCurve2D>[] pathTails;
 	// Current (approximate) length of the paths stored in pathTails
 	private final double[] pathTailLengths;
 
@@ -47,14 +47,14 @@ public class OffsetPathCollection {
 		}
 
 		this.size = size;
-		paths = new Path2D.Double[size];
+		paths = new Path2D[size];
 		offsets = new double[size];
 		pathTails = new Deque[size];
 		pathTailLengths = new double[size];
 		for (int i = 0; i < size; i++) {
 			paths[i] = new Path2D.Double();
 			offsets[i] = (double) offset * ((double) i - (double) (size - 1) / 2.0);
-			pathTails[i] = new ArrayDeque<QuadCurve2D.Double>();
+			pathTails[i] = new ArrayDeque<QuadCurve2D>();
 			pathTailLengths[i] = 0.0;
 		}
 		isComplete = false;
@@ -63,12 +63,12 @@ public class OffsetPathCollection {
 	/**
 	 * Return an array containing the paths in this collection, including tail queues.
 	 */
-	public Path2D.Double[] getPaths() {
+	public Path2D[] getPaths() {
 		if (isComplete) {
 			return paths;
 		}
 		// Need to append uncomitted path tails
-		Path2D.Double[] result = new Path2D.Double[size];
+		Path2D[] result = new Path2D.Double[size];
 		for (int i = 0; i < size; i++) {
 			result[i] = getPath(i);
 		}
@@ -78,14 +78,14 @@ public class OffsetPathCollection {
 	/**
 	 * Return the path in this collection at the specified index, including its tail queue.
 	 */
-	public Path2D.Double getPath(int index) {
+	public Path2D getPath(int index) {
 		if (isComplete) {
 			return paths[index];
 		}
 		// Need to append uncomitted path tail
-		Path2D.Double path = new Path2D.Double(paths[index]);
-		for (QuadCurve2D.Double curve : pathTails[index]) {
-			path.quadTo(curve.ctrlx, curve.ctrly, curve.x2, curve.y2);
+		Path2D path = new Path2D.Double(paths[index]);
+		for (QuadCurve2D curve : pathTails[index]) {
+			path.quadTo(curve.getCtrlX(), curve.getCtrlY(), curve.getX2(), curve.getY2());
 		}
 		return path;
 	}
@@ -96,8 +96,8 @@ public class OffsetPathCollection {
 	public void complete() {
 		for (int i = 0; i < size; i++) {
 			while (!pathTails[i].isEmpty()) {
-				QuadCurve2D.Double curve = pathTails[i].removeFirst();
-				paths[i].quadTo(curve.ctrlx, curve.ctrly, curve.x2, curve.y2);
+				QuadCurve2D curve = pathTails[i].removeFirst();
+				paths[i].quadTo(curve.getCtrlX(), curve.getCtrlY(), curve.getX2(), curve.getY2());
 			}
 		}
 		isComplete = true;
@@ -142,13 +142,13 @@ public class OffsetPathCollection {
 			double x2Offset = offsets[i] * Math.cos(endNormal);
 			double y2Offset = offsets[i] * Math.sin(endNormal);
 
-			QuadCurve2D.Double curve = new QuadCurve2D.Double(x1 + x1Offset, y1 + y1Offset, ctrlx + ctrlxOffset, ctrly + ctrlyOffset, x2 + x2Offset, y2 + y2Offset);
+			QuadCurve2D curve = new QuadCurve2D.Double(x1 + x1Offset, y1 + y1Offset, ctrlx + ctrlxOffset, ctrly + ctrlyOffset, x2 + x2Offset, y2 + y2Offset);
 			updatePathTail(i, curve);
 
 			if (pathTailLengths[i] > KNOT_TEST_DISTANCE) {
-				QuadCurve2D.Double lastCurve = pathTails[i].removeFirst();
-				paths[i].quadTo(lastCurve.ctrlx, lastCurve.ctrly, lastCurve.x2, lastCurve.y2);
-				pathTailLengths[i] -= Math.hypot(lastCurve.x2 - lastCurve.x1, lastCurve.y2 - lastCurve.y1);
+				QuadCurve2D tail = pathTails[i].removeFirst();
+				paths[i].quadTo(tail.getCtrlX(), tail.getCtrlY(), tail.getX2(), tail.getY2());
+				pathTailLengths[i] -= Math.hypot(tail.getX2() - tail.getX1(), tail.getY2() - tail.getY1());
 			}
 		}
 	}
@@ -164,35 +164,35 @@ public class OffsetPathCollection {
 	 * @param index the index of the path in this collection to trim
 	 * @param curve the curve to test for intersection with
 	 */
-	private void updatePathTail(int index, QuadCurve2D.Double curve) {
-		Point2D.Double intersection = null;
-		QuadCurve2D.Double trimCurve = null;
-		for (QuadCurve2D.Double pathCurve : pathTails[index]) {
-			intersection = SuperPath.getShapeIntersection(pathCurve, curve, 5.0, new Point2D.Double(curve.x1, curve.y1));
-			if (intersection != null) {
+	private void updatePathTail(int index, QuadCurve2D curve) {
+		Point2D knot = null;
+		QuadCurve2D trim = null;
+		for (QuadCurve2D pathCurve : pathTails[index]) {
+			knot = SuperPath.getShapeIntersection(pathCurve, curve, 5.0, curve.getP1());
+			if (knot != null) {
 				// The curve intersects with this part of the path, prepare to trim it
-				trimCurve = pathCurve;
+				trim = pathCurve;
 				break;
 			}
 		}
-		if (intersection == null) {
+		if (knot == null) {
 			// No intersection was found: the curve can be added to the tail of this path directly
 			pathTails[index].addLast(curve);
-			pathTailLengths[index] += Math.hypot(curve.x2 - curve.x1, curve.y2 - curve.y1);
+			pathTailLengths[index] += Math.hypot(curve.getX2() - curve.getX1(), curve.getY2() - curve.getY1());
 			return;
 		}
 
 		// End the intersecting part of the path at the point of intersection
-		pathTailLengths[index] -= Math.hypot(trimCurve.x2 - trimCurve.x1, trimCurve.y2 - trimCurve.y1);
-		trimCurve.setCurve(trimCurve.x1, trimCurve.y1, (trimCurve.x1 + intersection.x) / 2.0, (trimCurve.y1 + intersection.y) / 2.0, intersection.x, intersection.y);
-		pathTailLengths[index] += Math.hypot(trimCurve.x2 - trimCurve.x1, trimCurve.y2 - trimCurve.y1);
+		pathTailLengths[index] -= Math.hypot(trim.getX2() - trim.getX1(), trim.getY2() - trim.getY1());
+		trim.setCurve(trim.getX1(), trim.getY1(), (trim.getX1() + knot.getX()) / 2.0, (trim.getY1() + knot.getY()) / 2.0, knot.getX(), knot.getY());
+		pathTailLengths[index] += Math.hypot(trim.getX2() - trim.getX1(), trim.getY2() - trim.getY1());
 		// Remove the remainder of the path that follows this part
-		while (pathTails[index].peekLast() != trimCurve) {
-			QuadCurve2D.Double lastCurve = pathTails[index].removeLast();
-			pathTailLengths[index] -= Math.hypot(lastCurve.x2 - lastCurve.x1, lastCurve.y2 - lastCurve.y1);
+		while (pathTails[index].peekLast() != trim) {
+			QuadCurve2D last = pathTails[index].removeLast();
+			pathTailLengths[index] -= Math.hypot(last.getX2() - last.getX1(), last.getY2() - last.getY1());
 		}
 		// Add the given curve to this path, starting at the point of intersection
-		pathTails[index].addLast(new QuadCurve2D.Double(intersection.x, intersection.y, (intersection.x + curve.x2) / 2.0, (intersection.y + curve.y2) / 2.0, curve.x2, curve.y2));
-		pathTailLengths[index] += Math.hypot(curve.x2 - intersection.x, curve.y2 - intersection.y);
+		pathTails[index].addLast(new QuadCurve2D.Double(knot.getX(), knot.getY(), (knot.getX() + curve.getX2()) / 2.0, (knot.getY() + curve.getY2()) / 2.0, curve.getX2(), curve.getY2()));
+		pathTailLengths[index] += Math.hypot(curve.getX2() - knot.getX(), curve.getY2() - knot.getY());
 	}
 }

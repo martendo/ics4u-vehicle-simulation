@@ -62,19 +62,19 @@ public class SuperPath {
 
 	// Anchor rectangles for special state texture paints, shifted as animation
 	private static double textureRectX = 0;
-	private static Rectangle2D.Double hoverTextureRect = new Rectangle2D.Double(textureRectX, 0, 16, 16);
-	private static Rectangle2D.Double selectedTextureRect = new Rectangle2D.Double(textureRectX, 0, 16, 16);
+	private static Rectangle2D hoverTextureRect = new Rectangle2D.Double(textureRectX, 0, 16, 16);
+	private static Rectangle2D selectedTextureRect = new Rectangle2D.Double(textureRectX, 0, 16, 16);
 
 	// Texture paint objects used in place of PATH_COLOR when path is in a special state
 	private static TexturePaint hoverPaint = null;
 	private static TexturePaint selectedPaint = null;
 
 	// All points in this path, for calculating angles
-	private List<Point2D.Double> points;
+	private List<Point2D> points;
 	// A single path created from all points added to this SuperPath
-	private Path2D.Double path;
+	private Path2D path;
 	// All points where this SuperPath intersects itself
-	private List<Point2D.Double> intersections;
+	private List<Point2D> intersections;
 	// Whether or not this path is being hovered or selected
 	private SuperPathState state;
 	// Whether or not this path will change
@@ -123,9 +123,9 @@ public class SuperPath {
 		}
 
 		// Initialize all data for this path
-		points = new ArrayList<Point2D.Double>();
+		points = new ArrayList<Point2D>();
 		path = new Path2D.Double();
-		intersections = new ArrayList<Point2D.Double>();
+		intersections = new ArrayList<Point2D>();
 		state = SuperPathState.NORMAL;
 		isComplete = false;
 
@@ -144,7 +144,7 @@ public class SuperPath {
 		graphics.addRenderingHints(SimulationWorld.RENDERING_HINTS);
 		graphics.setBackground(new java.awt.Color(0, 0, 0, 0));
 		needsRedraw = true;
-		bounds = new Rectangle2D.Double(0.0, 0.0, image.getWidth(), image.getHeight());
+		bounds = new Rectangle2D.Double(0, 0, image.getWidth(), image.getHeight());
 		// Strokes for drawing this path
 		pathStroke = new BasicStroke(getPathWidth(), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 		pathOutlineStroke = new BasicStroke(getPathWidth() + PATH_OUTLINE_WIDTH, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
@@ -194,8 +194,8 @@ public class SuperPath {
 			throw new UnmodifiablePathException("Cannot modify a completed SuperPath");
 		}
 
-		Point2D.Double prevPoint = (Point2D.Double) path.getCurrentPoint();
-		Point2D.Double newPoint = new Point2D.Double();
+		Point2D prevPoint = path.getCurrentPoint();
+		Point2D newPoint = new Point2D.Double();
 		if (prevPoint == null) {
 			// This is the first point -> begin the path by setting its location
 			path.moveTo(x, y);
@@ -212,7 +212,7 @@ public class SuperPath {
 			double midy = (y + prevy) / 2.0;
 			double ctrlx;
 			double ctrly;
-			if (prevPoint.x == prevx && prevPoint.y == prevy) {
+			if (prevPoint.getX() == prevx && prevPoint.getY() == prevy) {
 				// If this curve is a straight line (first curve in path), use
 				// the midpoint between start and end points as the control point
 				ctrlx = (prevx + midx) / 2.0;
@@ -221,22 +221,22 @@ public class SuperPath {
 				ctrlx = prevx;
 				ctrly = prevy;
 			}
-			QuadCurve2D.Double curve = new QuadCurve2D.Double(prevPoint.x, prevPoint.y, ctrlx, ctrly, midx, midy);
+			QuadCurve2D curve = new QuadCurve2D.Double(prevPoint.getX(), prevPoint.getY(), ctrlx, ctrly, midx, midy);
 			// Add any new intersection from this curve
-			Point2D.Double intersection = getShapeIntersection(path, curve, 1.0, prevPoint);
+			Point2D intersection = getShapeIntersection(path, curve, 1.0, prevPoint);
 			if (intersection != null) {
 				intersections.add(intersection);
 			}
 			// Update path
-			path.quadTo(curve.ctrlx, curve.ctrly, curve.x2, curve.y2);
-			newPoint.setLocation(curve.x2, curve.y2);
+			path.quadTo(curve.getCtrlX(), curve.getCtrlY(), curve.getX2(), curve.getY2());
+			newPoint.setLocation(curve.getP2());
 			// Update only end machine location
-			endMachine.setLocation(curve.x2, curve.y2);
+			endMachine.setLocation(curve.getX2(), curve.getY2());
 
 			// Update lanes
-			lanes.offsetQuadTo(curve.x1, curve.y1, curve.ctrlx, curve.ctrly, curve.x2, curve.y2);
+			lanes.offsetQuadTo(curve.getX1(), curve.getY1(), curve.getCtrlX(), curve.getCtrlY(), curve.getX2(), curve.getY2());
 			if (laneSeparators != null) {
-				laneSeparators.offsetQuadTo(curve.x1, curve.y1, curve.ctrlx, curve.ctrly, curve.x2, curve.y2);
+				laneSeparators.offsetQuadTo(curve.getX1(), curve.getY1(), curve.getCtrlX(), curve.getCtrlY(), curve.getX2(), curve.getY2());
 			}
 		}
 		points.add(newPoint);
@@ -275,7 +275,7 @@ public class SuperPath {
 		if (laneSeparators != null) {
 			graphics.setColor(LANE_SEPARATOR_COLOR);
 			graphics.setStroke(LANE_SEPARATOR_STROKE);
-			for (Path2D.Double laneSeparator : laneSeparators.getPaths()) {
+			for (Path2D laneSeparator : laneSeparators.getPaths()) {
 				graphics.draw(laneSeparator);
 			}
 		}
@@ -284,8 +284,10 @@ public class SuperPath {
 		if (laneSeparators != null) {
 			graphics.setPaint(paint);
 			graphics.setStroke(pathStroke);
-			for (Point2D.Double p : intersections) {
-				graphics.drawLine((int) p.x, (int) p.y, (int) p.x, (int) p.y);
+			for (Point2D p : intersections) {
+				int x = (int) p.getX();
+				int y = (int) p.getY();
+				graphics.drawLine(x, y, x, y);
 			}
 		}
 
@@ -293,7 +295,7 @@ public class SuperPath {
 		if (SHOW_LANE_PATHS) {
 			graphics.setColor(LANE_PATH_COLOR);
 			graphics.setStroke(LANE_PATH_STROKE);
-			for (Path2D.Double lane : lanes.getPaths()) {
+			for (Path2D lane : lanes.getPaths()) {
 				graphics.draw(lane);
 			}
 		}
@@ -326,14 +328,12 @@ public class SuperPath {
 				lasty = coords[1];
 				break;
 			case PathIterator.SEG_LINETO:
-				Line2D.Double line = new Line2D.Double(lastx, lasty, coords[0], coords[1]);
-				graphics.draw(line);
+				graphics.draw(new Line2D.Double(lastx, lasty, coords[0], coords[1]));
 				lastx = coords[0];
 				lasty = coords[1];
 				break;
 			case PathIterator.SEG_QUADTO:
-				QuadCurve2D.Double curve = new QuadCurve2D.Double(lastx, lasty, coords[0], coords[1], coords[2], coords[3]);
-				graphics.draw(curve);
+				graphics.draw(new QuadCurve2D.Double(lastx, lasty, coords[0], coords[1], coords[2], coords[3]));
 				lastx = coords[2];
 				lasty = coords[3];
 				break;
@@ -471,21 +471,21 @@ public class SuperPath {
 	 * a length defined by a machine's height.
 	 */
 	public double getStartAngle() {
-		ListIterator<Point2D.Double> iter = points.listIterator();
+		ListIterator<Point2D> iter = points.listIterator();
 		if (!iter.hasNext()) {
 			return 0.0;
 		}
-		Point2D.Double startPoint = iter.next();
+		Point2D startPoint = iter.next();
 		// Iterate over points until a certain total length between them has been reached
-		Point2D.Double prevPoint = startPoint;
-		Point2D.Double currentPoint = startPoint;
+		Point2D prevPoint = startPoint;
+		Point2D currentPoint = startPoint;
 		for (double dist = 0.0; dist < 32.0 && iter.hasNext();) {
 			currentPoint = iter.next();
 			dist += currentPoint.distance(prevPoint);
 			prevPoint = currentPoint;
 		}
 		// Get the angle between the very first point and the first point after a certain length from the start
-		return Math.atan2(currentPoint.y - startPoint.y, currentPoint.x - startPoint.x);
+		return Math.atan2(currentPoint.getY() - startPoint.getY(), currentPoint.getX() - startPoint.getX());
 	}
 
 	/**
@@ -493,21 +493,21 @@ public class SuperPath {
 	 * length defined by a machine's height.
 	 */
 	public double getEndAngle() {
-		ListIterator<Point2D.Double> iter = points.listIterator(points.size());
+		ListIterator<Point2D> iter = points.listIterator(points.size());
 		if (!iter.hasPrevious()) {
 			return 0.0;
 		}
-		Point2D.Double endPoint = iter.previous();
+		Point2D endPoint = iter.previous();
 		// Iterate backwards over points until a certain total length between them has been reached
-		Point2D.Double lastPoint = endPoint;
-		Point2D.Double currentPoint = endPoint;
+		Point2D lastPoint = endPoint;
+		Point2D currentPoint = endPoint;
 		for (double dist = 0.0; dist < 32.0 && iter.hasPrevious();) {
 			currentPoint = iter.previous();
 			dist += currentPoint.distance(lastPoint);
 			lastPoint = currentPoint;
 		}
 		// Get the angle between the very last point and the first point after a certain length from the end
-		return Math.atan2(endPoint.y - currentPoint.y, endPoint.x - currentPoint.x);
+		return Math.atan2(endPoint.getY() - currentPoint.getY(), endPoint.getX() - currentPoint.getX());
 	}
 
 	/**
@@ -583,29 +583,27 @@ public class SuperPath {
 	 * @param ignorePoint a point that should not be considered an intersection
 	 * @return the first point where the two shapes intersect, or null if none is found
 	 */
-	public static Point2D.Double getShapeIntersection(Shape shapeA, Shape shapeB, double distance, Point2D.Double ignorePoint) {
-		Point2D.Double intersection;
+	public static Point2D getShapeIntersection(Shape shapeA, Shape shapeB, double distance, Point2D ignorePoint) {
+		Point2D intersection;
 		double[] coords = new double[6];
-		Line2D.Double lineA = new Line2D.Double();
-		Line2D.Double lineB = new Line2D.Double();
+		Line2D lineA = new Line2D.Double();
+		Line2D lineB = new Line2D.Double();
 		// Iterate over line segments in shapeA
 		for (PathIterator iterA = shapeA.getPathIterator(null, INTERSECTION_TEST_FLATNESS); !iterA.isDone(); iterA.next()) {
 			switch (iterA.currentSegment(coords)) {
 			case PathIterator.SEG_MOVETO:
-				lineA.x2 = coords[0];
-				lineA.y2 = coords[1];
+				lineA.setLine(0, 0, coords[0], coords[1]);
 				break;
 			case PathIterator.SEG_LINETO:
-				lineA.setLine(lineA.x2, lineA.y2, coords[0], coords[1]);
+				lineA.setLine(lineA.getX2(), lineA.getY2(), coords[0], coords[1]);
 				// Iterate over line segments in shapeB
 				for (PathIterator iterB = shapeB.getPathIterator(null, INTERSECTION_TEST_FLATNESS); !iterB.isDone(); iterB.next()) {
 					switch (iterB.currentSegment(coords)) {
 					case PathIterator.SEG_MOVETO:
-						lineB.x2 = coords[0];
-						lineB.y2 = coords[1];
+						lineB.setLine(0, 0, coords[0], coords[1]);
 						break;
 					case PathIterator.SEG_LINETO:
-						lineB.setLine(lineB.x2, lineB.y2, coords[0], coords[1]);
+						lineB.setLine(lineB.getX2(), lineB.getY2(), coords[0], coords[1]);
 						// Test the current pair of line segments
 						intersection = getLineIntersection(lineA, lineB, distance);
 						if (intersection != null && intersection.distance(ignorePoint) >= 1.0) {
@@ -632,29 +630,29 @@ public class SuperPath {
 	 * @param distance maximum distance from lines to allow points of intersection to be found
 	 * @return the point where the two line segments intersect, or null if they do not intersect
 	 */
-	private static Point2D.Double getLineIntersection(Line2D.Double lineA, Line2D.Double lineB, double distance) {
-		double tThreshold = distance / Math.hypot(lineA.x2 - lineA.x1, lineA.y2 - lineA.y1);
-		double uThreshold = distance / Math.hypot(lineB.x2 - lineB.x1, lineB.y2 - lineB.y1);
+	private static Point2D getLineIntersection(Line2D lineA, Line2D lineB, double distance) {
+		double tThreshold = distance / Math.hypot(lineA.getX2() - lineA.getX1(), lineA.getY2() - lineA.getY1());
+		double uThreshold = distance / Math.hypot(lineB.getX2() - lineB.getX1(), lineB.getY2() - lineB.getY1());
 		// See <https://en.wikipedia.org/wiki/Line-line_intersection#Given_two_points_on_each_line_segment>
 		// When representing line segments A and B in terms of first degree Bezier parameters,
 		//   PA = P1A + t*(P2A - P1A), t in [0, 1]
 		//   PB = P1B + u*(P2B - P1B), u in [0, 1]
 		// solve for t and u where PA = PB.
 		// (The slope-intercept form representation of lines is not sufficient as it cannot represent vertical lines)
-		double denominator = (lineA.x1 - lineA.x2) * (lineB.y1 - lineB.y2) - (lineA.y1 - lineA.y2) * (lineB.x1 - lineB.x2);
-		double t = ((lineA.x1 - lineB.x1) * (lineB.y1 - lineB.y2) - (lineA.y1 - lineB.y1) * (lineB.x1 - lineB.x2)) / denominator;
+		double denominator = (lineA.getX1() - lineA.getX2()) * (lineB.getY1() - lineB.getY2()) - (lineA.getY1() - lineA.getY2()) * (lineB.getX1() - lineB.getX2());
+		double t = ((lineA.getX1() - lineB.getX1()) * (lineB.getY1() - lineB.getY2()) - (lineA.getY1() - lineB.getY1()) * (lineB.getX1() - lineB.getX2())) / denominator;
 		if (t < 0.0 - tThreshold || t > 1.0 + tThreshold) {
 			// Point of intersection does not lie within lineA
 			return null;
 		}
-		double u = -((lineA.x1 - lineA.x2) * (lineA.y1 - lineB.y1) - (lineA.y1 - lineA.y2) * (lineA.x1 - lineB.x1)) / denominator;
+		double u = -((lineA.getX1() - lineA.getX2()) * (lineA.getY1() - lineB.getY1()) - (lineA.getY1() - lineA.getY2()) * (lineA.getX1() - lineB.getX1())) / denominator;
 		if (u < 0.0 - uThreshold || u > 1.0 + uThreshold) {
 			// Point of intersection does not lie within lineB
 			return null;
 		}
 		// Substitute t to find coordinates of intersection
-		double x = lineA.x1 + t * (lineA.x2 - lineA.x1);
-		double y = lineA.y1 + t * (lineA.y2 - lineA.y1);
+		double x = lineA.getX1() + t * (lineA.getX2() - lineA.getX1());
+		double y = lineA.getY1() + t * (lineA.getY2() - lineA.getY1());
 		return new Point2D.Double(x, y);
 	}
 
