@@ -29,7 +29,7 @@ public class DessertSpawner extends RandomSpawner {
 	 * Spawn a new truck then dessert.
 	 */
 	@Override
-	public void spawn() {
+	public void run() {
 		// First spawn a truck to lead the new dessert
 		Truck truck = new Truck();
 		path.addTraveller(truck, laneNum);
@@ -37,7 +37,7 @@ public class DessertSpawner extends RandomSpawner {
 		// Spawn the dessert following this truck at a later time
 		Spawner dessertSpawner = new FixedSpawner((int) (Truck.SPRITE.getWidth() / Truck.SPEED), 1) {
 			@Override
-			public void spawn() {
+			public void run() {
 				// Remove this one-time spawner
 				path.removeSpawner(this);
 				world.removeSpawner(this);

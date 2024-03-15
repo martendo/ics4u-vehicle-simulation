@@ -49,7 +49,7 @@ public abstract class Spawner {
 		if (isDone || --timer > 0) {
 			return;
 		}
-		spawn();
+		run();
 		if (spawnsLeft < 0 || --spawnsLeft > 0) {
 			resetTimer();
 			return;
@@ -72,7 +72,7 @@ public abstract class Spawner {
 	}
 
 	/**
-	 * This method is called at a random time interval within this spawner's time range.
+	 * This method is called at the end of each spawn time interval.
 	 */
-	public abstract void spawn();
+	public abstract void run();
 }
