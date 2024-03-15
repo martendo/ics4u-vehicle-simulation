@@ -314,8 +314,6 @@ public class SuperPath {
 	 * This method separates this path into its component curves and draws them
 	 * individually using QuadCurve2D (or Line2D, in the case of the start
 	 * point) objects.
-	 *
-	 * @param graphics the Graphics2D context on which to draw the segment
 	 */
 	private void strokePath() {
 		double[] coords = new double[6];
@@ -394,29 +392,9 @@ public class SuperPath {
 
 		// Create dessert spawners for each lane in this path
 		for (int i = 0; i < laneCount; i++) {
-			final int laneNum = i;
-			// Spawn trucks to visually lead each dessert
-			Spawner truckSpawner = new RandomSpawner(120, 480) {
-				@Override
-				public void spawn() {
-					Truck truck = new Truck();
-					addTraveller(truck, laneNum);
-					world.addActor(truck);
-					// Spawn the dessert following this truck at a later time
-					Spawner dessertSpawner = new FixedSpawner((int) (55 / Truck.SPEED), 1) {
-						@Override
-						public void spawn() {
-							Dessert dessert = new Candy();
-							addTraveller(dessert, laneNum);
-							world.addActor(dessert);
-						}
-					};
-					world.addSpawner(dessertSpawner);
-					spawners.add(dessertSpawner);
-				}
-			};
-			world.addSpawner(truckSpawner);
-			spawners.add(truckSpawner);
+			Spawner dessertSpawner = new DessertSpawner(world, this, i);
+			world.addSpawner(dessertSpawner);
+			addSpawner(dessertSpawner);
 		}
 	}
 
@@ -449,6 +427,25 @@ public class SuperPath {
 	 */
 	public void removeTraveller(PathTraveller object) {
 		travellers.remove(object);
+	}
+
+	/**
+	 * Add a spawner to this path's spawner list so it may be removed from its
+	 * world when this path dies.
+	 *
+	 * @param spawner the spawner to add to this path's spawner list
+	 */
+	public void addSpawner(Spawner spawner) {
+		spawners.add(spawner);
+	}
+
+	/**
+	 * Remove a spawner from this path's spawner list.
+	 *
+	 * @param spawner the spawner to remove from this path's spawner list
+	 */
+	public void removeSpawner(Spawner spawner) {
+		spawners.remove(spawner);
 	}
 
 	/**
