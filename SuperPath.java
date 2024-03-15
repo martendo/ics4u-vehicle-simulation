@@ -190,6 +190,10 @@ public class SuperPath {
 	 * @param y the y coordinate of the point
 	 */
 	public void addPoint(double x, double y) {
+		if (isComplete) {
+			throw new UnmodifiablePathException("Cannot modify a completed SuperPath");
+		}
+
 		Point2D.Double prevPoint = (Point2D.Double) path.getCurrentPoint();
 		Point2D.Double newPoint = new Point2D.Double();
 		if (prevPoint == null) {
@@ -369,6 +373,11 @@ public class SuperPath {
 	 * Commit all lane path tails to their respective lane paths for more efficient accessing.
 	 */
 	public void complete() {
+		if (isComplete) {
+			throw new UnmodifiablePathException("SuperPath is already marked complete");
+		}
+
+		isComplete = true;
 		lanes.complete();
 		if (laneSeparators != null) {
 			laneSeparators.complete();
