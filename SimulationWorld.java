@@ -3,12 +3,7 @@ import greenfoot.util.GraphicsUtilities;
 import java.awt.image.BufferedImage;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
-import java.awt.BasicStroke;
-import java.awt.Shape;
-import java.awt.geom.Path2D;
-import java.awt.geom.PathIterator;
-import java.awt.geom.QuadCurve2D;
-import java.awt.geom.Line2D;
+import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.ListIterator;
 
@@ -28,7 +23,18 @@ public class SimulationWorld extends World {
 	public static final int HEIGHT = 768;
 
 	// Map of rendering hints to be used in all graphics contexts
-	public static final RenderingHints RENDERING_HINTS = createRenderingHints();
+	public static final RenderingHints RENDERING_HINTS;
+
+	static {
+		// Turning on antialiasing gives smoother-looking graphics
+		RENDERING_HINTS = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		// Allow drawing images with subpixel accuracy (for precise positioning and rotation)
+		RENDERING_HINTS.put(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+		// Set all other applicable hints to prefer speed
+		RENDERING_HINTS.put(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
+		RENDERING_HINTS.put(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_SPEED);
+		RENDERING_HINTS.put(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_DISABLE);
+	}
 
 	// Background pattern visual parameters
 	private static final int BACKGROUND_PATTERN_WIDTH = 128;
@@ -191,20 +197,6 @@ public class SimulationWorld extends World {
 
 		// Draw initial background image so this world isn't blank on reset
 		updateImage();
-	}
-
-	/**
-	 * Create and return the map of rendering hints to be used for all graphics contexts.
-	 */
-	private static RenderingHints createRenderingHints() {
-		// Turning on antialiasing gives smoother-looking graphics
-		RenderingHints hints = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		// Set all other applicable hints to prefer speed
-		hints.put(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
-		hints.put(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
-		hints.put(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_SPEED);
-		hints.put(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_DISABLE);
-		return hints;
 	}
 
 	/**
@@ -371,7 +363,8 @@ public class SimulationWorld extends World {
 		for (SuperPath path : paths) {
 			graphics.drawImage(path.getImage(), path.getX(), path.getY(), null);
 			for (SuperActor actor : path.getActors()) {
-				graphics.drawImage(actor.getImage(), actor.getX(), actor.getY(), null);
+				AffineTransform transform = AffineTransform.getTranslateInstance(actor.getPreciseImageX(), actor.getPreciseImageY());
+				graphics.drawImage(actor.getImage(), transform, null);
 			}
 		}
 	}

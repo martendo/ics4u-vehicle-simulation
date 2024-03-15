@@ -72,15 +72,15 @@ public abstract class SuperActor {
 	 * Return the X position of the left side of this SuperActor's image if the
 	 * center of its image were to be placed at its internal coordinates.
 	 */
-	public int getX() {
-		return (int) x - (getImage().getWidth() / 2);
+	public double getPreciseImageX() {
+		return x - (double) getImage().getWidth() / 2.0;
 	}
 
 	/**
 	 * Return the Y position of the top side of this SuperActor's image if the
 	 * center of its image were to be placed at its internal coordinates.
 	 */
-	public int getY() {
-		return (int) y - (getImage().getHeight() / 2);
+	public double getPreciseImageY() {
+		return y - (double) getImage().getHeight() / 2.0;
 	}
 }
