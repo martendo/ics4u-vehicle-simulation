@@ -262,6 +262,9 @@ public class SimulationWorld extends World {
 				continue;
 			}
 			spawner.act();
+			if (spawner.isDone()) {
+				spawners.remove(spawner);
+			}
 		}
 
 		// Update actors
@@ -273,6 +276,9 @@ public class SimulationWorld extends World {
 				continue;
 			}
 			actor.act();
+			if (actor.isDead()) {
+				iter.remove();
+			}
 		}
 
 		// Render
