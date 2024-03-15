@@ -8,7 +8,7 @@ import java.awt.image.BufferedImage;
  * @version March 2024
  */
 public class Candy extends Dessert {
-	private static final BufferedImage SPRITE = new GreenfootImage("images/candy.png").getAwtImage();
+	public static final BufferedImage SPRITE = new GreenfootImage("images/candy.png").getAwtImage();
 
 	@Override
 	protected BufferedImage getSprite() {

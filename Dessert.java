@@ -21,31 +21,38 @@ public abstract class Dessert extends PathTraveller {
 	}
 
 	/**
-	 * Draw a truck bed and plate under the dessert's sprite.
+	 * Draw the dessert's sprite, on top of a plate on top of a truck bed.
 	 */
 	@Override
-	protected void resetImage() {
-		super.resetImage();
+	public void updateImage() {
+		resetImage();
 		BufferedImage image = getImage();
 		BufferedImage sprite = getSprite();
 		Graphics2D graphics = getGraphics();
 		AffineTransform saveTransform = graphics.getTransform();
 
-		// Rotate from the center of this dessert's image
-		graphics.translate(image.getWidth() / 2, image.getHeight() / 2);
-		graphics.rotate(getRotation());
-		// Draw from the center of the dessert's sprite (which has its midright point at the center of its image)
-		graphics.translate(-sprite.getWidth() / 2, 0);
+		AffineTransform transform = getCenterRotateTransform();
+		graphics.transform(transform);
 		// Draw truck bed
 		graphics.setColor(TRUCK_BED_COLOR);
-		graphics.fillRect(-TRUCK_BED_LENGTH / 2, -TRUCK_BED_WIDTH / 2 , TRUCK_BED_LENGTH, TRUCK_BED_WIDTH);
+		graphics.fillRect(-TRUCK_BED_LENGTH, -TRUCK_BED_WIDTH / 2 , TRUCK_BED_LENGTH, TRUCK_BED_WIDTH);
 		graphics.setColor(java.awt.Color.BLACK);
-		graphics.drawRect(-TRUCK_BED_LENGTH / 2, -TRUCK_BED_WIDTH / 2 , TRUCK_BED_LENGTH, TRUCK_BED_WIDTH);
+		graphics.drawRect(-TRUCK_BED_LENGTH, -TRUCK_BED_WIDTH / 2 , TRUCK_BED_LENGTH, TRUCK_BED_WIDTH);
 		// Draw plate
 		graphics.setColor(PLATE_COLOR);
-		graphics.fillOval(-PLATE_SIZE / 2, -PLATE_SIZE / 2, PLATE_SIZE, PLATE_SIZE);
+		graphics.fillOval(-(TRUCK_BED_LENGTH + PLATE_SIZE) / 2, -PLATE_SIZE / 2, PLATE_SIZE, PLATE_SIZE);
 
 		graphics.setTransform(saveTransform);
+
+		drawSpriteToImage();
+	}
+
+	@Override
+	protected AffineTransform getSpriteTransform() {
+		BufferedImage sprite = getSprite();
+		AffineTransform transform = getCenterRotateTransform();
+		transform.translate(-(TRUCK_BED_LENGTH + sprite.getWidth()) / 2.0, -sprite.getHeight() / 2.0);
+		return transform;
 	}
 
 	@Override

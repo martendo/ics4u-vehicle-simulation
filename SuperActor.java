@@ -122,18 +122,38 @@ public abstract class SuperActor {
 	public void act() {};
 
 	/**
-	 * Set this actor's image to its sprite image rotated to its current angle
-	 * of rotation.
+	 * Reset this actor's image then draw its sprite onto it.
 	 */
 	public void updateImage() {
 		resetImage();
+		drawSpriteToImage();
+	}
+
+	/**
+	 * Draw this actor's sprite rotated to its current angle of rotation onto
+	 * its image.
+	 */
+	public void drawSpriteToImage() {
+		graphics.drawImage(getSprite(), getSpriteTransform(), null);
+	}
+
+	/**
+	 * Return the necessary transformation to apply before drawing this actor's
+	 * sprite onto its image.
+	 */
+	protected AffineTransform getSpriteTransform() {
+		// Place this actor's sprite so its midright point is at the center of the image
 		BufferedImage sprite = getSprite();
+		AffineTransform transform = getCenterRotateTransform();
+		transform.translate(-sprite.getWidth(), (double) -sprite.getHeight() / 2.0);
+		return transform;
+	}
+
+	protected AffineTransform getCenterRotateTransform() {
 		// Rotate from the center of this actor's image
 		AffineTransform transform = AffineTransform.getTranslateInstance((double) image.getWidth() / 2.0, (double) image.getHeight() / 2.0);
 		transform.rotate(angle);
-		// Place this actor's sprite so its midright point is at the center of the image
-		transform.translate(-sprite.getWidth(), (double) -sprite.getHeight() / 2.0);
-		graphics.drawImage(sprite, transform, null);
+		return transform;
 	}
 
 	/**

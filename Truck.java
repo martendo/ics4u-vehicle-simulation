@@ -11,7 +11,7 @@ import java.awt.geom.AffineTransform;
 public class Truck extends PathTraveller {
 	public static final double SPEED = 2.0;
 
-	private static final BufferedImage SPRITE = new GreenfootImage("images/truck.png").getAwtImage();
+	public static final BufferedImage SPRITE = new GreenfootImage("images/truck.png").getAwtImage();
 
 	public Truck() {
 		super(SPEED);
