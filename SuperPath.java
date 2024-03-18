@@ -399,6 +399,13 @@ public class SuperPath {
 	}
 
 	/**
+	 * Return a list of all travellers currently on this path.
+	 */
+	public List<PathTraveller> getTravellers() {
+		return new ArrayList<PathTraveller>(travellers);
+	}
+
+	/**
 	 * Return a list of all actors on this path, including path travellers and machines.
 	 */
 	public List<SuperActor> getActors() {

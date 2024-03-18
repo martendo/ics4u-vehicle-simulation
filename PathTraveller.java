@@ -26,7 +26,20 @@ public abstract class PathTraveller extends SuperActor {
 	public PathTraveller(double speed) {
 		super();
 		this.speed = speed;
-		initImage();
+	}
+
+	/**
+	 * Set the speed of this traveller to the given value.
+	 */
+	public void setSpeed(double speed) {
+		this.speed = speed;
+	}
+
+	/**
+	 * Return the current speed of this traveller.
+	 */
+	public double getSpeed() {
+		return speed;
 	}
 
 	/**
@@ -47,6 +60,13 @@ public abstract class PathTraveller extends SuperActor {
 		setRotation(targetAngle);
 		// Reflect angle change in image
 		updateImage();
+	}
+
+	/**
+	 * Return the path that this traveller is currently travelling.
+	 */
+	public SuperPath getPath() {
+		return path;
 	}
 
 	/**

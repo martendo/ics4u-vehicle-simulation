@@ -10,6 +10,11 @@ import java.awt.image.BufferedImage;
 public class Candy extends Dessert {
 	public static final BufferedImage SPRITE = new GreenfootImage("images/candy.png").getAwtImage();
 
+	public Candy(Truck truck) {
+		super(truck);
+		initImage();
+	}
+
 	@Override
 	protected BufferedImage getSprite() {
 		return SPRITE;

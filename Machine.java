@@ -2,6 +2,7 @@ import greenfoot.util.GraphicsUtilities;
 import java.awt.image.BufferedImage;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
+import java.awt.Shape;
 
 /**
  * The visual object representing the beginnings and ends of paths. They cover
@@ -95,5 +96,10 @@ public class Machine extends SuperActor {
 	@Override
 	protected int getImageSize() {
 		return Math.max(length, width) * 2;
+	}
+
+	@Override
+	public Shape getHitShape() {
+		throw new UnsupportedOperationException("Machine objects do not have hit shapes");
 	}
 }

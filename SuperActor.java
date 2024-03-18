@@ -2,6 +2,9 @@ import greenfoot.util.GraphicsUtilities;
 import java.awt.image.BufferedImage;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
+import java.awt.Shape;
+import java.util.Set;
+import java.util.HashSet;
 
 /**
  * A class for objects in a SimulationWorld.
@@ -23,6 +26,9 @@ public abstract class SuperActor {
 	private double angle;
 	private boolean isDead;
 
+	// All other actors to be considered as a unit with this actor
+	private Set<SuperActor> linkedActors;
+
 	// The image representing this actor to draw onto the world
 	private BufferedImage image;
 	// The graphics context for this actor's image
@@ -38,6 +44,7 @@ public abstract class SuperActor {
 		isDead = false;
 		image = null;
 		graphics = null;
+		linkedActors = new HashSet<SuperActor>();
 	}
 
 	/**
@@ -50,6 +57,24 @@ public abstract class SuperActor {
 		graphics = image.createGraphics();
 		graphics.addRenderingHints(SimulationWorld.RENDERING_HINTS);
 		graphics.setBackground(new java.awt.Color(0, 0, 0, 0));
+	}
+
+	/**
+	 * Add an actor to this actor's set of linked actors and add this actor to
+	 * the other actor's set of linked actors.
+	 */
+	public void linkActor(SuperActor actor) {
+		linkedActors.add(actor);
+		if (!actor.getLinkedActors().contains(this)) {
+			actor.linkActor(this);
+		}
+	}
+
+	/**
+	 * Return the set of actors which have been linked to this actor.
+	 */
+	public Set<SuperActor> getLinkedActors() {
+		return new HashSet<SuperActor>(linkedActors);
 	}
 
 	/**
@@ -92,10 +117,17 @@ public abstract class SuperActor {
 	}
 
 	/**
-	 * Mark this actor as dead; to be removed from the world.
+	 * Mark this actor as dead (to be removed from the world), as well as all
+	 * linked actors.
 	 */
 	public void die() {
 		isDead = true;
+		for (SuperActor actor : linkedActors) {
+			if (!actor.isDead()) {
+				actor.die();
+			}
+		}
+		linkedActors.clear();
 	}
 
 	/**
@@ -109,6 +141,8 @@ public abstract class SuperActor {
 
 	/**
 	 * This method is called when this actor is added to the SimulationWorld.
+	 *
+	 * By default, do nothing.
 	 *
 	 * @param world the SimulationWorld that this actor was just added to
 	 */
@@ -214,4 +248,10 @@ public abstract class SuperActor {
 	public double getPreciseImageY() {
 		return y - (double) image.getHeight() / 2.0;
 	}
+
+	/**
+	 * Return a shape object representing the area which this actor is
+	 * considered to be occupying, in world space (already transformed).
+	 */
+	public abstract Shape getHitShape();
 }

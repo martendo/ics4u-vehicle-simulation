@@ -42,7 +42,7 @@ public class DessertSpawner extends RandomSpawner {
 				path.removeSpawner(this);
 				world.removeSpawner(this);
 				// Spawn the dessert following the truck
-				Dessert dessert = new Candy();
+				Dessert dessert = new Candy(truck);
 				path.addTraveller(dessert, laneNum);
 				world.addActor(dessert);
 			}
