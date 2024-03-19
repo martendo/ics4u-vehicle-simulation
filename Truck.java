@@ -15,13 +15,23 @@ public class Truck extends PathTraveller {
 	public static final double MIN_SPEED = 0.5;
 	public static final double MAX_SPEED = 3.0;
 
+	// The distance behind another traveller at which to slow down
+	public static final double SLOWDOWN_DISTANCE = Dessert.TRUCK_BED_LENGTH + 16.0;
+
 	public static final BufferedImage SPRITE = new GreenfootImage("images/truck.png").getAwtImage();
 
 	// The area of a truck, with its midright point at the origin
 	private static final Rectangle2D HIT_RECT = new Rectangle2D.Double(-SPRITE.getWidth(), -SPRITE.getHeight() / 2.0, SPRITE.getWidth(), SPRITE.getHeight());
 
+	// The default or target speed of this truck
+	private double originalSpeed;
+	// The traveller which this truck is currently stuck behind
+	private PathTraveller limitingTraveller;
+
 	public Truck() {
 		super(Math.random() * (MAX_SPEED - MIN_SPEED) + MIN_SPEED);
+		originalSpeed = getSpeed();
+		limitingTraveller = null;
 		initImage();
 	}
 
@@ -47,24 +57,43 @@ public class Truck extends PathTraveller {
 			return;
 		}
 
-		// Check if this truck should slow down when stuck behind slower travellers
-		for (PathTraveller traveller : getPath().getTravellersInLane(getLaneNumber())) {
-			if (traveller.getSpeed() >= getSpeed()) {
-				continue;
-			}
-			double distance = traveller.getDistanceTravelled() - getDistanceTravelled();
-			if (distance < 0.0 || distance > Dessert.TRUCK_BED_LENGTH + 16.0) {
-				continue;
-			}
-			// This truck is stuck behind a slower traveller
-			// Update the speed of this truck and its linked travellers
-			setSpeed(traveller.getSpeed());
-			for (SuperActor actor : getLinkedActors()) {
-				if (actor instanceof PathTraveller) {
-					((PathTraveller) actor).setSpeed(traveller.getSpeed());
+		// Check if this truck should slow down behind a slower traveller when it is not currently
+		// stuck behind one or the one it was stuck behind is no longer present in front
+		if (limitingTraveller == null || (limitingTraveller.isDead() ||
+		limitingTraveller.getLaneNumber() != getLaneNumber() ||
+		limitingTraveller.getDistanceTravelled() - getDistanceTravelled() > SLOWDOWN_DISTANCE)) {
+			limitingTraveller = null;
+			// Check if there is a new traveller to be stuck behind
+			for (PathTraveller traveller : getPath().getTravellersInLane(getLaneNumber())) {
+				if (traveller.getSpeed() >= getSpeed()) {
+					continue;
+				}
+				double distance = traveller.getDistanceTravelled() - getDistanceTravelled();
+				if (distance > 0.0 && distance <= SLOWDOWN_DISTANCE) {
+					limitingTraveller = traveller;
+					break;
 				}
 			}
-			break;
+		}
+		if (limitingTraveller != null) {
+			// This truck is stuck behind a slower traveller
+			setSpeed(limitingTraveller.getSpeed());
+		} else if (getSpeed() < originalSpeed) {
+			// There is no traveller ahead and this truck can go faster
+			setSpeed(originalSpeed);
+		}
+	}
+
+	/**
+	 * Set the speed of this truck and all of its linked actors who are path travellers.
+	 */
+	@Override
+	public void setSpeed(double speed) {
+		super.setSpeed(speed);
+		for (SuperActor actor : getLinkedActors()) {
+			if (actor instanceof PathTraveller) {
+				((PathTraveller) actor).setSpeed(speed);
+			}
 		}
 	}
 
