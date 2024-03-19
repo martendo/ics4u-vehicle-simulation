@@ -41,9 +41,13 @@ public class DessertSpawner extends RandomSpawner {
 				// Remove this one-time spawner
 				path.removeSpawner(this);
 				world.removeSpawner(this);
+				// It is rare but possible that the truck has already been killed -> don't spawn
+				if (truck.isDead()) {
+					return;
+				}
 				// Spawn the dessert following the truck
 				Dessert dessert = new Candy(truck);
-				path.addTraveller(dessert, laneNum);
+				path.addTraveller(dessert, truck.getLaneNumber());
 				world.addActor(dessert);
 			}
 		};
