@@ -12,7 +12,8 @@ import java.awt.geom.Rectangle2D;
  * @version March 2024
  */
 public class Truck extends PathTraveller {
-	public static final double SPEED = 2.0;
+	public static final double MIN_SPEED = 0.5;
+	public static final double MAX_SPEED = 3.0;
 
 	public static final BufferedImage SPRITE = new GreenfootImage("images/truck.png").getAwtImage();
 
@@ -20,7 +21,7 @@ public class Truck extends PathTraveller {
 	private static final Rectangle2D HIT_RECT = new Rectangle2D.Double(-SPRITE.getWidth(), -SPRITE.getHeight() / 2.0, SPRITE.getWidth(), SPRITE.getHeight());
 
 	public Truck() {
-		super(SPEED);
+		super(Math.random() * (MAX_SPEED - MIN_SPEED) + MIN_SPEED);
 		initImage();
 	}
 
@@ -43,6 +44,27 @@ public class Truck extends PathTraveller {
 		}
 		if (hit) {
 			die();
+			return;
+		}
+
+		// Check if this truck should slow down when stuck behind slower travellers
+		for (PathTraveller traveller : getPath().getTravellersInLane(getLaneNumber())) {
+			if (traveller.getSpeed() >= getSpeed()) {
+				continue;
+			}
+			double distance = traveller.getDistanceTravelled() - getDistanceTravelled();
+			if (distance < 0.0 || distance > Dessert.TRUCK_BED_LENGTH + 16.0) {
+				continue;
+			}
+			// This truck is stuck behind a slower traveller
+			// Update the speed of this truck and its linked travellers
+			setSpeed(traveller.getSpeed());
+			for (SuperActor actor : getLinkedActors()) {
+				if (actor instanceof PathTraveller) {
+					((PathTraveller) actor).setSpeed(traveller.getSpeed());
+				}
+			}
+			break;
 		}
 	}
 

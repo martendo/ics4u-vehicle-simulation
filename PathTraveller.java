@@ -16,16 +16,22 @@ public abstract class PathTraveller extends SuperActor {
 	private SuperPath path = null;
 	// The iterator used to progressively travel along this traveller's path
 	private PathTraceIterator pathIter = null;
+	// Index of the lane in the path this traveller is travelling along
+	private int laneNum;
 
 	// Distance to travel along a path per act
 	private double speed;
+	// Total distance this traveller has travelled along its path
+	private double distanceTravelled;
 
 	// The exact angle of the current segment of the path, which this traveller is constantly interpolating towards
-	private double targetAngle = 0.0;
+	private double targetAngle;
 
 	public PathTraveller(double speed) {
 		super();
 		this.speed = speed;
+		distanceTravelled = 0.0;
+		targetAngle = 0.0;
 	}
 
 	/**
@@ -50,6 +56,7 @@ public abstract class PathTraveller extends SuperActor {
 	 */
 	public void addedToPath(SuperPath path, int laneNum) {
 		this.path = path;
+		this.laneNum = laneNum;
 		pathIter = path.getLaneTraceIterator(laneNum);
 		// First segment must be PathIterator.SEG_MOVETO
 		double[] coords = new double[6];
@@ -70,6 +77,13 @@ public abstract class PathTraveller extends SuperActor {
 	}
 
 	/**
+	 * Return the index of the lane on the path this traveller is travelling along.
+	 */
+	public int getLaneNumber() {
+		return laneNum;
+	}
+
+	/**
 	 * Move this traveller along its path, and
 	 */
 	@Override
@@ -80,6 +94,7 @@ public abstract class PathTraveller extends SuperActor {
 			endTravel();
 			return;
 		}
+		distanceTravelled += speed;
 		// Set this traveller's location to the end point of the iterator's current line segment
 		double[] coords = new double[6];
 		pathIter.currentSegment(coords);
@@ -100,6 +115,13 @@ public abstract class PathTraveller extends SuperActor {
 
 		// Reflect angle change in image
 		updateImage();
+	}
+
+	/**
+	 * Return the total distance this traveller has travelled along its path.
+	 */
+	public double getDistanceTravelled() {
+		return distanceTravelled;
 	}
 
 	/**

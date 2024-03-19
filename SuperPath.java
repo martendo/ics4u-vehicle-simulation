@@ -100,8 +100,8 @@ public class SuperPath {
 
 	// The world this path belongs to, for adding actors that this path creates
 	private SimulationWorld world;
-	// Objects currently on this path
-	private List<PathTraveller> travellers;
+	// Objects currently in each lane on this path
+	private List<PathTraveller>[] travellers;
 	// All spawners attached to this path, stored for cleaning up
 	private List<Spawner> spawners;
 	// Machine actors at ends of this path
@@ -151,7 +151,10 @@ public class SuperPath {
 
 		// Initialize path-related actor variables
 		world = null;
-		travellers = new ArrayList<PathTraveller>();
+		travellers = new List[laneCount];
+		for (int i = 0; i < laneCount; i++) {
+			travellers[i] = new ArrayList<PathTraveller>();
+		}
 		spawners = new ArrayList<Spawner>();
 		startMachine = new Machine(this, true);
 		endMachine = new Machine(this, false);
@@ -402,7 +405,18 @@ public class SuperPath {
 	 * Return a list of all travellers currently on this path.
 	 */
 	public List<PathTraveller> getTravellers() {
-		return new ArrayList<PathTraveller>(travellers);
+		List<PathTraveller> result = new ArrayList<PathTraveller>();
+		for (List<PathTraveller> laneTravellers : travellers) {
+			result.addAll(laneTravellers);
+		}
+		return result;
+	}
+
+	/**
+	 * Return a list of all travellers currently in the specified lane on this path.
+	 */
+	public List<PathTraveller> getTravellersInLane(int laneNum) {
+		return new ArrayList<PathTraveller>(travellers[laneNum]);
 	}
 
 	/**
@@ -410,7 +424,7 @@ public class SuperPath {
 	 */
 	public List<SuperActor> getActors() {
 		// Append machines so that they are always drawn after (on top of) travellers
-		List<SuperActor> actors = new ArrayList<SuperActor>(travellers);
+		List<SuperActor> actors = new ArrayList<SuperActor>(getTravellers());
 		actors.add(startMachine);
 		actors.add(endMachine);
 		return actors;
@@ -423,7 +437,7 @@ public class SuperPath {
 	 * @param laneNum the index of the lane to travel on
 	 */
 	public void addTraveller(PathTraveller object, int laneNum) {
-		travellers.add(object);
+		travellers[laneNum].add(object);
 		object.addedToPath(this, laneNum);
 	}
 
@@ -433,7 +447,7 @@ public class SuperPath {
 	 * @param object the path traveller object to remove from this path
 	 */
 	public void removeTraveller(PathTraveller object) {
-		travellers.remove(object);
+		travellers[object.getLaneNumber()].remove(object);
 	}
 
 	/**
@@ -463,8 +477,10 @@ public class SuperPath {
 		startMachine.die();
 		endMachine.die();
 		// Path travellers will remove themselves from the list when killed
-		while (travellers.size() > 0) {
-			travellers.get(0).die();
+		for (List<PathTraveller> laneTravellers : travellers) {
+			while (laneTravellers.size() > 0) {
+				laneTravellers.get(0).die();
+			}
 		}
 		// Remove spawners
 		for (Spawner spawner : spawners) {
