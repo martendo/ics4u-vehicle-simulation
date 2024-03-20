@@ -21,6 +21,9 @@ public abstract class Dessert extends PathTraveller {
 	private static final java.awt.Color TRUCK_BED_COLOR = new java.awt.Color(140, 140, 140);
 	private static final java.awt.Color PLATE_COLOR = java.awt.Color.WHITE;
 
+	// The truck actor that this dessert is following
+	private Truck attachedTruck;
+
 	/**
 	 * Create a new dessert actor attached to the given truck.
 	 *
@@ -29,6 +32,7 @@ public abstract class Dessert extends PathTraveller {
 	public Dessert(Truck truck) {
 		super(truck.getSpeed());
 		linkActor(truck);
+		attachedTruck = truck;
 	}
 
 	/**

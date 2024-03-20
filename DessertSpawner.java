@@ -49,6 +49,7 @@ public class DessertSpawner extends RandomSpawner {
 				Dessert dessert = new Candy(truck);
 				path.addTraveller(dessert, truck.getLaneNumber());
 				world.addActor(dessert);
+				truck.attachDessert(dessert);
 			}
 		};
 		world.addSpawner(dessertSpawner);

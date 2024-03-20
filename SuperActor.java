@@ -62,11 +62,26 @@ public abstract class SuperActor {
 	/**
 	 * Add an actor to this actor's set of linked actors and add this actor to
 	 * the other actor's set of linked actors.
+	 *
+	 * @param actor the actor to link
 	 */
 	public void linkActor(SuperActor actor) {
 		linkedActors.add(actor);
 		if (!actor.getLinkedActors().contains(this)) {
 			actor.linkActor(this);
+		}
+	}
+
+	/**
+	 * Remove an actor from this actor's set of linked actors and remove this
+	 * actor from the other actor's set of linked actors.
+	 *
+	 * @param actor the actor to unlink
+	 */
+	public void unlinkActor(SuperActor actor) {
+		linkedActors.remove(actor);
+		if (actor.getLinkedActors().contains(this)) {
+			actor.unlinkActor(this);
 		}
 	}
 
@@ -117,17 +132,26 @@ public abstract class SuperActor {
 	}
 
 	/**
-	 * Mark this actor as dead (to be removed from the world), as well as all
-	 * linked actors.
+	 * Mark this actor as dead (to be removed from the world) and unlink it from
+	 * all other actors.
 	 */
 	public void die() {
 		isDead = true;
 		for (SuperActor actor : linkedActors) {
-			if (!actor.isDead()) {
-				actor.die();
-			}
+			actor.unlinkActor(this);
 		}
 		linkedActors.clear();
+	}
+
+	/**
+	 * Mark this actor and all of its linked actors as dead (to be removed from
+	 * the world).
+	 */
+	public void dieAndKillLinked() {
+		for (SuperActor actor : linkedActors) {
+			actor.die();
+		}
+		die();
 	}
 
 	/**

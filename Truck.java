@@ -29,11 +29,19 @@ public class Truck extends PathTraveller {
 	// The traveller which this truck is currently stuck behind
 	private PathTraveller limitingTraveller;
 
+	// The dessert actor that is following this truck
+	private Dessert attachedDessert;
+
 	public Truck() {
 		super(Math.random() * (MAX_SPEED - MIN_SPEED) + MIN_SPEED);
 		originalSpeed = getSpeed();
 		limitingTraveller = null;
+		attachedDessert = null;
 		initImage();
+	}
+
+	public void attachDessert(Dessert dessert) {
+		attachedDessert = dessert;
 	}
 
 	@Override
@@ -50,12 +58,12 @@ public class Truck extends PathTraveller {
 			// NOTE: This only tests a single point for collision for the sake of speed
 			// (intersection of two transformed shapes causes noticeable slowdown)
 			if (traveller.getHitShape().contains(getX(), getY())) {
-				traveller.die();
+				traveller.dieAndKillLinked();
 				hit = true;
 			}
 		}
 		if (hit) {
-			die();
+			dieAndKillLinked();
 			return;
 		}
 
@@ -130,10 +138,8 @@ public class Truck extends PathTraveller {
 	@Override
 	public void setSpeed(double speed) {
 		super.setSpeed(speed);
-		for (SuperActor actor : getLinkedActors()) {
-			if (actor instanceof PathTraveller) {
-				((PathTraveller) actor).setSpeed(speed);
-			}
+		if (attachedDessert != null) {
+			attachedDessert.setSpeed(speed);
 		}
 	}
 
@@ -144,10 +150,8 @@ public class Truck extends PathTraveller {
 	@Override
 	public void moveToLane(int newLane) {
 		super.moveToLane(newLane);
-		for (SuperActor actor : getLinkedActors()) {
-			if (actor instanceof PathTraveller) {
-				((PathTraveller) actor).moveToLane(newLane);
-			}
+		if (attachedDessert != null) {
+			attachedDessert.moveToLane(newLane);
 		}
 	}
 
