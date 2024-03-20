@@ -151,7 +151,7 @@ public class Truck extends PathTraveller {
 	public void moveToLane(int newLane) {
 		super.moveToLane(newLane);
 		if (attachedDessert != null) {
-			attachedDessert.moveToLane(newLane);
+			attachedDessert.moveToLane(newLane, getDistanceTravelled() - SPRITE.getWidth());
 		}
 	}
 
