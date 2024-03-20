@@ -61,7 +61,7 @@ public abstract class PathTraveller extends SuperActor {
 		// First segment must be PathIterator.SEG_MOVETO
 		double[] coords = new double[6];
 		pathIter.currentSegment(coords);
-		setLocation(coords[0], coords[0]);
+		setLocation(coords[0], coords[1]);
 		// Start with average angle of path's beginning
 		targetAngle = path.getStartAngle();
 		setRotation(targetAngle);
