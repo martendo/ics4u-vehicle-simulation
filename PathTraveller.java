@@ -79,6 +79,7 @@ public abstract class PathTraveller extends SuperActor {
 		distanceTravelled = path.getAdjacentDistanceInLane(laneNum, distanceTravelled, newLane);
 		double[] coords = new double[6];
 		pathIter.next(distanceTravelled);
+		pathIter.currentSegment(coords);
 		setLocation(coords[0], coords[1]);
 		laneNum = newLane;
 	}
@@ -95,6 +96,7 @@ public abstract class PathTraveller extends SuperActor {
 		distanceTravelled = distance;
 		double[] coords = new double[6];
 		pathIter.next(distanceTravelled);
+		pathIter.currentSegment(coords);
 		setLocation(coords[0], coords[1]);
 		laneNum = newLane;
 	}
