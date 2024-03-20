@@ -567,7 +567,7 @@ public class SuperPath {
 	 * @param destLane the index of the lane to find the distance in
 	 * @return the distance for a point on the target lane that is adjacent to the point at the given distance on the source lane
 	 */
-	public double getEquivalentDistanceInLane(int srcLane, double srcDist, int destLane) {
+	public double getAdjacentDistanceInLane(int srcLane, double srcDist, int destLane) {
 		double[] coords = new double[6];
 		// Get the angle of the normal to the path at the point found at the given distance
 		PathTraceIterator srcIter = getLaneTraceIterator(srcLane);

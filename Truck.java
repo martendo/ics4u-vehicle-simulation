@@ -89,7 +89,7 @@ public class Truck extends PathTraveller {
 	 * @return true if this truck can change lanes without moving into an existing traveller, false otherwise
 	 */
 	private boolean canMoveToLane(int laneNum) {
-		double thisTravelled = getPath().getEquivalentDistanceInLane(getLaneNumber(), getDistanceTravelled(), laneNum);
+		double thisTravelled = getPath().getAdjacentDistanceInLane(getLaneNumber(), getDistanceTravelled(), laneNum);
 		// Check if any travellers in the lane occupy the space where this truck would move
 		for (PathTraveller traveller : getPath().getTravellersInLane(laneNum)) {
 			double otherTravelled = traveller.getDistanceTravelled();

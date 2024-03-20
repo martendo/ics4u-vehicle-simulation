@@ -78,7 +78,7 @@ public abstract class PathTraveller extends SuperActor {
 		path.moveTravellerToLane(this, newLane);
 		pathIter = path.getLaneTraceIterator(newLane);
 		// Move to the location in the new lane adjacent to this traveller's old position
-		distanceTravelled = path.getEquivalentDistanceInLane(laneNum, distanceTravelled, newLane);
+		distanceTravelled = path.getAdjacentDistanceInLane(laneNum, distanceTravelled, newLane);
 		double[] coords = new double[6];
 		pathIter.next(distanceTravelled);
 		setLocation(coords[0], coords[1]);
