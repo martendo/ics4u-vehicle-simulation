@@ -1,6 +1,4 @@
-import greenfoot.util.GraphicsUtilities;
 import java.awt.image.BufferedImage;
-import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.Shape;
 import java.util.Set;
@@ -29,11 +27,6 @@ public abstract class SuperActor {
 	// All other actors to be considered as a unit with this actor
 	private Set<SuperActor> linkedActors;
 
-	// The image representing this actor to draw onto the world
-	private BufferedImage image;
-	// The graphics context for this actor's image
-	private Graphics2D graphics;
-
 	/**
 	 * Create a new SuperActor.
 	 */
@@ -42,21 +35,7 @@ public abstract class SuperActor {
 		y = 0.0;
 		angle = 0.0;
 		isDead = false;
-		image = null;
-		graphics = null;
 		linkedActors = new HashSet<SuperActor>();
-	}
-
-	/**
-	 * Create this actor's image and graphics context using the image size
-	 * returned by its getImageSize() method.
-	 */
-	public void initImage() {
-		int size = getImageSize();
-		image = GraphicsUtilities.createCompatibleTranslucentImage(size, size);
-		graphics = image.createGraphics();
-		graphics.addRenderingHints(SimulationWorld.RENDERING_HINTS);
-		graphics.setBackground(new java.awt.Color(0, 0, 0, 0));
 	}
 
 	/**
@@ -180,97 +159,15 @@ public abstract class SuperActor {
 	public void act() {};
 
 	/**
-	 * Reset this actor's image then draw its sprite onto it.
-	 */
-	public void updateImage() {
-		resetImage();
-		drawSpriteToImage();
-	}
-
-	/**
-	 * Draw this actor's sprite rotated to its current angle of rotation onto
-	 * its image.
-	 */
-	public void drawSpriteToImage() {
-		graphics.drawImage(getSprite(), getSpriteTransform(), null);
-	}
-
-	/**
-	 * Return the necessary transformation to apply before drawing this actor's
-	 * sprite onto its image.
-	 */
-	protected AffineTransform getSpriteTransform() {
-		// Place this actor's sprite so its midright point is at the center of the image
-		BufferedImage sprite = getSprite();
-		AffineTransform transform = getCenterRotateTransform();
-		transform.translate(-sprite.getWidth(), (double) -sprite.getHeight() / 2.0);
-		return transform;
-	}
-
-	protected AffineTransform getCenterRotateTransform() {
-		// Rotate from the center of this actor's image
-		AffineTransform transform = AffineTransform.getTranslateInstance((double) image.getWidth() / 2.0, (double) image.getHeight() / 2.0);
-		transform.rotate(angle);
-		return transform;
-	}
-
-	/**
 	 * Return the image of this actor for drawing.
 	 */
-	public BufferedImage getImage() {
-		if (DEBUG_SHOW_IMAGE_BOXES) {
-			graphics.setColor(java.awt.Color.WHITE);
-			graphics.drawRect(0, 0, image.getWidth() - 1, image.getHeight() - 1);
-			graphics.fillRect(image.getWidth() / 2 - 5, image.getHeight() / 2 - 5, 10, 10);
-		}
-		return image;
-	}
+	public abstract BufferedImage getImage();
 
-	/**
-	 * Return this actor's graphics context.
-	 */
-	public Graphics2D getGraphics() {
-		return graphics;
-	}
-
-	/**
-	 * Retrieve the image to draw rotated for this actor's image.
-	 */
-	protected abstract BufferedImage getSprite();
-
-	/**
-	 * Retrieve the size to use to create this actor's image.
-	 *
-	 * By default, use double the largest dimension of this actor's sprite.
-	 */
-	protected int getImageSize() {
-		BufferedImage sprite = getSprite();
-		return Math.max(sprite.getWidth(), sprite.getHeight()) * 2;
-	}
-
-	/**
-	 * Prepare this actor's image for drawing.
-	 *
-	 * By default, clear its image to transparency.
-	 */
-	protected void resetImage() {
-		graphics.clearRect(0, 0, image.getWidth(), image.getHeight());
-	}
-
-	/**
-	 * Return the X position of the left side of this SuperActor's image if the
-	 * center of its image were to be placed at its internal coordinates.
-	 */
-	public double getPreciseImageX() {
-		return x - (double) image.getWidth() / 2.0;
-	}
-
-	/**
-	 * Return the Y position of the top side of this SuperActor's image if the
-	 * center of its image were to be placed at its internal coordinates.
-	 */
-	public double getPreciseImageY() {
-		return y - (double) image.getHeight() / 2.0;
+	public AffineTransform getImageTransform() {
+		AffineTransform transform = AffineTransform.getTranslateInstance(x, y);
+		transform.rotate(angle);
+		transform.translate(-getImage().getWidth(), -getImage().getHeight() / 2.0);
+		return transform;
 	}
 
 	/**

@@ -12,7 +12,6 @@ public class Candy extends Dessert {
 
 	public Candy(Truck truck) {
 		super(truck);
-		initImage();
 	}
 
 	@Override

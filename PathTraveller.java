@@ -65,8 +65,6 @@ public abstract class PathTraveller extends SuperActor {
 		// Start with average angle of path's beginning
 		targetAngle = path.getStartAngle();
 		setRotation(targetAngle);
-		// Reflect angle change in image
-		updateImage();
 	}
 
 	/**
@@ -144,9 +142,6 @@ public abstract class PathTraveller extends SuperActor {
 
 		// Update position
 		setLocation(coords[0], coords[1]);
-
-		// Reflect angle change in image
-		updateImage();
 	}
 
 	/**

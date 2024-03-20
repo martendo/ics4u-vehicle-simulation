@@ -35,7 +35,7 @@ public class DessertSpawner extends RandomSpawner {
 		path.addTraveller(truck, laneNum);
 		world.addActor(truck);
 		// Spawn the dessert following this truck at a later time
-		Spawner dessertSpawner = new FixedSpawner((int) (Truck.SPRITE.getWidth() / truck.getSpeed()), 1) {
+		Spawner dessertSpawner = new FixedSpawner((int) (Truck.IMAGE.getWidth() / truck.getSpeed()), 1) {
 			@Override
 			public void run() {
 				// Remove this one-time spawner

@@ -22,6 +22,9 @@ public class Machine extends SuperActor {
 	private static final java.awt.Color BODY_COLOR = new java.awt.Color(196, 196, 196);
 	private static final java.awt.Color ROOF_COLOR = new java.awt.Color(128, 128, 128, 128);
 
+	private final BufferedImage image;
+	private final Graphics2D graphics;
+
 	// The dimensions of this machine, dependent on the width of its path
 	private final int length;
 	private final int width;
@@ -45,7 +48,13 @@ public class Machine extends SuperActor {
 		width = path.getPathWidth() + 50;
 		this.forwards = forwards;
 
-		initImage();
+		// Initialize image
+		int size = Math.max(length, width) * 2;
+		image = GraphicsUtilities.createCompatibleTranslucentImage(size, size);
+		graphics = image.createGraphics();
+		graphics.addRenderingHints(SimulationWorld.RENDERING_HINTS);
+		graphics.setBackground(new java.awt.Color(0, 0, 0, 0));
+
 		setRotation(0.0);
 	}
 
@@ -61,10 +70,7 @@ public class Machine extends SuperActor {
 		updateImage();
 	}
 
-	@Override
 	public void updateImage() {
-		BufferedImage image = getImage();
-		Graphics2D graphics = getGraphics();
 		graphics.clearRect(0, 0, image.getWidth(), image.getHeight());
 		AffineTransform saveTransform = graphics.getTransform();
 
@@ -89,13 +95,13 @@ public class Machine extends SuperActor {
 	}
 
 	@Override
-	protected BufferedImage getSprite() {
-		throw new UnsupportedOperationException("Machine objects do not have sprites");
+	public BufferedImage getImage() {
+		return image;
 	}
 
 	@Override
-	protected int getImageSize() {
-		return Math.max(length, width) * 2;
+	public AffineTransform getImageTransform() {
+		return AffineTransform.getTranslateInstance(getX() - image.getWidth() / 2.0, getY() - image.getHeight() / 2.0);
 	}
 
 	@Override

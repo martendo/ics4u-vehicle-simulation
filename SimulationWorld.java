@@ -3,7 +3,6 @@ import greenfoot.util.GraphicsUtilities;
 import java.awt.image.BufferedImage;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
-import java.awt.geom.AffineTransform;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.ListIterator;
@@ -390,8 +389,7 @@ public class SimulationWorld extends World {
 	 * actor's image location.
 	 */
 	private void drawActor(SuperActor actor) {
-		AffineTransform transform = AffineTransform.getTranslateInstance(actor.getPreciseImageX(), actor.getPreciseImageY());
-		graphics.drawImage(actor.getImage(), transform, null);
+		graphics.drawImage(actor.getImage(), actor.getImageTransform(), null);
 	}
 
 	/**

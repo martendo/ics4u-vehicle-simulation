@@ -15,14 +15,14 @@ public class Truck extends PathTraveller {
 	public static final double MIN_SPEED = 0.5;
 	public static final double MAX_SPEED = 3.0;
 
-	public static final BufferedImage SPRITE = new GreenfootImage("images/truck.png").getAwtImage();
+	public static final BufferedImage IMAGE = new GreenfootImage("images/truck.png").getAwtImage();
 
 	// The distance behind another traveller at which to slow down
 	public static final double SLOWDOWN_DISTANCE = Dessert.TRUCK_BED_LENGTH + 16.0;
-	public static final int LENGTH = Dessert.TRUCK_BED_LENGTH + SPRITE.getWidth() + 16;
+	public static final int LENGTH = Dessert.TRUCK_BED_LENGTH + IMAGE.getWidth() + 16;
 
 	// The area of a truck, with its midright point at the origin
-	private static final Rectangle2D HIT_RECT = new Rectangle2D.Double(-SPRITE.getWidth(), -SPRITE.getHeight() / 2.0, SPRITE.getWidth(), SPRITE.getHeight());
+	private static final Rectangle2D HIT_RECT = new Rectangle2D.Double(-IMAGE.getWidth(), -IMAGE.getHeight() / 2.0, IMAGE.getWidth(), IMAGE.getHeight());
 
 	// The default or target speed of this truck
 	private double originalSpeed;
@@ -37,7 +37,6 @@ public class Truck extends PathTraveller {
 		originalSpeed = getSpeed();
 		limitingTraveller = null;
 		attachedDessert = null;
-		initImage();
 	}
 
 	public void attachDessert(Dessert dessert) {
@@ -151,13 +150,13 @@ public class Truck extends PathTraveller {
 	public void moveToLane(int newLane) {
 		super.moveToLane(newLane);
 		if (attachedDessert != null) {
-			attachedDessert.moveToLane(newLane, getDistanceTravelled() - SPRITE.getWidth());
+			attachedDessert.moveToLane(newLane, getDistanceTravelled() - IMAGE.getWidth());
 		}
 	}
 
 	@Override
-	protected BufferedImage getSprite() {
-		return SPRITE;
+	public BufferedImage getImage() {
+		return IMAGE;
 	}
 
 	@Override
