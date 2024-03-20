@@ -24,6 +24,9 @@ public abstract class SuperActor {
 	private double angle;
 	private boolean isDead;
 
+	// A reference to the world this actor was added to
+	private SimulationWorld world;
+
 	// All other actors to be considered as a unit with this actor
 	private Set<SuperActor> linkedActors;
 
@@ -35,6 +38,7 @@ public abstract class SuperActor {
 		y = 0.0;
 		angle = 0.0;
 		isDead = false;
+		world = null;
 		linkedActors = new HashSet<SuperActor>();
 	}
 
@@ -143,13 +147,28 @@ public abstract class SuperActor {
 	}
 
 	/**
+	 * Set this actor's world and call its addedToWorld method.
+	 */
+	public void setWorld(SimulationWorld world) {
+		this.world = world;
+		addedToWorld(world);
+	}
+
+	/**
+	 * Return the simulation world this actor is in, or null if it is not in a world.
+	 */
+	public SimulationWorld getWorld() {
+		return world;
+	}
+
+	/**
 	 * This method is called when this actor is added to the SimulationWorld.
 	 *
 	 * By default, do nothing.
 	 *
 	 * @param world the SimulationWorld that this actor was just added to
 	 */
-	public void addedToWorld(SimulationWorld world) {}
+	protected void addedToWorld(SimulationWorld world) {}
 
 	/**
 	 * Update this SuperActor.
@@ -163,6 +182,9 @@ public abstract class SuperActor {
 	 */
 	public abstract BufferedImage getImage();
 
+	/**
+	 * Get the transformation to apply to this actor's image when drawing it onto the world.
+	 */
 	public AffineTransform getImageTransform() {
 		AffineTransform transform = AffineTransform.getTranslateInstance(x, y);
 		transform.rotate(angle);

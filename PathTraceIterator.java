@@ -1,9 +1,10 @@
+import java.awt.Shape;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 
 /**
  * A PathIterator-like class that returns points at specific distances along the
- * path defined by another PathIterator.
+ * path of a Shape.
  *
  * @author Martin Baldwin
  * @version March 2024
@@ -20,12 +21,12 @@ public class PathTraceIterator {
 	private Point2D currentPoint;
 
 	/**
-	 * Create a new PathTraceIterator using the path defined by the supplied path iterator.
+	 * Create a new PathTraceIterator using the path defined by the supplied shape.
 	 *
-	 * @param pi the original path being traced
+	 * @param shape the original path being traced
 	 */
-	public PathTraceIterator(PathIterator pi) {
-		originalpi = pi;
+	public PathTraceIterator(Shape shape) {
+		originalpi = shape.getPathIterator(null, FLATNESS);
 		lastPathPoint = null;
 		currentPoint = null;
 	}
@@ -107,13 +108,36 @@ public class PathTraceIterator {
 					lastPathPoint.setLocation(coords[0], coords[1]);
 				}
 				break;
-			default:
-				throw new UnsupportedOperationException("PathIterator supplied to PathTraceIterator must only return segments of type SEG_MOVETO and SEG_LINETO");
 			}
 		}
 		// Reached the end of the path -> move to the last point
 		if (originalpi.isDone()) {
 			currentPoint.setLocation(coords[0], coords[1]);
 		}
+	}
+
+	/**
+	 * Calculate the length of the path that traces the given shape.
+	 *
+	 * @param shape the path to trace
+	 * @return the length of the path defined by shape
+	 */
+	public static double getLength(Shape shape) {
+		double[] coords = new double[6];
+		double length = 0.0;
+		Point2D lastPoint = new Point2D.Double();
+		// Total distances between each returned line segment
+		for (PathIterator iter = shape.getPathIterator(null, FLATNESS); !iter.isDone(); iter.next()) {
+			switch (iter.currentSegment(coords)) {
+			case PathIterator.SEG_MOVETO:
+				lastPoint.setLocation(coords[0], coords[1]);
+				break;
+			case PathIterator.SEG_LINETO:
+				length += lastPoint.distance(coords[0], coords[1]);
+				lastPoint.setLocation(coords[0], coords[1]);
+				break;
+			}
+		}
+		return length;
 	}
 }

@@ -554,8 +554,17 @@ public class SuperPath {
 	 * @return a new PathTraceIterator that independently traverses the specified lane of this SuperPath
 	 */
 	public PathTraceIterator getLaneTraceIterator(int laneNum) {
-		PathIterator pi = lanes.getPath(laneNum).getPathIterator(null, PathTraceIterator.FLATNESS);
-		return new PathTraceIterator(pi);
+		return new PathTraceIterator(lanes.getPath(laneNum));
+	}
+
+	/**
+	 * Get the total length of the path of the lane at the specified index.
+	 *
+	 * @param laneNum the index of the lane to check
+	 * @return the length of the lane
+	 */
+	public double getLaneLength(int laneNum) {
+		return PathTraceIterator.getLength(lanes.getPath(laneNum));
 	}
 
 	/**

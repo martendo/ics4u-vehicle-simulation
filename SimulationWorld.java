@@ -225,7 +225,7 @@ public class SimulationWorld extends World {
 	 */
 	public void addActor(SuperActor actor) {
 		actors.add(actor);
-		actor.addedToWorld(this);
+		actor.setWorld(this);
 	}
 
 	/**
@@ -267,16 +267,15 @@ public class SimulationWorld extends World {
 		}
 
 		// Update actors
-		// Use a ListIterator to be able to remove dead actors from the list during iteration
-		for (ListIterator<SuperActor> iter = actors.listIterator(); iter.hasNext();) {
-			SuperActor actor = iter.next();
+		// Create a copy of the actors list to allow adding and removing spawners during iteration
+		for (SuperActor actor : new ArrayList<SuperActor>(actors)) {
 			if (actor.isDead()) {
-				iter.remove();
+				actors.remove(actor);
 				continue;
 			}
 			actor.act();
 			if (actor.isDead()) {
-				iter.remove();
+				actors.remove(actor);
 			}
 		}
 

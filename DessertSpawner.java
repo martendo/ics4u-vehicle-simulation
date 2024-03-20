@@ -46,7 +46,13 @@ public class DessertSpawner extends RandomSpawner {
 					return;
 				}
 				// Spawn the dessert following the truck
-				Dessert dessert = new Candy(truck);
+				Dessert dessert;
+				int roll = (int) (Math.random() * 5.0);
+				if (roll == 0) {
+					dessert = new Bomb(truck);
+				} else {
+					dessert = new Candy(truck);
+				}
 				path.addTraveller(dessert, truck.getLaneNumber());
 				world.addActor(dessert);
 				truck.attachDessert(dessert);
