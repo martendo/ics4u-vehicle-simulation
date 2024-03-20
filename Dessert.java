@@ -17,7 +17,7 @@ public abstract class Dessert extends PathTraveller {
 	// The area of a dessert's truck bed, with its midright point at the origin
 	private static final Rectangle2D TRUCK_BED_RECT = new Rectangle2D.Double(0, 0, TRUCK_BED_LENGTH, TRUCK_BED_WIDTH);
 
-	private static final int PLATE_SIZE = TRUCK_BED_WIDTH - 5;
+	private static final int PLATE_SIZE = TRUCK_BED_WIDTH;
 
 	private static final java.awt.Color TRUCK_BED_COLOR = new java.awt.Color(140, 140, 140);
 	private static final java.awt.Color PLATE_COLOR = java.awt.Color.WHITE;
@@ -42,7 +42,10 @@ public abstract class Dessert extends PathTraveller {
 		image = GraphicsUtilities.createCompatibleTranslucentImage(TRUCK_BED_LENGTH, TRUCK_BED_WIDTH);
 		graphics = image.createGraphics();
 		graphics.addRenderingHints(SimulationWorld.RENDERING_HINTS);
+		drawImage();
+	}
 
+	public void drawImage() {
 		// Draw truck bed
 		graphics.setColor(TRUCK_BED_COLOR);
 		graphics.fillRect(0, 0, image.getWidth(), image.getHeight());
@@ -53,7 +56,18 @@ public abstract class Dessert extends PathTraveller {
 		graphics.fillOval((TRUCK_BED_LENGTH - PLATE_SIZE) / 2, (TRUCK_BED_WIDTH - PLATE_SIZE) / 2, PLATE_SIZE, PLATE_SIZE);
 		// Draw sprite
 		BufferedImage sprite = getSprite();
-		graphics.drawImage(sprite, (TRUCK_BED_LENGTH - sprite.getWidth()) / 2, (TRUCK_BED_WIDTH - sprite.getHeight()) / 2, null);
+		// Rotate sprite to always stay upright
+		AffineTransform spriteTransform = AffineTransform.getTranslateInstance(TRUCK_BED_LENGTH / 2.0, TRUCK_BED_WIDTH / 2.0);
+		spriteTransform.rotate(-getRotation());
+		spriteTransform.translate(-sprite.getWidth() / 2.0, -sprite.getHeight() / 2.0);
+		graphics.drawImage(sprite, spriteTransform, null);
+	}
+
+	@Override
+	public void act() {
+		super.act();
+		// Update image to reflect angle change
+		drawImage();
 	}
 
 	@Override
