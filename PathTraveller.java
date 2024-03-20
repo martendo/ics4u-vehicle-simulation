@@ -70,6 +70,22 @@ public abstract class PathTraveller extends SuperActor {
 	}
 
 	/**
+	 * Switch to the given lane in this traveller's path at its equivalent distance.
+	 *
+	 * @param newLane the index of the lane to move to
+	 */
+	public void moveToLane(int newLane) {
+		path.moveTravellerToLane(this, newLane);
+		pathIter = path.getLaneTraceIterator(newLane);
+		// Move to the location in the new lane adjacent to this traveller's old position
+		distanceTravelled = path.getEquivalentDistanceInLane(laneNum, distanceTravelled, newLane);
+		double[] coords = new double[6];
+		pathIter.next(distanceTravelled);
+		setLocation(coords[0], coords[1]);
+		laneNum = newLane;
+	}
+
+	/**
 	 * Return the path that this traveller is currently travelling.
 	 */
 	public SuperPath getPath() {

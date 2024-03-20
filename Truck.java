@@ -15,10 +15,11 @@ public class Truck extends PathTraveller {
 	public static final double MIN_SPEED = 0.5;
 	public static final double MAX_SPEED = 3.0;
 
+	public static final BufferedImage SPRITE = new GreenfootImage("images/truck.png").getAwtImage();
+
 	// The distance behind another traveller at which to slow down
 	public static final double SLOWDOWN_DISTANCE = Dessert.TRUCK_BED_LENGTH + 16.0;
-
-	public static final BufferedImage SPRITE = new GreenfootImage("images/truck.png").getAwtImage();
+	public static final int LENGTH = Dessert.TRUCK_BED_LENGTH + SPRITE.getWidth() + 16;
 
 	// The area of a truck, with its midright point at the origin
 	private static final Rectangle2D HIT_RECT = new Rectangle2D.Double(-SPRITE.getWidth(), -SPRITE.getHeight() / 2.0, SPRITE.getWidth(), SPRITE.getHeight());
@@ -38,6 +39,7 @@ public class Truck extends PathTraveller {
 	@Override
 	public void act() {
 		super.act();
+
 		// Crash into any other intersecting travellers on this path
 		boolean hit = false;
 		for (PathTraveller traveller : getPath().getTravellers()) {
@@ -57,6 +59,44 @@ public class Truck extends PathTraveller {
 			return;
 		}
 
+		updateSpeed();
+		// If stuck behind another traveller, check if it is possible to change lanes
+		if (limitingTraveller != null) {
+			int newLane = -1;
+			if (getLaneNumber() > 0 && canMoveToLane(getLaneNumber() - 1)) {
+				newLane = getLaneNumber() - 1;
+			} else if (getLaneNumber() < getPath().getLaneCount() - 1 && canMoveToLane(getLaneNumber() + 1)) {
+				newLane = getLaneNumber() + 1;
+			}
+			if (newLane != -1) {
+				moveToLane(newLane);
+			}
+		}
+	}
+
+	/**
+	 * Test if this truck will have space if it moved to the requested lane.
+	 *
+	 * @param laneNum the index of the lane in this truck's path to test
+	 * @return true if this truck can change lanes without moving into an existing traveller, false otherwise
+	 */
+	private boolean canMoveToLane(int laneNum) {
+		double thisTravelled = getPath().getEquivalentDistanceInLane(getLaneNumber(), getDistanceTravelled(), laneNum);
+		// Check if any travellers in the lane occupy the space where this truck would move
+		for (PathTraveller traveller : getPath().getTravellersInLane(laneNum)) {
+			double otherTravelled = traveller.getDistanceTravelled();
+			if (otherTravelled > thisTravelled - LENGTH && otherTravelled - SLOWDOWN_DISTANCE < thisTravelled) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Update this truck's speed to stay behind any slower travellers that may
+	 * be in front, and update the reference to the limiting traveller accordingly.
+	 */
+	private void updateSpeed() {
 		// Check if this truck should slow down behind a slower traveller when it is not currently
 		// stuck behind one or the one it was stuck behind is no longer present in front
 		if (limitingTraveller == null || (limitingTraveller.isDead() ||
@@ -93,6 +133,20 @@ public class Truck extends PathTraveller {
 		for (SuperActor actor : getLinkedActors()) {
 			if (actor instanceof PathTraveller) {
 				((PathTraveller) actor).setSpeed(speed);
+			}
+		}
+	}
+
+	/**
+	 * Move this truck to the given lane along with all of its linked actors who
+	 * are path travellers.
+	 */
+	@Override
+	public void moveToLane(int newLane) {
+		super.moveToLane(newLane);
+		for (SuperActor actor : getLinkedActors()) {
+			if (actor instanceof PathTraveller) {
+				((PathTraveller) actor).moveToLane(newLane);
 			}
 		}
 	}

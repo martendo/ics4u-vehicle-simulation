@@ -451,6 +451,20 @@ public class SuperPath {
 	}
 
 	/**
+	 * Move a path traveller from its current lane in this path to a new lane.
+	 *
+	 * @param object the path traveller object to move
+	 * @param laneNum the index of the lane to move the traveller to
+	 */
+	public void moveTravellerToLane(PathTraveller object, int laneNum) {
+		if (object.getPath() != this) {
+			throw new IllegalArgumentException("PathTraveller object does not belong to this SuperPath");
+		}
+		travellers[object.getLaneNumber()].remove(object);
+		travellers[laneNum].add(object);
+	}
+
+	/**
 	 * Add a spawner to this path's spawner list so it may be removed from its
 	 * world when this path dies.
 	 *
@@ -542,6 +556,53 @@ public class SuperPath {
 	public PathTraceIterator getLaneTraceIterator(int laneNum) {
 		PathIterator pi = lanes.getPath(laneNum).getPathIterator(null, PathTraceIterator.FLATNESS);
 		return new PathTraceIterator(pi);
+	}
+
+	/**
+	 * Get the distance along a lane in this path for a point that is adjacent
+	 * to the point at a given distance along another lane.
+	 *
+	 * @param srcLane the index of the lane where the distance is given
+	 * @param srcDist the distance along the source lane to get the equivalent distance to
+	 * @param destLane the index of the lane to find the distance in
+	 * @return the distance for a point on the target lane that is adjacent to the point at the given distance on the source lane
+	 */
+	public double getEquivalentDistanceInLane(int srcLane, double srcDist, int destLane) {
+		double[] coords = new double[6];
+		// Get the angle of the normal to the path at the point found at the given distance
+		PathTraceIterator srcIter = getLaneTraceIterator(srcLane);
+		srcIter.next(srcDist);
+		srcIter.currentSegment(coords);
+		double srcX = coords[0];
+		double srcY = coords[1];
+		// Simply use a point 1 pixel further along to calculate the angle
+		srcIter.next(1.0);
+		srcIter.currentSegment(coords);
+		double normal = Math.atan2(coords[1] - srcY, coords[0] - srcX) + Math.PI / 2.0;
+		// Get the target point, the ideal location of the point in the adjacent lane
+		// Since lanes are modified in order to improve their usability (e.g. splicing knots out),
+		// this exact point may not exist in the lane
+		double destX = srcX + LANE_WIDTH * (destLane - srcLane) * Math.cos(normal);
+		double destY = srcY + LANE_WIDTH * (destLane - srcLane) * Math.sin(normal);
+
+		// Find the point in the lane that is closest to the target point
+		// NOTE: It may under very rare circumstances be possible to find an
+		// incorrect point that is closer to the target point than the real goal
+		Point2D closestPoint = new Point2D.Double();
+		double closestPointDist = -1.0;
+		double destDist = 0.0;
+		double traversed = 0.0;
+		for (PathTraceIterator destIter = getLaneTraceIterator(destLane); !destIter.isDone(); destIter.next(1.0)) {
+			destIter.currentSegment(coords);
+			double pointDist = Math.hypot(destX - coords[0], destY - coords[1]);
+			if (pointDist < closestPointDist || closestPointDist < 0.0) {
+				closestPoint.setLocation(coords[0], coords[1]);
+				closestPointDist = pointDist;
+				destDist = traversed;
+			}
+			traversed += 1.0;
+		}
+		return destDist;
 	}
 
 	/**
