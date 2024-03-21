@@ -16,6 +16,9 @@ public class Truck extends PathTraveller {
 	public static final double MIN_SPEED = 0.5;
 	public static final double MAX_SPEED = 3.0;
 
+	// Number of acts to wait after changing lanes before changing again
+	public static final int LANE_CHANGE_TIMEOUT = 120;
+
 	public static final BufferedImage IMAGE = new GreenfootImage("images/truck.png").getAwtImage();
 
 	// The distance behind another traveller at which to slow down
@@ -33,11 +36,15 @@ public class Truck extends PathTraveller {
 	// The payload actor that is following this truck
 	private Payload attachedPayload;
 
+	// Number of acts to wait until this truck can make another lane change
+	private int laneChangeTimer;
+
 	public Truck() {
 		super(Math.random() * (MAX_SPEED - MIN_SPEED) + MIN_SPEED);
 		originalSpeed = getSpeed();
 		limitingTraveller = null;
 		attachedPayload = null;
+		laneChangeTimer = 0;
 	}
 
 	public void attachPayload(Payload payload) {
@@ -68,8 +75,13 @@ public class Truck extends PathTraveller {
 		}
 
 		updateSpeed();
-		// If stuck behind another traveller, check if it is possible to change lanes
-		if (limitingTraveller != null) {
+
+		// Update timer to decide if changing lanes is allowed
+		if (laneChangeTimer > 0) {
+			laneChangeTimer--;
+		}
+		// If stuck behind another traveller and lane change timeout is over, check if it is possible to change lanes
+		if (limitingTraveller != null && laneChangeTimer == 0) {
 			int newLane = -1;
 			if (getLaneNumber() > 0 && canMoveToLane(getLaneNumber() - 1)) {
 				newLane = getLaneNumber() - 1;
@@ -78,6 +90,8 @@ public class Truck extends PathTraveller {
 			}
 			if (newLane != -1) {
 				moveToLane(newLane);
+				// Wait until making another lane change
+				laneChangeTimer = LANE_CHANGE_TIMEOUT;
 			}
 		}
 	}
