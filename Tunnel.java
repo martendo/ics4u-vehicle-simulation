@@ -12,10 +12,10 @@ import java.awt.Shape;
  * @author Martin Baldwin
  * @version March 2024
  */
-public class Machine extends SuperActor {
-	// The fixed length (or depth) of all machines
+public class Tunnel extends SuperActor {
+	// The fixed length (or depth) of all tunnels
 	private static final int ROOF_LENGTH = 32;
-	// The difference between a machine's width and its roof's width
+	// The difference between a tunnel's width and its roof's width
 	private static final int ROOF_MARGIN = 24;
 	private static final int POSITION_OFFSET = 64;
 
@@ -25,21 +25,21 @@ public class Machine extends SuperActor {
 	private final BufferedImage image;
 	private final Graphics2D graphics;
 
-	// The dimensions of this machine, dependent on the width of its path
+	// The dimensions of this tunnel, dependent on the width of its path
 	private final int length;
 	private final int width;
-	// The path on which this machine appears
+	// The path on which this tunnel appears
 	private final SuperPath path;
-	// Whether or not this machine should cover the path in the direction of its rotation (true) or in the direction opposite to its rotation (false)
+	// Whether or not this tunnel should cover the path in the direction of its rotation (true) or in the direction opposite to its rotation (false)
 	private final boolean forwards;
 
 	/**
-	 * Create a new machine actor.
+	 * Create a new tunnel actor.
 	 *
-	 * @param path the SuperPath that this machine belongs to
-	 * @param forwards whether or not this machine should cover the path in the direction of its rotation (true) or in the direction opposite to its rotation (false)
+	 * @param path the SuperPath that this tunnel belongs to
+	 * @param forwards whether or not this tunnel should cover the path in the direction of its rotation (true) or in the direction opposite to its rotation (false)
 	 */
-	public Machine(SuperPath path, boolean forwards) {
+	public Tunnel(SuperPath path, boolean forwards) {
 		super();
 		this.path = path;
 		// Make sure to cover up the round cap of the path, taking into account the position offset
@@ -59,14 +59,14 @@ public class Machine extends SuperActor {
 	}
 
 	/**
-	 * Set this machine's rotation, in order to visually fall in line with the path.
+	 * Set this tunnel's rotation, in order to visually fall in line with the path.
 	 *
-	 * @param angle the angle to have this machine rotated
+	 * @param angle the angle to have this tunnel rotated
 	 */
 	@Override
 	public void setRotation(double angle) {
 		super.setRotation(angle);
-		// Rotation is the only time this machine's image will change, so update the image in this method
+		// Rotation is the only time this tunnel's image will change, so update the image in this method
 		updateImage();
 	}
 
@@ -77,7 +77,7 @@ public class Machine extends SuperActor {
 		// Rotate about the center of this image
 		graphics.translate((double) image.getWidth() / 2.0, (double) image.getHeight() / 2.0);
 		graphics.rotate(getRotation());
-		// Place this machine's midleft (if forwards) or midright (if backwards) point at the center of its image
+		// Place this tunnel's midleft (if forwards) or midright (if backwards) point at the center of its image
 		// Draw roof
 		graphics.translate(forwards ? POSITION_OFFSET : -(ROOF_LENGTH + POSITION_OFFSET), -(width - ROOF_MARGIN) / 2);
 		graphics.setColor(ROOF_COLOR);
@@ -106,6 +106,6 @@ public class Machine extends SuperActor {
 
 	@Override
 	public Shape getHitShape() {
-		throw new UnsupportedOperationException("Machine objects do not have hit shapes");
+		throw new UnsupportedOperationException("Tunnel objects do not have hit shapes");
 	}
 }

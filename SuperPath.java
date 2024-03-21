@@ -106,9 +106,9 @@ public class SuperPath {
 	private List<SuperActor> otherActors;
 	// All spawners attached to this path, stored for cleaning up
 	private List<Spawner> spawners;
-	// Machine actors at ends of this path
-	private final Machine startMachine;
-	private final Machine endMachine;
+	// Tunnel actors at ends of this path
+	private final Tunnel startTunnel;
+	private final Tunnel endTunnel;
 
 	// Variables to keep track of the last given point in order to control path curves
 	private double prevx;
@@ -159,19 +159,19 @@ public class SuperPath {
 		}
 		otherActors = new ArrayList<SuperActor>();
 		spawners = new ArrayList<Spawner>();
-		startMachine = new Machine(this, true);
-		endMachine = new Machine(this, false);
+		startTunnel = new Tunnel(this, true);
+		endTunnel = new Tunnel(this, false);
 	}
 
 	/**
-	 * Set this path's world to the given world and add its machine actors to the world.
+	 * Set this path's world to the given world and add its tunnel actors to the world.
 	 *
 	 * @param world the SimulationWorld to add this path and its actors to
 	 */
 	public void addedToWorld(SimulationWorld world) {
 		this.world = world;
-		world.addActor(startMachine);
-		world.addActor(endMachine);
+		world.addActor(startTunnel);
+		world.addActor(endTunnel);
 	}
 
 	/**
@@ -208,9 +208,9 @@ public class SuperPath {
 			// Add a line segment of one point in order to have something to draw
 			path.lineTo(x, y);
 			newPoint.setLocation(x, y);
-			// Update machine locations
-			startMachine.setLocation(x, y);
-			endMachine.setLocation(x, y);
+			// Update tunnel locations
+			startTunnel.setLocation(x, y);
+			endTunnel.setLocation(x, y);
 		} else {
 			// Use quadratic curves to smoothen the lines, connecting midpoints
 			// of given points with actual points as control points
@@ -236,8 +236,8 @@ public class SuperPath {
 			// Update path
 			path.quadTo(curve.getCtrlX(), curve.getCtrlY(), curve.getX2(), curve.getY2());
 			newPoint.setLocation(curve.getP2());
-			// Update only end machine location
-			endMachine.setLocation(curve.getX2(), curve.getY2());
+			// Update only end tunnel location
+			endTunnel.setLocation(curve.getX2(), curve.getY2());
 
 			// Update lanes
 			lanes.offsetQuadTo(curve.getX1(), curve.getY1(), curve.getCtrlX(), curve.getCtrlY(), curve.getX2(), curve.getY2());
@@ -246,8 +246,8 @@ public class SuperPath {
 			}
 		}
 		points.add(newPoint);
-		startMachine.setRotation(getStartAngle());
-		endMachine.setRotation(getEndAngle());
+		startTunnel.setRotation(getStartAngle());
+		endTunnel.setRotation(getEndAngle());
 
 		prevx = x;
 		prevy = y;
@@ -423,14 +423,15 @@ public class SuperPath {
 	}
 
 	/**
-	 * Return a list of all actors on this path, including path travellers and machines.
+	 * Return a list of all actors on this path, including path travellers,
+	 * tunnels, and other linked actors.
 	 */
 	public List<SuperActor> getActors() {
-		// Append machines so that they are always drawn after (on top of) travellers
 		List<SuperActor> actors = new ArrayList<SuperActor>(getTravellers());
 		actors.addAll(otherActors);
-		actors.add(startMachine);
-		actors.add(endMachine);
+		// Append tunnels so that they are always drawn after (on top of) travellers and other actors
+		actors.add(startTunnel);
+		actors.add(endTunnel);
 		return actors;
 	}
 
@@ -517,18 +518,16 @@ public class SuperPath {
 	}
 
 	/**
-	 * Kill all machines and path travellers on this path and remove all of its
-	 * spawners from the world.
+	 * Kill all actors on this path and remove all of its spawners from the world.
 	 */
 	public void die() {
-		startMachine.die();
-		endMachine.die();
-		// Path travellers will remove themselves from the list when killed
-		for (List<PathTraveller> laneTravellers : travellers) {
-			while (laneTravellers.size() > 0) {
-				laneTravellers.get(0).die();
-			}
+		for (SuperActor actor : getActors()) {
+			actor.die();
 		}
+		for (List<PathTraveller> laneTravellers : travellers) {
+			laneTravellers.clear();
+		}
+		otherActors.clear();
 		// Remove spawners
 		for (Spawner spawner : spawners) {
 			world.removeSpawner(spawner);
@@ -537,8 +536,7 @@ public class SuperPath {
 	}
 
 	/**
-	 * Get the average angle of the beginning of this path, taking into account
-	 * a length defined by a machine's height.
+	 * Get the average angle of the beginning of this path.
 	 */
 	public double getStartAngle() {
 		ListIterator<Point2D> iter = points.listIterator();
@@ -559,8 +557,7 @@ public class SuperPath {
 	}
 
 	/**
-	 * Get the average angle of the end of this path, taking into account a
-	 * length defined by a machine's height.
+	 * Get the average angle of the end of this path.
 	 */
 	public double getEndAngle() {
 		ListIterator<Point2D> iter = points.listIterator(points.size());
