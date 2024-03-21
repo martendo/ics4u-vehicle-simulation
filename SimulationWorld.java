@@ -274,8 +274,11 @@ public class SimulationWorld extends World {
 				continue;
 			}
 			actor.act();
-			if (actor.isDead()) {
-				actors.remove(actor);
+		}
+		// Remove newly dead actors
+		for (ListIterator<SuperActor> iter = actors.listIterator(); iter.hasNext();) {
+			if (iter.next().isDead()) {
+				iter.remove();
 			}
 		}
 		// Remove dead actors from paths
