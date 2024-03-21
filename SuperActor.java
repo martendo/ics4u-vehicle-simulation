@@ -16,9 +16,6 @@ import java.util.HashSet;
  * @version March 2024
  */
 public abstract class SuperActor {
-	// Settings
-	public static final boolean DEBUG_SHOW_IMAGE_BOXES = false;
-
 	private double x;
 	private double y;
 	private double angle;
