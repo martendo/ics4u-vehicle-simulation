@@ -15,7 +15,7 @@ public abstract class Dessert extends PathTraveller {
 	public static final int TRUCK_BED_WIDTH = 32;
 	public static final int TRUCK_BED_LENGTH = 48;
 	// The area of a dessert's truck bed, with its midright point at the origin
-	private static final Rectangle2D TRUCK_BED_RECT = new Rectangle2D.Double(0, 0, TRUCK_BED_LENGTH, TRUCK_BED_WIDTH);
+	private static final Rectangle2D HIT_RECT = new Rectangle2D.Double(-TRUCK_BED_LENGTH, -TRUCK_BED_WIDTH / 2.0, TRUCK_BED_LENGTH, TRUCK_BED_WIDTH);
 
 	private static final int PLATE_SIZE = TRUCK_BED_WIDTH;
 
@@ -85,6 +85,6 @@ public abstract class Dessert extends PathTraveller {
 	public Shape getHitShape() {
 		AffineTransform transform = AffineTransform.getTranslateInstance(getX(), getY());
 		transform.rotate(getRotation());
-		return transform.createTransformedShape(TRUCK_BED_RECT);
+		return transform.createTransformedShape(HIT_RECT);
 	}
 }

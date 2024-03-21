@@ -22,7 +22,7 @@ public class Truck extends PathTraveller {
 	public static final int LENGTH = Dessert.TRUCK_BED_LENGTH + IMAGE.getWidth() + 16;
 
 	// The area of a truck, with its midright point at the origin
-	private static final Rectangle2D HIT_RECT = new Rectangle2D.Double(-IMAGE.getWidth(), -IMAGE.getHeight() / 2.0, IMAGE.getWidth(), IMAGE.getHeight());
+	private static final Rectangle2D HIT_RECT = new Rectangle2D.Double(-35, -29 / 2.0, 35, 29);
 
 	// The default or target speed of this truck
 	private double originalSpeed;
