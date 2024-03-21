@@ -111,6 +111,14 @@ public class SimulationWorld extends World {
 		actors = new ArrayList<SuperActor>();
 		spawners = new ArrayList<Spawner>();
 
+		// Create wanderer spawners
+		spawners.add(new FixedSpawner(1200) {
+			@Override
+			public void run() {
+				addActor(new Ufo());
+			}
+		});
+
 		// Set up path-editing buttons
 		buttons = new SelectButton[BUTTON_COUNT];
 		buttons[BUTTON_INDEX_DRAW] = new SelectButton(new GreenfootImage("images/pencil.png"), true) {
