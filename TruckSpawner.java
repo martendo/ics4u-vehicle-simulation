@@ -30,12 +30,19 @@ public class TruckSpawner extends RandomSpawner {
 	 */
 	@Override
 	public void run() {
+		int roll = (int) (Math.random() * 10);
 		// First spawn a truck to lead the new payload
-		Truck truck = new Truck();
+		Truck.TruckColor color;
+		if (roll == 0) {
+			color = Truck.TruckColor.BROWN;
+		} else {
+			color = Truck.TruckColor.GREEN;
+		}
+		Truck truck = new Truck(color);
 		path.addTraveller(truck, laneNum);
 		world.addActor(truck);
 		// Spawn the payload following this truck at a later time
-		Spawner payloadSpawner = new FixedSpawner((int) (Truck.IMAGE.getWidth() / truck.getSpeed()), 1) {
+		Spawner payloadSpawner = new FixedSpawner((int) (truck.getImage().getWidth() / truck.getSpeed()), 1) {
 			@Override
 			public void run() {
 				// Remove this one-time spawner
@@ -47,7 +54,6 @@ public class TruckSpawner extends RandomSpawner {
 				}
 				// Spawn the payload following the truck
 				Payload payload;
-				int roll = (int) (Math.random() * 10);
 				if (roll == 0) {
 					payload = new Bomb(truck);
 				} else {
