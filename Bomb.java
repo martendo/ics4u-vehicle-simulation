@@ -26,6 +26,10 @@ public class Bomb extends Payload {
 	@Override
 	public void act() {
 		super.act();
+
+		if (!hasItem()) {
+			return;
+		}
 		if (--timer <= 0) {
 			explode();
 		}

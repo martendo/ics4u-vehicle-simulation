@@ -27,6 +27,8 @@ public abstract class Payload extends PathTraveller {
 
 	// The truck actor that this payload is following
 	private Truck attachedTruck;
+	// Whether or not this payload is still carrying its item
+	private boolean hasItem;
 
 	/**
 	 * Create a new payload actor attached to the given truck.
@@ -37,6 +39,7 @@ public abstract class Payload extends PathTraveller {
 		super(truck.getSpeed());
 		linkActor(truck);
 		attachedTruck = truck;
+		hasItem = true;
 
 		// Initialize image
 		image = GraphicsUtilities.createCompatibleTranslucentImage(TRUCK_BED_LENGTH, TRUCK_BED_WIDTH);
@@ -51,6 +54,11 @@ public abstract class Payload extends PathTraveller {
 		graphics.fillRect(0, 0, image.getWidth(), image.getHeight());
 		graphics.setColor(java.awt.Color.BLACK);
 		graphics.drawRect(0, 0, image.getWidth() - 1, image.getHeight() - 1);
+
+		if (!hasItem) {
+			return;
+		}
+
 		// Draw plate
 		graphics.setColor(PLATE_COLOR);
 		graphics.fillOval((TRUCK_BED_LENGTH - PLATE_SIZE) / 2, (TRUCK_BED_WIDTH - PLATE_SIZE) / 2, PLATE_SIZE, PLATE_SIZE);
@@ -70,9 +78,37 @@ public abstract class Payload extends PathTraveller {
 		drawImage();
 	}
 
+	/**
+	 * Test if this payload still has its item.
+	 */
+	public boolean hasItem() {
+		return hasItem;
+	}
+
+	/**
+	 * Remove the item from this payload.
+	 */
+	public void removeItem() {
+		hasItem = false;
+	}
+
 	@Override
 	public BufferedImage getImage() {
 		return image;
+	}
+
+	/**
+	 * Get the X coordinate of the center of this payload actor.
+	 */
+	public double getItemX() {
+		return getX() - (TRUCK_BED_LENGTH / 2.0) * Math.cos(getRotation());
+	}
+
+	/**
+	 * Get the Y coordinate of the center of this payload actor.
+	 */
+	public double getItemY() {
+		return getY() - (TRUCK_BED_WIDTH / 2.0) * Math.sin(getRotation());
 	}
 
 	/**

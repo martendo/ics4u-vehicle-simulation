@@ -456,4 +456,20 @@ public class SimulationWorld extends World {
 			addObject(shownWidgets.get(i), 20 * (i + 1) + (Widget.WIDTH * i) + Widget.WIDTH / 2, HEIGHT - 20 - Widget.HEIGHT / 2);
 		}
 	}
+
+	/**
+	 * Get all actors in this world of the specified class.
+	 *
+	 * @param cls the class of the actors to retrieve
+	 * @return a list of all actors of the class cls in this world
+	 */
+	public <T extends SuperActor> List<T> getActors(Class<T> cls) {
+		List<T> result = new ArrayList<T>();
+		for (SuperActor actor : actors) {
+			if (cls.isInstance(actor)) {
+				result.add(cls.cast(actor));
+			}
+		}
+		return result;
+	}
 }
