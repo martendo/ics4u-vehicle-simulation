@@ -14,7 +14,7 @@ public class Explosion extends SuperActor {
 	public static final BufferedImage IMAGE = new GreenfootImage("images/explosion.png").getAwtImage();
 
 	// Number of acts to keep an explosion on-screen
-	public static final int LIFESPAN = 30;
+	public static final int LIFESPAN = 10;
 
 	// The shape defining the area where actors will be killed from an explosion
 	private static final Ellipse2D HIT_SHAPE = new Ellipse2D.Double(-100, -100, 200, 200);

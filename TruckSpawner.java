@@ -47,7 +47,7 @@ public class TruckSpawner extends RandomSpawner {
 				}
 				// Spawn the payload following the truck
 				Payload payload;
-				int roll = (int) (Math.random() * 5.0);
+				int roll = (int) (Math.random() * 10);
 				if (roll == 0) {
 					payload = new Bomb(truck);
 				} else {
