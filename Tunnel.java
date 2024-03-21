@@ -2,7 +2,6 @@ import greenfoot.util.GraphicsUtilities;
 import java.awt.image.BufferedImage;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
-import java.awt.Shape;
 
 /**
  * The visual object representing the beginnings and ends of paths. They cover
@@ -102,10 +101,5 @@ public class Tunnel extends SuperActor {
 	@Override
 	public AffineTransform getImageTransform() {
 		return AffineTransform.getTranslateInstance(getX() - image.getWidth() / 2.0, getY() - image.getHeight() / 2.0);
-	}
-
-	@Override
-	public Shape getHitShape() {
-		throw new UnsupportedOperationException("Tunnel objects do not have hit shapes");
 	}
 }

@@ -195,6 +195,10 @@ public abstract class SuperActor {
 	/**
 	 * Return a shape object representing the area which this actor is
 	 * considered to be occupying, in world space (already transformed).
+	 *
+	 * By default, throw an UnsupportedOperationException.
 	 */
-	public abstract Shape getHitShape();
+	public Shape getHitShape() {
+		throw new UnsupportedOperationException("Attempted to access the hit shape of a SuperActor class that does not provide one");
+	}
 }
