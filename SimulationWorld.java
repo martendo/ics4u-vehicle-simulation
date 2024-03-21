@@ -203,6 +203,8 @@ public class SimulationWorld extends World {
 		shownWidgets.add(buttons[BUTTON_INDEX_LANE_PLUS]);
 		displayWidgets();
 
+		actors.add(new Bird());
+
 		// Draw initial background image so this world isn't blank on reset
 		updateImage();
 	}
