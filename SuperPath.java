@@ -398,9 +398,9 @@ public class SuperPath {
 
 		// Create dessert spawners for each lane in this path
 		for (int i = 0; i < laneCount; i++) {
-			Spawner dessertSpawner = new DessertSpawner(world, this, i);
-			world.addSpawner(dessertSpawner);
-			addSpawner(dessertSpawner);
+			Spawner truckSpawner = new TruckSpawner(world, this, i);
+			world.addSpawner(truckSpawner);
+			addSpawner(truckSpawner);
 		}
 	}
 

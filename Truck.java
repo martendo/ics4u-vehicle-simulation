@@ -6,7 +6,8 @@ import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 
 /**
- * The visual object that brings a dessert object along its path.
+ * The object that brings a payload object along its path, also dealing with its
+ * lane changing and collision.
  *
  * @author Martin Baldwin
  * @version March 2024
@@ -18,8 +19,8 @@ public class Truck extends PathTraveller {
 	public static final BufferedImage IMAGE = new GreenfootImage("images/truck.png").getAwtImage();
 
 	// The distance behind another traveller at which to slow down
-	public static final double SLOWDOWN_DISTANCE = Dessert.TRUCK_BED_LENGTH + 16.0;
-	public static final int LENGTH = Dessert.TRUCK_BED_LENGTH + IMAGE.getWidth() + 16;
+	public static final double SLOWDOWN_DISTANCE = Payload.TRUCK_BED_LENGTH + 16.0;
+	public static final int LENGTH = Payload.TRUCK_BED_LENGTH + IMAGE.getWidth() + 16;
 
 	// The area of a truck, with its midright point at the origin
 	private static final Rectangle2D HIT_RECT = new Rectangle2D.Double(-35, -29 / 2.0, 35, 29);
@@ -29,18 +30,18 @@ public class Truck extends PathTraveller {
 	// The traveller which this truck is currently stuck behind
 	private PathTraveller limitingTraveller;
 
-	// The dessert actor that is following this truck
-	private Dessert attachedDessert;
+	// The payload actor that is following this truck
+	private Payload attachedPayload;
 
 	public Truck() {
 		super(Math.random() * (MAX_SPEED - MIN_SPEED) + MIN_SPEED);
 		originalSpeed = getSpeed();
 		limitingTraveller = null;
-		attachedDessert = null;
+		attachedPayload = null;
 	}
 
-	public void attachDessert(Dessert dessert) {
-		attachedDessert = dessert;
+	public void attachPayload(Payload payload) {
+		attachedPayload = payload;
 	}
 
 	@Override
@@ -137,8 +138,8 @@ public class Truck extends PathTraveller {
 	@Override
 	public void setSpeed(double speed) {
 		super.setSpeed(speed);
-		if (attachedDessert != null) {
-			attachedDessert.setSpeed(speed);
+		if (attachedPayload != null) {
+			attachedPayload.setSpeed(speed);
 		}
 	}
 
@@ -149,8 +150,8 @@ public class Truck extends PathTraveller {
 	@Override
 	public void moveToLane(int newLane) {
 		super.moveToLane(newLane);
-		if (attachedDessert != null) {
-			attachedDessert.moveToLane(newLane, getDistanceTravelled() - IMAGE.getWidth());
+		if (attachedPayload != null) {
+			attachedPayload.moveToLane(newLane, getDistanceTravelled() - IMAGE.getWidth());
 		}
 	}
 

@@ -11,10 +11,10 @@ import java.awt.geom.Rectangle2D;
  * @author Martin Baldwin
  * @version March 2024
  */
-public abstract class Dessert extends PathTraveller {
+public abstract class Payload extends PathTraveller {
 	public static final int TRUCK_BED_WIDTH = 32;
 	public static final int TRUCK_BED_LENGTH = 48;
-	// The area of a dessert's truck bed, with its midright point at the origin
+	// The area of a truck's bed, with its midright point at the origin
 	private static final Rectangle2D HIT_RECT = new Rectangle2D.Double(-TRUCK_BED_LENGTH, -TRUCK_BED_WIDTH / 2.0, TRUCK_BED_LENGTH, TRUCK_BED_WIDTH);
 
 	private static final int PLATE_SIZE = TRUCK_BED_WIDTH;
@@ -25,15 +25,15 @@ public abstract class Dessert extends PathTraveller {
 	private final BufferedImage image;
 	private final Graphics2D graphics;
 
-	// The truck actor that this dessert is following
+	// The truck actor that this payload is following
 	private Truck attachedTruck;
 
 	/**
-	 * Create a new dessert actor attached to the given truck.
+	 * Create a new payload actor attached to the given truck.
 	 *
-	 * @param truck the truck actor to link this dessert to.
+	 * @param truck the truck actor to link this payload to.
 	 */
-	public Dessert(Truck truck) {
+	public Payload(Truck truck) {
 		super(truck.getSpeed());
 		linkActor(truck);
 		attachedTruck = truck;
@@ -76,8 +76,8 @@ public abstract class Dessert extends PathTraveller {
 	}
 
 	/**
-	 * Retrieve the BufferedImage of the dessert sprite to draw on top of the
-	 * truck bed and plate for this dessert's image.
+	 * Retrieve the BufferedImage of the payload sprite to draw on top of the
+	 * truck bed and plate for this payload's image.
 	 */
 	protected abstract BufferedImage getSprite();
 

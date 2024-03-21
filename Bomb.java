@@ -7,7 +7,7 @@ import java.awt.image.BufferedImage;
  * @author Martin Baldwin
  * @version March 2024
  */
-public class Bomb extends Dessert {
+public class Bomb extends Payload {
 	public static final BufferedImage SPRITE = new GreenfootImage("images/bomb.png").getAwtImage();
 
 	// Number of acts left until explosion
