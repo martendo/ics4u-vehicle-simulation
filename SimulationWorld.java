@@ -112,7 +112,7 @@ public class SimulationWorld extends World {
 		spawners = new ArrayList<Spawner>();
 
 		// Create wanderer spawners
-		spawners.add(new FixedSpawner(1200) {
+		spawners.add(new RandomSpawner(120, 300) {
 			@Override
 			public void run() {
 				addActor(new Ufo());
