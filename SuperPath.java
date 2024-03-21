@@ -102,6 +102,8 @@ public class SuperPath {
 	private SimulationWorld world;
 	// Objects currently in each lane on this path
 	private List<PathTraveller>[] travellers;
+	// SuperActors that are not PathTravellers linked to this path to be drawn under other paths
+	private List<SuperActor> otherActors;
 	// All spawners attached to this path, stored for cleaning up
 	private List<Spawner> spawners;
 	// Machine actors at ends of this path
@@ -155,6 +157,7 @@ public class SuperPath {
 		for (int i = 0; i < laneCount; i++) {
 			travellers[i] = new ArrayList<PathTraveller>();
 		}
+		otherActors = new ArrayList<SuperActor>();
 		spawners = new ArrayList<Spawner>();
 		startMachine = new Machine(this, true);
 		endMachine = new Machine(this, false);
@@ -425,6 +428,7 @@ public class SuperPath {
 	public List<SuperActor> getActors() {
 		// Append machines so that they are always drawn after (on top of) travellers
 		List<SuperActor> actors = new ArrayList<SuperActor>(getTravellers());
+		actors.addAll(otherActors);
 		actors.add(startMachine);
 		actors.add(endMachine);
 		return actors;
@@ -462,6 +466,35 @@ public class SuperPath {
 		}
 		travellers[object.getLaneNumber()].remove(object);
 		travellers[laneNum].add(object);
+	}
+
+	/**
+	 * Link an actor other than a path traveller to this path so it may be drawn
+	 * under other paths.
+	 *
+	 * @param actor the SuperActor object to link
+	 */
+	public void linkActor(SuperActor actor) {
+		if (actor instanceof PathTraveller) {
+			throw new IllegalArgumentException("PathTraveller objects must be added to SuperPaths using the addTraveller() method");
+		}
+		otherActors.add(actor);
+	}
+
+	/**
+	 * Remove an actor added with the addActor() method.
+	 *
+	 * @param actor the SuperActor object to unlink
+	 */
+	public void unlinkActor(SuperActor actor) {
+		otherActors.remove(actor);
+	}
+
+	/**
+	 * Return a list of actors that have been linked to this path.
+	 */
+	public List<SuperActor> getLinkedActors() {
+		return new ArrayList<SuperActor>(otherActors);
 	}
 
 	/**

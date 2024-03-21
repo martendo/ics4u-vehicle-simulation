@@ -35,6 +35,7 @@ public class Bomb extends Dessert {
 		// Create the explosion actor
 		Explosion explosion = new Explosion();
 		explosion.setLocation(getX(), getY());
+		getPath().linkActor(explosion);
 		getWorld().addActor(explosion);
 
 		// Kill all travellers within the range of the explosion shape (circle of radius 100)

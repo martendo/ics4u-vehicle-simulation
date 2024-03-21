@@ -278,6 +278,14 @@ public class SimulationWorld extends World {
 				actors.remove(actor);
 			}
 		}
+		// Remove dead actors from paths
+		for (SuperPath path : paths) {
+			for (SuperActor actor : path.getLinkedActors()) {
+				if (actor.isDead()) {
+					path.unlinkActor(actor);
+				}
+			}
+		}
 
 		// Render
 		updateImage();
