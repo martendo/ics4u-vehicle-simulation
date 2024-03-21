@@ -1,6 +1,6 @@
 /**
- * An individual timer that counts down by act, calling its spawn method after a
- * number of acts defined by its resetTImer() method has passed.
+ * An individual timer that counts down by act, calling its run method after a
+ * number of acts defined by its resetTimer() method has passed.
  *
  * @author Martin Baldwin
  * @version March 2024

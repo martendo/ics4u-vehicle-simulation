@@ -41,6 +41,7 @@ public class Explosion extends SuperActor {
 
 	@Override
 	public AffineTransform getImageTransform() {
+		// Draw the image centered at this explosion's coordinates
 		AffineTransform transform = AffineTransform.getTranslateInstance(getX(), getY());
 		transform.translate(-IMAGE.getWidth() / 2.0, -IMAGE.getHeight() / 2.0);
 		return transform;

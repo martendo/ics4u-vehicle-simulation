@@ -180,7 +180,12 @@ public abstract class SuperActor {
 	public abstract BufferedImage getImage();
 
 	/**
-	 * Get the transformation to apply to this actor's image when drawing it onto the world.
+	 * Get the transformation to apply to this actor's image when drawing it
+	 * onto the world.
+	 *
+	 * By default, this transforms the image so that its midright point is
+	 * placed at this actor's location point and that it is rotated about this
+	 * actor's location point.
 	 */
 	public AffineTransform getImageTransform() {
 		AffineTransform transform = AffineTransform.getTranslateInstance(x, y);

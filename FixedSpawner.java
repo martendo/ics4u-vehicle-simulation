@@ -1,5 +1,5 @@
 /**
- * An individual timer that counts down by act, calling its spawn method after a
+ * An individual timer that counts down by act, calling its run method after a
  * fixed number of acts has passed.
  *
  * @author Martin Baldwin

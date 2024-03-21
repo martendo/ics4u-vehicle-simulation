@@ -32,8 +32,8 @@ public class Truck extends PathTraveller {
 	}
 
 	// The distance behind another traveller at which to slow down
-	public static final double SLOWDOWN_DISTANCE = Payload.TRUCK_BED_LENGTH + 16.0;
-	public static final int LENGTH = Payload.TRUCK_BED_LENGTH + TruckColor.GREEN.image.getWidth() + 16;
+	public static final double SLOWDOWN_DISTANCE = Payload.TRUCK_BED_LENGTH + 24.0;
+	public static final int LENGTH = Payload.TRUCK_BED_LENGTH + TruckColor.GREEN.image.getWidth() + 24;
 
 	// The area of a truck, with its midright point at the origin
 	private static final Rectangle2D HIT_RECT = new Rectangle2D.Double(-35, -29 / 2.0, 35, 29);
