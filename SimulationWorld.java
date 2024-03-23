@@ -38,8 +38,8 @@ public class SimulationWorld extends World {
 
 	// Background pattern visual parameters
 	private static final int BACKGROUND_PATTERN_WIDTH = 128;
-	private static final java.awt.Color BACKGROUND_PATTERN_COLOR_1 = new java.awt.Color(255, 200, 155);
-	private static final java.awt.Color BACKGROUND_PATTERN_COLOR_2 = new java.awt.Color(255, 190, 140);
+	private static final java.awt.Color BACKGROUND_PATTERN_COLOR_1 = new java.awt.Color(94, 175, 86);
+	private static final java.awt.Color BACKGROUND_PATTERN_COLOR_2 = new java.awt.Color(87, 165, 80);
 	private static final BufferedImage BACKGROUND_PATTERN = createBackgroundPattern();
 
 	// Mouse actions can correspond to different path-editing actions depending on the selected button
