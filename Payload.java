@@ -1,6 +1,7 @@
 import greenfoot.util.GraphicsUtilities;
 import java.awt.image.BufferedImage;
 import java.awt.Graphics2D;
+import java.awt.BasicStroke;
 import java.awt.geom.AffineTransform;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
@@ -21,6 +22,9 @@ public abstract class Payload extends PathTraveller {
 
 	private static final java.awt.Color TRUCK_BED_COLOR = new java.awt.Color(140, 140, 140);
 	private static final java.awt.Color PLATE_COLOR = java.awt.Color.WHITE;
+	private static final java.awt.Color BORDER_COLOR = java.awt.Color.BLACK;
+
+	private static final BasicStroke BORDER_STROKE = new BasicStroke(1.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 
 	private final BufferedImage image;
 	private final Graphics2D graphics;
@@ -42,18 +46,20 @@ public abstract class Payload extends PathTraveller {
 		hasItem = true;
 
 		// Initialize image
-		image = GraphicsUtilities.createCompatibleTranslucentImage(TRUCK_BED_LENGTH, TRUCK_BED_WIDTH);
+		image = GraphicsUtilities.createCompatibleTranslucentImage(TRUCK_BED_LENGTH + 8, TRUCK_BED_WIDTH + 8);
 		graphics = image.createGraphics();
 		graphics.addRenderingHints(SimulationWorld.RENDERING_HINTS);
+		graphics.translate(4, 4); // Padding
+		graphics.setStroke(BORDER_STROKE);
 		drawImage();
 	}
 
 	public void drawImage() {
 		// Draw truck bed
 		graphics.setColor(TRUCK_BED_COLOR);
-		graphics.fillRect(0, 0, image.getWidth(), image.getHeight());
-		graphics.setColor(java.awt.Color.BLACK);
-		graphics.drawRect(0, 0, image.getWidth() - 1, image.getHeight() - 1);
+		graphics.fillRect(0, 0, TRUCK_BED_LENGTH, TRUCK_BED_WIDTH);
+		graphics.setColor(BORDER_COLOR);
+		graphics.drawRect(0, 0, TRUCK_BED_LENGTH, TRUCK_BED_WIDTH);
 
 		if (!hasItem) {
 			return;

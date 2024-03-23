@@ -1,6 +1,7 @@
 import greenfoot.util.GraphicsUtilities;
 import java.awt.image.BufferedImage;
 import java.awt.Graphics2D;
+import java.awt.BasicStroke;
 import java.awt.geom.AffineTransform;
 
 /**
@@ -18,8 +19,11 @@ public class Tunnel extends SuperActor {
 	private static final int ROOF_MARGIN = 24;
 	private static final int POSITION_OFFSET = 64;
 
-	private static final java.awt.Color BODY_COLOR = new java.awt.Color(196, 196, 196);
+	private static final java.awt.Color BODY_COLOR = new java.awt.Color(208, 122, 74);
 	private static final java.awt.Color ROOF_COLOR = new java.awt.Color(128, 128, 128, 128);
+	private static final java.awt.Color BORDER_COLOR = new java.awt.Color(32, 32, 32);
+
+	private static final BasicStroke BORDER_STROKE = new BasicStroke(3.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 
 	private final BufferedImage image;
 	private final Graphics2D graphics;
@@ -48,12 +52,12 @@ public class Tunnel extends SuperActor {
 		this.forwards = forwards;
 
 		// Initialize image
-		int size = Math.max(length, width) * 2;
+		int size = Math.max(length, width) * 2 + 8; // + Padding
 		image = GraphicsUtilities.createCompatibleTranslucentImage(size, size);
 		graphics = image.createGraphics();
 		graphics.addRenderingHints(SimulationWorld.RENDERING_HINTS);
 		graphics.setBackground(new java.awt.Color(0, 0, 0, 0));
-
+		graphics.setStroke(BORDER_STROKE);
 		setRotation(0.0);
 	}
 
@@ -81,13 +85,13 @@ public class Tunnel extends SuperActor {
 		graphics.translate(forwards ? POSITION_OFFSET : -(ROOF_LENGTH + POSITION_OFFSET), -(width - ROOF_MARGIN) / 2);
 		graphics.setColor(ROOF_COLOR);
 		graphics.fillRect(0, 0, ROOF_LENGTH, (width - ROOF_MARGIN));
-		graphics.setColor(java.awt.Color.BLACK);
+		graphics.setColor(BORDER_COLOR);
 		graphics.drawRect(0, 0, ROOF_LENGTH, (width - ROOF_MARGIN));
 		// Draw body
 		graphics.translate(forwards ? -length : ROOF_LENGTH, -ROOF_MARGIN / 2);
 		graphics.setColor(BODY_COLOR);
 		graphics.fillRect(0, 0, length, width);
-		graphics.setColor(java.awt.Color.BLACK);
+		graphics.setColor(BORDER_COLOR);
 		graphics.drawRect(0, 0, length, width);
 
 		graphics.setTransform(saveTransform);
