@@ -25,7 +25,7 @@ public class Ufo extends Wanderer {
 
 	public static final double IMAGE_ROTATION_SPEED = Math.PI * 2.0 / 180.0;
 
-	private static final Ellipse2D HIT_SHAPE = new Ellipse2D.Double(0, 0, IMAGE.getWidth(), IMAGE.getHeight());
+	private static final Ellipse2D HIT_SHAPE = new Ellipse2D.Double(14, 14, 100, 100);
 
 	// The angle at which this UFO is moving, which differs from its angle of rotation
 	private double movementAngle;
