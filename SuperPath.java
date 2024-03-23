@@ -30,7 +30,7 @@ import java.util.ListIterator;
 public class SuperPath {
 	// Settings
 	public static final boolean DEBUG_SHOW_LANE_PATHS = false;
-	public static final boolean DEBUG_SHOW_BOUNDING_RECT = true;
+	public static final boolean DEBUG_SHOW_BOUNDING_RECT = false;
 
 	// Flatness of curves to enforce when looking for intersections in paths
 	private static final double INTERSECTION_TEST_FLATNESS = 1.0;
@@ -87,7 +87,9 @@ public class SuperPath {
 	private final OffsetPathCollection laneSeparators;
 
 	// Stored image of this path for more efficient drawing
-	private BufferedImage image;
+	private BufferedImage fullImage;
+	// Cropped subimage of fullImage for even faster drawing
+	private BufferedImage croppedImage;
 	// Graphics context of this path's image
 	private final Graphics2D graphics;
 	// Signal that this path has changed and needs to be redrawn
@@ -142,8 +144,9 @@ public class SuperPath {
 		}
 
 		// Set up visuals
-		image = GraphicsUtilities.createCompatibleTranslucentImage(SimulationWorld.WIDTH, SimulationWorld.HEIGHT);
-		graphics = image.createGraphics();
+		fullImage = GraphicsUtilities.createCompatibleTranslucentImage(SimulationWorld.WIDTH, SimulationWorld.HEIGHT);
+		croppedImage = fullImage;
+		graphics = fullImage.createGraphics();
 		graphics.addRenderingHints(SimulationWorld.RENDERING_HINTS);
 		if (DEBUG_SHOW_BOUNDING_RECT) {
 			graphics.setBackground(new java.awt.Color(0, 0, 0, 128));
@@ -151,7 +154,7 @@ public class SuperPath {
 			graphics.setBackground(new java.awt.Color(0, 0, 0, 0));
 		}
 		needsRedraw = true;
-		bounds = new Rectangle2D.Double(0, 0, image.getWidth(), image.getHeight());
+		bounds = new Rectangle2D.Double(0, 0, fullImage.getWidth(), fullImage.getHeight());
 		// Strokes for drawing this path
 		pathStroke = new BasicStroke(getPathWidth(), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 		pathOutlineStroke = new BasicStroke(getPathWidth() + PATH_OUTLINE_WIDTH * 2, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
@@ -263,7 +266,7 @@ public class SuperPath {
 	 * Draw this SuperPath onto its image object.
 	 */
 	private void redraw() {
-		graphics.clearRect(0, 0, image.getWidth(), image.getHeight());
+		graphics.clearRect(0, 0, fullImage.getWidth(), fullImage.getHeight());
 		// Determine how to paint this path depending on state
 		Paint paint;
 		if (state == SuperPathState.HOVER) {
@@ -315,6 +318,16 @@ public class SuperPath {
 		if (state == SuperPathState.NORMAL) {
 			needsRedraw = false;
 		}
+
+		// Crop this path's image to its boundaries for faster drawing
+		// The stroke for the path outline is the thickest, thus defining the boundary of this path
+		bounds = pathOutlineStroke.createStrokedShape(path).getBounds2D();
+		// Grow bounds to include rendered subpixels
+		bounds.setRect(bounds.getX() - 1, bounds.getY() - 1, bounds.getWidth() + 2, bounds.getHeight() + 2);
+		// Clamp bounds to original image dimensions
+		bounds = bounds.createIntersection(new Rectangle2D.Double(0, 0, fullImage.getWidth(), fullImage.getHeight()));
+		// Draw using cropped image (graphics continues to draw on full-size image, coordinates unaffected)
+		croppedImage = fullImage.getSubimage(getX(), getY(), (int) bounds.getWidth(), (int) bounds.getHeight());
 	}
 
 	/**
@@ -361,7 +374,7 @@ public class SuperPath {
 		if (needsRedraw) {
 			redraw();
 		}
-		return image;
+		return croppedImage;
 	}
 
 	/**
@@ -391,15 +404,6 @@ public class SuperPath {
 		if (laneSeparators != null) {
 			laneSeparators.complete();
 		}
-
-		// Crop this path's image to its boundaries for faster drawing
-		bounds = pathOutlineStroke.createStrokedShape(path).getBounds2D();
-		// Grow bounds to include rendered subpixels
-		bounds.setRect(bounds.getX() - 1, bounds.getY() - 1, bounds.getWidth() + 2, bounds.getHeight() + 2);
-		// Clamp bounds to original image dimensions
-		bounds = bounds.createIntersection(new Rectangle2D.Double(0, 0, image.getWidth(), image.getHeight()));
-		// Draw using cropped image (graphics continues to draw on full-size image, coordinates unaffected)
-		image = image.getSubimage(getX(), getY(), (int) bounds.getWidth(), (int) bounds.getHeight());
 
 		// Create dessert spawners for each lane in this path
 		for (int i = 0; i < laneCount; i++) {
