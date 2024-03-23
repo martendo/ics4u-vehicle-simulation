@@ -12,12 +12,13 @@ import java.awt.geom.Ellipse2D;
  * @version March 2024
  */
 public class Ufo extends Wanderer {
-	public static final BufferedImage IMAGE = new GreenfootImage("images/ufo.png").getAwtImage();
+	public static final BufferedImage NORMAL_IMAGE = new GreenfootImage("images/ufo-normal.png").getAwtImage();
+	public static final BufferedImage SCARED_IMAGE = new GreenfootImage("images/ufo-scared.png").getAwtImage();
 
-	public static final int MIN_X = -IMAGE.getWidth();
-	public static final int MAX_X = SimulationWorld.WIDTH + IMAGE.getWidth();
-	public static final int MIN_Y = -IMAGE.getHeight();
-	public static final int MAX_Y = SimulationWorld.HEIGHT + IMAGE.getHeight();
+	public static final int MIN_X = -NORMAL_IMAGE.getWidth();
+	public static final int MAX_X = SimulationWorld.WIDTH + NORMAL_IMAGE.getWidth();
+	public static final int MIN_Y = -NORMAL_IMAGE.getHeight();
+	public static final int MAX_Y = SimulationWorld.HEIGHT + NORMAL_IMAGE.getHeight();
 
 	public static final double MIN_SPEED = 2.0;
 	public static final double MAX_SPEED = 3.0;
@@ -98,14 +99,14 @@ public class Ufo extends Wanderer {
 	 * Return the X position of the center of this UFO's image.
 	 */
 	private double getCenterX() {
-		return getX() - IMAGE.getWidth() / 2.0 * Math.cos(getRotation());
+		return getX() - getImage().getWidth() / 2.0 * Math.cos(getRotation());
 	}
 
 	/**
 	 * Return the Y position of the center of this UFO's image.
 	 */
 	private double getCenterY() {
-		return getY() - IMAGE.getWidth() / 2.0 * Math.cos(getRotation());
+		return getY() - getImage().getWidth() / 2.0 * Math.cos(getRotation());
 	}
 
 	/**
@@ -127,24 +128,28 @@ public class Ufo extends Wanderer {
 
 	@Override
 	public BufferedImage getImage() {
-		return IMAGE;
+		if (isScared) {
+			return SCARED_IMAGE;
+		}
+		return NORMAL_IMAGE;
 	}
 
 	@Override
 	public AffineTransform getImageTransform() {
+		BufferedImage image = getImage();
 		AffineTransform transform = AffineTransform.getTranslateInstance(getX(), getY());
 		if (isScared) {
 			// Restore the original image center point at the time of being scared
 			transform.rotate(scaredAngle);
-			transform.translate(-IMAGE.getWidth() / 2.0, 0.0);
+			transform.translate(-image.getWidth() / 2.0, 0.0);
 		}
 		// Rotate from the center if scared, midright point otherwise
 		transform.rotate(getRotation());
 		// Place image center at this UFO's location if scared, midright of image otherwise
 		if (isScared) {
-			transform.translate(-IMAGE.getWidth() / 2.0, -IMAGE.getHeight() / 2.0);
+			transform.translate(-image.getWidth() / 2.0, -image.getHeight() / 2.0);
 		} else {
-			transform.translate(-IMAGE.getWidth(), -IMAGE.getHeight() / 2.0);
+			transform.translate(-image.getWidth(), -image.getHeight() / 2.0);
 		}
 		return transform;
 	}
