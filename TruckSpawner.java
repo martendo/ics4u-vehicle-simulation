@@ -32,11 +32,11 @@ public class TruckSpawner extends RandomSpawner {
 	public void run() {
 		int roll = (int) (Math.random() * 5);
 		// First spawn a truck to lead the new payload
-		Truck.TruckColor color;
+		Truck.Color color;
 		if (roll == 0) {
-			color = Truck.TruckColor.BROWN;
+			color = Truck.Color.BROWN;
 		} else {
-			color = Truck.TruckColor.GREEN;
+			color = Truck.Color.GREEN;
 		}
 		Truck truck = new Truck(color);
 		path.addTraveller(truck, laneNum);

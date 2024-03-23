@@ -20,20 +20,20 @@ public class Truck extends PathTraveller {
 	public static final int LANE_CHANGE_TIMEOUT = 120;
 
 	// All types of trucks with different images
-	public enum TruckColor {
+	public enum Color {
 		GREEN("images/truck-green.png"),
 		BROWN("images/truck-brown.png");
 
 		public final BufferedImage image;
 
-		private TruckColor(String filename) {
+		private Color(String filename) {
 			image = new GreenfootImage(filename).getAwtImage();
 		}
 	}
 
 	// The distance behind another traveller at which to slow down
 	public static final double SLOWDOWN_DISTANCE = Payload.TRUCK_BED_LENGTH + 24.0;
-	public static final int LENGTH = Payload.TRUCK_BED_LENGTH + TruckColor.GREEN.image.getWidth() + 24;
+	public static final int LENGTH = Payload.TRUCK_BED_LENGTH + Color.GREEN.image.getWidth() + 24;
 
 	// The area of a truck, with its midright point at the origin
 	private static final Rectangle2D HIT_RECT = new Rectangle2D.Double(-35, -29 / 2.0, 35, 29);
@@ -41,7 +41,7 @@ public class Truck extends PathTraveller {
 	// The default or target speed of this truck
 	private double originalSpeed;
 	// The color of this truck, determining what image to use
-	private TruckColor color;
+	private Color color;
 
 	// The traveller which this truck is currently stuck behind
 	private PathTraveller limitingTraveller;
@@ -52,7 +52,7 @@ public class Truck extends PathTraveller {
 	// Number of acts to wait until this truck can make another lane change
 	private int laneChangeTimer;
 
-	public Truck(TruckColor color) {
+	public Truck(Color color) {
 		super(Math.random() * (MAX_SPEED - MIN_SPEED) + MIN_SPEED);
 		originalSpeed = getSpeed();
 		this.color = color;
