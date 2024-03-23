@@ -43,6 +43,9 @@ public class SimulationWorld extends World {
 	private static final java.awt.Color BACKGROUND_PATTERN_COLOR_2 = new java.awt.Color(87, 165, 80);
 	private static final BufferedImage BACKGROUND_PATTERN = createBackgroundPattern();
 
+	// The order to draw wanderer types, appearing from bottom to top
+	private static final Class[] WANDERER_DRAW_ORDER = {Bird.class, Ufo.class};
+
 	// Mouse actions can correspond to different path-editing actions depending on the selected button
 	public enum PathEditMode {
 		DRAW, SELECT
@@ -416,10 +419,15 @@ public class SimulationWorld extends World {
 				actorsToDraw.remove(actor);
 			}
 		}
-
 		// Draw all remaining actors that haven't already been drawn when drawing paths
-		for (SuperActor actor : actorsToDraw) {
-			drawActor(actor);
+		// The only types of actors that are not linked to paths are wanderers
+		for (Class cls : WANDERER_DRAW_ORDER) {
+			for (SuperActor actor : new ArrayList<SuperActor>(actorsToDraw)) {
+				if (cls.isInstance(actor)) {
+					drawActor(actor);
+					actorsToDraw.remove(actor);
+				}
+			}
 		}
 	}
 
