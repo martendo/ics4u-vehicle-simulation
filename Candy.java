@@ -2,12 +2,12 @@ import greenfoot.GreenfootImage;
 import java.awt.image.BufferedImage;
 
 /**
- * The only type of dessert for now...
+ * A tasty type of food that birds will target and eat.
  *
  * @author Martin Baldwin
  * @version March 2024
  */
-public class Candy extends Payload {
+public class Candy extends Food {
 	public static final BufferedImage SPRITE = new GreenfootImage("images/candy.png").getAwtImage();
 
 	public Candy(Truck truck) {
