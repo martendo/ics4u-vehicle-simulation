@@ -119,6 +119,12 @@ public class SimulationWorld extends World {
 				addActor(new Ufo());
 			}
 		});
+		spawners.add(new RandomSpawner(60, 180) {
+			@Override
+			public void run() {
+				addActor(new Bird());
+			}
+		});
 
 		// Set up path-editing buttons
 		buttons = new SelectButton[BUTTON_COUNT];
@@ -203,8 +209,6 @@ public class SimulationWorld extends World {
 		shownWidgets.add(otherWidgets[WIDGET_INDEX_LANE_COUNT]);
 		shownWidgets.add(buttons[BUTTON_INDEX_LANE_PLUS]);
 		displayWidgets();
-
-		actors.add(new Bird());
 
 		if (INIT_DEFAULT_PATH) {
 			// Create one default path to start with

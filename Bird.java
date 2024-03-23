@@ -5,43 +5,76 @@ import java.awt.geom.AffineTransform;
 public class Bird extends Wanderer {
 	public static final BufferedImage IMAGE = new GreenfootImage("images/bird.png").getAwtImage();
 
-	private static final double MAX_ACCEL = 0.1;
+	private static final double SPEED = 4.0;
 
-	private double speed;
-	private double accelMag;
-	private double accelAngle;
-	private boolean wasOutside;
+	private static final double MIN_X = -IMAGE.getWidth() / 2.0;
+	private static final double MAX_X = SimulationWorld.WIDTH + IMAGE.getWidth() / 2.0;
+	private static final double MIN_Y = -IMAGE.getHeight() / 2.0;
+	private static final double MAX_Y = SimulationWorld.HEIGHT + IMAGE.getHeight() / 2.0;
 
-	private Spawner accelChangeTimer;
+	// The angle of rotation of this bird at the start of a lerp interval
+	private double prevAngle;
+	// The angle of rotation of this bird at the end of a lerp interval
+	private double targetAngle;
+	// The current angle interpolation factor ("t"), in [0.0, 1.0]
+	private double lerp;
+
+	// Timer that will periodically change this bird's target angle
+	private Spawner targetChangeTimer;
 
 	public Bird() {
 		super();
-		setLocation(SimulationWorld.WIDTH / 2.0, SimulationWorld.HEIGHT / 2.0);
-		accelChangeTimer = new RandomSpawner(10, 60) {
+
+		// Initialize location
+		double x, y;
+		if ((int) (Math.random() * 2) == 0) {
+			// Spawn on a horizontal edge of the world
+			boolean top = (int) (Math.random() * 2) == 0;
+			x = Math.random() * (MAX_X - MIN_X) + MIN_X;
+			y = top ? MIN_Y : MAX_Y;
+		} else {
+			// Spawn on a vertical edge of the world
+			boolean left = (int) (Math.random() * 2) == 0;
+			x = left ? MIN_X : MAX_X;
+			y = Math.random() * (MAX_Y - MIN_Y) + MIN_Y;
+		}
+		setLocation(x, y);
+
+		setSpeed(SPEED);
+		setRotation(Math.atan2(SimulationWorld.HEIGHT / 2.0 - y, SimulationWorld.WIDTH / 2.0 - x));
+		targetChangeTimer = new RandomSpawner(60, 120) {
 			@Override
 			public void run() {
-				accelMag = Math.random() * MAX_ACCEL;
-				accelAngle = Math.random() * Math.PI * 2.0;
+				updateTarget();
 			}
 		};
+		updateTarget();
+	}
+
+	/**
+	 * Set up this bird for a new target angle to interpolate towards.
+	 */
+	private void updateTarget() {
+		prevAngle = getRotation();
+		targetAngle = Math.random() * Math.PI * 2.0;
+		if (Math.abs(targetAngle - Math.PI * 2.0 - prevAngle) < Math.abs(targetAngle - prevAngle)) {
+			targetAngle -= Math.PI * 2.0;
+		}
+		lerp = 0.0;
 	}
 
 	@Override
 	public void act() {
-		accelChangeTimer.act();
-		if (getX() < 0 || getX() > SimulationWorld.WIDTH || getY() < 0 || getY() > SimulationWorld.HEIGHT) {
-			accelMag = MAX_ACCEL;
-			accelAngle = Math.atan2(SimulationWorld.HEIGHT / 2.0 - getY(), SimulationWorld.WIDTH / 2.0 - getX());
-			wasOutside = true;
-		} else if (wasOutside) {
-			accelMag = -accelMag;
-			wasOutside = false;
+		targetChangeTimer.act();
+		if (lerp < 1.0) {
+			lerp += 0.005;
 		}
-		double speedX = speed * Math.cos(getRotation()) + accelMag * Math.cos(accelAngle);
-		double speedY = speed * Math.sin(getRotation()) + accelMag * Math.sin(accelAngle);
-		speed = Math.hypot(speedX, speedY);
-		setRotation(Math.atan2(speedY, speedX));
-		setLocation(getX() + speedX, getY() + speedY);
+		setRotation(prevAngle + (targetAngle - prevAngle) * lerp);
+
+		setLocation(getX() + getSpeed() * Math.cos(getRotation()), getY() + getSpeed() * Math.sin(getRotation()));
+		if (getX() < MIN_X || getX() > MAX_X || getY() < MIN_Y || getY() > MAX_Y) {
+			die();
+		}
 	}
 
 	@Override
