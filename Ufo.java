@@ -21,13 +21,19 @@ public class Ufo extends Wanderer {
 
 	public static final double MIN_SPEED = 2.0;
 	public static final double MAX_SPEED = 3.0;
+	public static final double SCARED_SPEED = 10.0;
 
 	public static final double IMAGE_ROTATION_SPEED = Math.PI * 2.0 / 180.0;
 
 	private static final Ellipse2D HIT_SHAPE = new Ellipse2D.Double(0, 0, IMAGE.getWidth(), IMAGE.getHeight());
 
 	// The angle at which this UFO is moving, which differs from its angle of rotation
-	private final double movementAngle;
+	private double movementAngle;
+
+	// The flag that controls whether this UFO will move in its usual spiral motion (false) or a straight line (true)
+	private boolean isScared;
+	// The image angle of this UFO at the time it was scared, for maintaining its image position after being scared
+	private double scaredAngle;
 
 	public Ufo() {
 		super();
@@ -54,6 +60,8 @@ public class Ufo extends Wanderer {
 		setLocation(x1, y1);
 		setSpeed(Math.random() * (MAX_SPEED - MIN_SPEED) + MIN_SPEED);
 		movementAngle = Math.atan2(y2 - y1, x2 - x1);
+		isScared = false;
+		scaredAngle = -1.0;
 	}
 
 	@Override
@@ -72,12 +80,31 @@ public class Ufo extends Wanderer {
 		// Rotate the image
 		setRotation(imageAngle + IMAGE_ROTATION_SPEED);
 
-		// Pick up any payloads under this UFO
-		for (Payload payload : getWorld().getActors(Payload.class)) {
-			if (getHitShape().contains(payload.getItemX(), payload.getItemY())) {
-				payload.removeItem();
+		if (!isScared) {
+			// Pick up any payloads under this UFO
+			for (Payload payload : getWorld().getActors(Payload.class)) {
+				if (getHitShape().contains(payload.getItemX(), payload.getItemY())) {
+					payload.removeItem();
+				}
 			}
 		}
+	}
+
+	/**
+	 * Start making this UFO move in a straight lane at a faster speed directly
+	 * away from the given point.
+	 *
+	 * @param x the x-coordinate of the point to move away from
+	 * @param y the y-coordinate of the point to move away from
+	 */
+	public void scareAwayFromPoint(double x, double y) {
+		isScared = true;
+		movementAngle = Math.atan2(getY() - y, getX() - x);
+		if (scaredAngle < 0.0) {
+			scaredAngle = getRotation();
+			setRotation(0.0);
+		}
+		setSpeed(SCARED_SPEED);
 	}
 
 	@Override
@@ -86,10 +113,26 @@ public class Ufo extends Wanderer {
 	}
 
 	@Override
-	public Shape getHitShape() {
+	public AffineTransform getImageTransform() {
 		AffineTransform transform = AffineTransform.getTranslateInstance(getX(), getY());
+		if (isScared) {
+			// Restore the original image center point at the time of being scared
+			transform.rotate(scaredAngle);
+			transform.translate(-IMAGE.getWidth() / 2.0, 0.0);
+		}
+		// Rotate from the center if scared, midright point otherwise
 		transform.rotate(getRotation());
-		transform.translate(-IMAGE.getWidth(), -IMAGE.getHeight() / 2.0);
-		return transform.createTransformedShape(HIT_SHAPE);
+		// Place image center at this UFO's location if scared, midright of image otherwise
+		if (isScared) {
+			transform.translate(-IMAGE.getWidth() / 2.0, -IMAGE.getHeight() / 2.0);
+		} else {
+			transform.translate(-IMAGE.getWidth(), -IMAGE.getHeight() / 2.0);
+		}
+		return transform;
+	}
+
+	@Override
+	public Shape getHitShape() {
+		return getImageTransform().createTransformedShape(HIT_SHAPE);
 	}
 }

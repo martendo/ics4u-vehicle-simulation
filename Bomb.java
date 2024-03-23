@@ -46,6 +46,12 @@ public class Bomb extends Payload {
 				traveller.dieAndKillLinked();
 			}
 		}
+
+		// Scare all UFOs away
+		for (Ufo ufo : getWorld().getActors(Ufo.class)) {
+			ufo.scareAwayFromPoint(getX(), getY());
+		}
+
 		getPath().linkActor(explosion);
 		getWorld().addActor(explosion);
 	}

@@ -30,7 +30,7 @@ public class TruckSpawner extends RandomSpawner {
 	 */
 	@Override
 	public void run() {
-		int roll = (int) (Math.random() * 10);
+		int roll = (int) (Math.random() * 5);
 		// First spawn a truck to lead the new payload
 		Truck.TruckColor color;
 		if (roll == 0) {
