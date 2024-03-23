@@ -17,6 +17,7 @@ public class SimulationWorld extends World {
 	// Settings
 	public static final int MIN_LANE_COUNT = 1;
 	public static final int MAX_LANE_COUNT = 10;
+	public static final boolean INIT_DEFAULT_PATH = true;
 
 	// Dimensions of this world
 	public static final int WIDTH = 1024;
@@ -204,6 +205,27 @@ public class SimulationWorld extends World {
 		displayWidgets();
 
 		actors.add(new Bird());
+
+		if (INIT_DEFAULT_PATH) {
+			// Create one default path to start with
+			SuperPath defaultPath = new SuperPath(3);
+			paths.add(defaultPath);
+			defaultPath.addedToWorld(this);
+			defaultPath.addPoint(925, 25);
+			defaultPath.addPoint(875, 225);
+			defaultPath.addPoint(750, 275);
+			defaultPath.addPoint(575, 175);
+			defaultPath.addPoint(350, 125);
+			defaultPath.addPoint(200, 150);
+			defaultPath.addPoint(100, 275);
+			defaultPath.addPoint(125, 450);
+			defaultPath.addPoint(300, 550);
+			defaultPath.addPoint(550, 400);
+			defaultPath.addPoint(700, 450);
+			defaultPath.addPoint(725, 650);
+			defaultPath.addPoint(750, 775);
+			defaultPath.complete();
+		}
 
 		// Draw initial background image so this world isn't blank on reset
 		updateImage();
