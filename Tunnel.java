@@ -37,6 +37,8 @@ public class Tunnel extends SuperActor {
 	private final Graphics2D graphics;
 	// Cropped subimage of fullImage for faster drawing
 	private BufferedImage croppedImage;
+	// Rectangle defining the area relative to fullImage that croppedImage contains
+	private Rectangle2D crop;
 
 	// The dimensions of this tunnel, dependent on the width of its path
 	private final int length;
@@ -112,13 +114,13 @@ public class Tunnel extends SuperActor {
 		graphics.setTransform(saveTransform);
 
 		// Crop this tunnel's image to its boundaries for faster drawing
-		Rectangle2D bounds = getDrawingTransform().createTransformedShape(boundsShape).getBounds2D();
+		crop = getDrawingTransform().createTransformedShape(boundsShape).getBounds2D();
 		// Grow bounds to include rendered subpixels
-		bounds.setRect(bounds.getX() - 3, bounds.getY() - 3, bounds.getWidth() + 6, bounds.getHeight() + 6);
+		crop.setRect(crop.getX() - 3, crop.getY() - 3, crop.getWidth() + 6, crop.getHeight() + 6);
 		// Clamp bounds to original image dimensions
-		bounds = bounds.createIntersection(new Rectangle2D.Double(0, 0, fullImage.getWidth(), fullImage.getHeight()));
+		crop = crop.createIntersection(new Rectangle2D.Double(0, 0, fullImage.getWidth(), fullImage.getHeight()));
 		// Draw using cropped image (graphics continues to draw on full-size image, coordinates unaffected)
-		croppedImage = fullImage.getSubimage((int) bounds.getX(), (int) bounds.getY(), (int) bounds.getWidth(), (int) bounds.getHeight());
+		croppedImage = fullImage.getSubimage((int) crop.getX(), (int) crop.getY(), (int) crop.getWidth(), (int) crop.getHeight());
 	}
 
 	@Override
@@ -151,6 +153,6 @@ public class Tunnel extends SuperActor {
 
 	@Override
 	public AffineTransform getImageTransform() {
-		return AffineTransform.getTranslateInstance(getX() - croppedImage.getWidth() / 2.0, getY() - croppedImage.getHeight() / 2.0);
+		return AffineTransform.getTranslateInstance(getX() - fullImage.getWidth() / 2.0 + crop.getX(), getY() - fullImage.getHeight() / 2.0 + crop.getY());
 	}
 }
