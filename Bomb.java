@@ -38,6 +38,7 @@ public class Bomb extends Payload {
 	private void explode() {
 		// Create the explosion actor
 		Explosion explosion = new Explosion();
+		explosion.setLayer(getWorld().getPathIndex(getPath()));
 		explosion.setLocation(getX(), getY());
 
 		// Kill all travellers within the range of the explosion shape (circle of radius 100)
@@ -52,7 +53,6 @@ public class Bomb extends Payload {
 			ufo.scareAwayFromPoint(getX(), getY());
 		}
 
-		getPath().linkActor(explosion);
 		getWorld().addActor(explosion);
 	}
 

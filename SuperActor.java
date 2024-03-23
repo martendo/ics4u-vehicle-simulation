@@ -27,6 +27,9 @@ public abstract class SuperActor {
 	// All other actors to be considered as a unit with this actor
 	private Set<SuperActor> linkedActors;
 
+	// The Z layer this actor appears on, relative to the paths that exist in its world
+	private int layer;
+
 	/**
 	 * Create a new SuperActor.
 	 */
@@ -37,6 +40,21 @@ public abstract class SuperActor {
 		isDead = false;
 		world = null;
 		linkedActors = new HashSet<SuperActor>();
+		layer = -1;
+	}
+
+	/**
+	 * Set this actor's layer index to the given value.
+	 */
+	public void setLayer(int layer) {
+		this.layer = layer;
+	}
+
+	/**
+	 * Return this actor's current layer index.
+	 */
+	public int getLayer() {
+		return layer;
 	}
 
 	/**

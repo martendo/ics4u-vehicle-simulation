@@ -43,8 +43,8 @@ public class SimulationWorld extends World {
 	private static final java.awt.Color BACKGROUND_PATTERN_COLOR_2 = new java.awt.Color(87, 165, 80);
 	private static final BufferedImage BACKGROUND_PATTERN = createBackgroundPattern();
 
-	// The order to draw wanderer types, appearing from bottom to top
-	private static final Class[] WANDERER_DRAW_ORDER = {Bird.class, Ufo.class};
+	// The order to draw actor types that are not linked to paths, appearing from bottom to top
+	private static final Class[] NONPATH_ACTOR_DRAW_ORDER = {Explosion.class, Bird.class, Ufo.class};
 
 	// Mouse actions can correspond to different path-editing actions depending on the selected button
 	public enum PathEditMode {
@@ -119,13 +119,21 @@ public class SimulationWorld extends World {
 		spawners.add(new RandomSpawner(120, 300) {
 			@Override
 			public void run() {
-				addActor(new Ufo());
+				Ufo ufo = new Ufo();
+				if (!paths.isEmpty()) {
+					ufo.setLayer((int) (Math.random() * paths.size()));
+				}
+				addActor(ufo);
 			}
 		});
 		spawners.add(new RandomSpawner(60, 180) {
 			@Override
 			public void run() {
-				addActor(new Bird());
+				Bird bird = new Bird();
+				if (!paths.isEmpty()) {
+					bird.setLayer((int) (Math.random() * paths.size()));
+				}
+				addActor(bird);
 			}
 		});
 
@@ -181,6 +189,7 @@ public class SimulationWorld extends World {
 					return;
 				}
 				selectedPath.die();
+				removeActorLayer(paths.indexOf(selectedPath));
 				paths.remove(selectedPath);
 				selectedPath = null;
 				hideWidget(buttons[BUTTON_INDEX_DELETE]);
@@ -268,6 +277,29 @@ public class SimulationWorld extends World {
 	}
 
 	/**
+	 * Get the index (layer index) of the given path in this world.
+	 *
+	 * @param path the SuperPath to test
+	 */
+	public int getPathIndex(SuperPath path) {
+		return paths.indexOf(path);
+	}
+
+	/**
+	 * Shift all actors on or above the given layer down to the layer below,
+	 * effectively removing the given layer.
+	 *
+	 * @param layer the index of the layer to remove
+	 */
+	public void removeActorLayer(int layer) {
+		for (SuperActor actor : actors) {
+			if (actor.getLayer() >= layer) {
+				actor.setLayer(Math.max(actor.getLayer() - 1, -1));
+			}
+		}
+	}
+
+	/**
 	 * Add a spawner to this world.
 	 *
 	 * @param spawner the spawner object to add
@@ -318,14 +350,6 @@ public class SimulationWorld extends World {
 		for (ListIterator<SuperActor> iter = actors.listIterator(); iter.hasNext();) {
 			if (iter.next().isDead()) {
 				iter.remove();
-			}
-		}
-		// Remove dead actors from paths
-		for (SuperPath path : paths) {
-			for (SuperActor actor : path.getLinkedActors()) {
-				if (actor.isDead()) {
-					path.unlinkActor(actor);
-				}
 			}
 		}
 
@@ -407,25 +431,28 @@ public class SimulationWorld extends World {
 		// Keep track of which actors to draw, as actors on paths are given special priority
 		List<SuperActor> actorsToDraw = new ArrayList<SuperActor>(actors);
 
-		// Draw paths
 		if (hoveredPath != null || selectedPath != null) {
 			SuperPath.updatePaints();
 		}
-		for (SuperPath path : paths) {
-			graphics.drawImage(path.getImage(), path.getX(), path.getY(), null);
-			for (SuperActor actor : path.getActors()) {
-				drawActor(actor);
-				// This actor no longer needs to be drawn
-				actorsToDraw.remove(actor);
-			}
-		}
-		// Draw all remaining actors that haven't already been drawn when drawing paths
-		// The only types of actors that are not linked to paths are wanderers
-		for (Class cls : WANDERER_DRAW_ORDER) {
-			for (SuperActor actor : new ArrayList<SuperActor>(actorsToDraw)) {
-				if (cls.isInstance(actor)) {
+		// Draw paths
+		for (int layer = -1; layer < paths.size(); layer++) {
+			if (layer >= 0) {
+				SuperPath path = paths.get(layer);
+				graphics.drawImage(path.getImage(), path.getX(), path.getY(), null);
+				for (SuperActor actor : path.getActors()) {
 					drawActor(actor);
+					// This actor no longer needs to be drawn
 					actorsToDraw.remove(actor);
+				}
+			}
+			// Draw non-path actors on this layer
+			for (Class cls : NONPATH_ACTOR_DRAW_ORDER) {
+				for (ListIterator<SuperActor> iter = actorsToDraw.listIterator(); iter.hasNext();) {
+					SuperActor actor = iter.next();
+					if (cls.isInstance(actor) && actor.getLayer() == layer) {
+						drawActor(actor);
+						iter.remove();
+					}
 				}
 			}
 		}
