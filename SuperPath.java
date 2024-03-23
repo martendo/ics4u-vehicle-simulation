@@ -30,6 +30,7 @@ import java.util.ListIterator;
 public class SuperPath {
 	// Settings
 	public static final boolean DEBUG_SHOW_LANE_PATHS = false;
+	public static final boolean DEBUG_SHOW_BOUNDING_RECT = true;
 
 	// Flatness of curves to enforce when looking for intersections in paths
 	private static final double INTERSECTION_TEST_FLATNESS = 1.0;
@@ -144,7 +145,11 @@ public class SuperPath {
 		image = GraphicsUtilities.createCompatibleTranslucentImage(SimulationWorld.WIDTH, SimulationWorld.HEIGHT);
 		graphics = image.createGraphics();
 		graphics.addRenderingHints(SimulationWorld.RENDERING_HINTS);
-		graphics.setBackground(new java.awt.Color(0, 0, 0, 0));
+		if (DEBUG_SHOW_BOUNDING_RECT) {
+			graphics.setBackground(new java.awt.Color(0, 0, 0, 128));
+		} else {
+			graphics.setBackground(new java.awt.Color(0, 0, 0, 0));
+		}
 		needsRedraw = true;
 		bounds = new Rectangle2D.Double(0, 0, image.getWidth(), image.getHeight());
 		// Strokes for drawing this path
