@@ -81,13 +81,31 @@ public class Ufo extends Wanderer {
 		setRotation(imageAngle + IMAGE_ROTATION_SPEED);
 
 		if (!isScared) {
-			// Pick up any payloads under this UFO
-			for (Payload payload : getWorld().getActors(Payload.class)) {
+			// Pick up any payloads on the path under this UFO
+			SuperPath underPath = getWorld().getPathUnderPoint(getCenterX(), getCenterY());
+			if (underPath == null) {
+				return;
+			}
+			for (Payload payload : underPath.getTravellers(Payload.class)) {
 				if (getHitShape().contains(payload.getItemX(), payload.getItemY())) {
 					payload.removeItem();
 				}
 			}
 		}
+	}
+
+	/**
+	 * Return the X position of the center of this UFO's image.
+	 */
+	private double getCenterX() {
+		return getX() - IMAGE.getWidth() / 2.0 * Math.cos(getRotation());
+	}
+
+	/**
+	 * Return the Y position of the center of this UFO's image.
+	 */
+	private double getCenterY() {
+		return getY() - IMAGE.getWidth() / 2.0 * Math.cos(getRotation());
 	}
 
 	/**

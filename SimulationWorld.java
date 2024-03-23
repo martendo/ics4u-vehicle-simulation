@@ -378,18 +378,11 @@ public class SimulationWorld extends World {
 					hoveredPath.unmarkHovered();
 					hoveredPath = null;
 				}
-				// Iterate backwards through paths because later paths appear on top
-				for (ListIterator<SuperPath> iter = paths.listIterator(paths.size()); iter.hasPrevious();) {
-					SuperPath path = iter.previous();
-					// Don't bother updating the hover state if the path is already selected
-					if (path == selectedPath) {
-						continue;
-					}
-					if (path.isPointTouching(mouse.getX(), mouse.getY())) {
-						path.markHovered();
-						hoveredPath = path;
-						break;
-					}
+				SuperPath underPath = getPathUnderPoint(mouse.getX(), mouse.getY());
+				// Don't bother updating the hover state if the path is already selected
+				if (underPath != null && underPath != selectedPath) {
+					underPath.markHovered();
+					hoveredPath = underPath;
 				}
 			}
 			break;
@@ -495,5 +488,23 @@ public class SimulationWorld extends World {
 			}
 		}
 		return result;
+	}
+
+	/**
+	 * Get the topmost path in this world that touches the given point.
+	 *
+	 * @param x the x-coordinate of the point to test
+	 * @param y the y-coordinate of the point to test
+	 * @return the visually-topmost SuperPath object under the point, or null if there is no path there
+	 */
+	public SuperPath getPathUnderPoint(double x, double y) {
+		// Iterate backwards through paths because later paths appear on top
+		for (ListIterator<SuperPath> iter = paths.listIterator(paths.size()); iter.hasPrevious();) {
+			SuperPath path = iter.previous();
+			if (path.isPointTouching(x, y)) {
+				return path;
+			}
+		}
+		return null;
 	}
 }

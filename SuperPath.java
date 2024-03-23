@@ -416,6 +416,24 @@ public class SuperPath {
 	}
 
 	/**
+	 * Return a list of all travellers currently on this path of the specified class.
+	 *
+	 * @param cls the class of the travellers to retrieve
+	 * @return a list of all travellers of the class cls on this path
+	 */
+	public <T extends PathTraveller> List<T> getTravellers(Class<T> cls) {
+		List<T> result = new ArrayList<T>();
+		for (List<PathTraveller> laneTravellers : travellers) {
+			for (PathTraveller traveller : laneTravellers) {
+				if (cls.isInstance(traveller)) {
+					result.add(cls.cast(traveller));
+				}
+			}
+		}
+		return result;
+	}
+
+	/**
 	 * Return a list of all travellers currently in the specified lane on this path.
 	 */
 	public List<PathTraveller> getTravellersInLane(int laneNum) {
