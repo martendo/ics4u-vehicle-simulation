@@ -3,6 +3,7 @@ import java.awt.image.BufferedImage;
 import java.awt.Graphics2D;
 import java.awt.BasicStroke;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
 
 /**
  * The visual object representing the beginnings and ends of paths. They cover
@@ -13,6 +14,9 @@ import java.awt.geom.AffineTransform;
  * @version March 2024
  */
 public class Tunnel extends SuperActor {
+	// Settings
+	public static final boolean DEBUG_SHOW_BOUNDING_RECT = false;
+
 	// The fixed length (or depth) of all tunnels
 	private static final int ROOF_LENGTH = 32;
 	// The difference between a tunnel's width and its roof's width
@@ -25,8 +29,14 @@ public class Tunnel extends SuperActor {
 
 	private static final BasicStroke BORDER_STROKE = new BasicStroke(3.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 
-	private final BufferedImage image;
+	// The rectangle containing this entire tunnel, before translation and rotation, for image cropping
+	private final Rectangle2D boundsShape;
+
+	// The image that is drawn onto, uncropped
+	private final BufferedImage fullImage;
 	private final Graphics2D graphics;
+	// Cropped subimage of fullImage for faster drawing
+	private BufferedImage croppedImage;
 
 	// The dimensions of this tunnel, dependent on the width of its path
 	private final int length;
@@ -50,13 +60,19 @@ public class Tunnel extends SuperActor {
 		// Hang over the edges of the path a little
 		width = path.getPathWidth() + 50;
 		this.forwards = forwards;
+		boundsShape = createBoundsShape();
 
 		// Initialize image
 		int size = Math.max(length, width) * 2 + 8; // + Padding
-		image = GraphicsUtilities.createCompatibleTranslucentImage(size, size);
-		graphics = image.createGraphics();
+		fullImage = GraphicsUtilities.createCompatibleTranslucentImage(size, size);
+		croppedImage = fullImage;
+		graphics = fullImage.createGraphics();
 		graphics.addRenderingHints(SimulationWorld.RENDERING_HINTS);
-		graphics.setBackground(new java.awt.Color(0, 0, 0, 0));
+		if (DEBUG_SHOW_BOUNDING_RECT) {
+			graphics.setBackground(new java.awt.Color(0, 0, 128, 128));
+		} else {
+			graphics.setBackground(new java.awt.Color(0, 0, 128, 0));
+		}
 		graphics.setStroke(BORDER_STROKE);
 		setRotation(0.0);
 	}
@@ -74,12 +90,11 @@ public class Tunnel extends SuperActor {
 	}
 
 	public void updateImage() {
-		graphics.clearRect(0, 0, image.getWidth(), image.getHeight());
+		graphics.clearRect(0, 0, fullImage.getWidth(), fullImage.getHeight());
 		AffineTransform saveTransform = graphics.getTransform();
 
 		// Rotate about the center of this image
-		graphics.translate((double) image.getWidth() / 2.0, (double) image.getHeight() / 2.0);
-		graphics.rotate(getRotation());
+		graphics.transform(getDrawingTransform());
 		// Place this tunnel's midleft (if forwards) or midright (if backwards) point at the center of its image
 		// Draw roof
 		graphics.translate(forwards ? POSITION_OFFSET : -(ROOF_LENGTH + POSITION_OFFSET), -(width - ROOF_MARGIN) / 2);
@@ -95,15 +110,47 @@ public class Tunnel extends SuperActor {
 		graphics.drawRect(0, 0, length, width);
 
 		graphics.setTransform(saveTransform);
+
+		// Crop this tunnel's image to its boundaries for faster drawing
+		Rectangle2D bounds = getDrawingTransform().createTransformedShape(boundsShape).getBounds2D();
+		// Grow bounds to include rendered subpixels
+		bounds.setRect(bounds.getX() - 3, bounds.getY() - 3, bounds.getWidth() + 6, bounds.getHeight() + 6);
+		// Clamp bounds to original image dimensions
+		bounds = bounds.createIntersection(new Rectangle2D.Double(0, 0, fullImage.getWidth(), fullImage.getHeight()));
+		// Draw using cropped image (graphics continues to draw on full-size image, coordinates unaffected)
+		croppedImage = fullImage.getSubimage((int) bounds.getX(), (int) bounds.getY(), (int) bounds.getWidth(), (int) bounds.getHeight());
 	}
 
 	@Override
 	public BufferedImage getImage() {
-		return image;
+		return croppedImage;
+	}
+
+	/**
+	 * Get the transformation required to draw this tunnel onto its full image.
+	 */
+	private AffineTransform getDrawingTransform() {
+		AffineTransform transform = AffineTransform.getTranslateInstance((double) fullImage.getWidth() / 2.0, (double) fullImage.getHeight() / 2.0);
+		transform.rotate(getRotation());
+		return transform;
+	}
+
+	/**
+	 * Create the rectangle that contains this entire tunnel, before translation
+	 * and rotation, for image cropping.
+	 */
+	private Rectangle2D createBoundsShape() {
+		Rectangle2D bounds = new Rectangle2D.Double();
+		if (forwards) {
+			bounds.setRect(-length + POSITION_OFFSET, -width / 2.0, length + ROOF_LENGTH, width);
+		} else {
+			bounds.setRect(-(ROOF_LENGTH + POSITION_OFFSET), -width / 2.0, length + ROOF_LENGTH, width);
+		}
+		return bounds;
 	}
 
 	@Override
 	public AffineTransform getImageTransform() {
-		return AffineTransform.getTranslateInstance(getX() - image.getWidth() / 2.0, getY() - image.getHeight() / 2.0);
+		return AffineTransform.getTranslateInstance(getX() - croppedImage.getWidth() / 2.0, getY() - croppedImage.getHeight() / 2.0);
 	}
 }
