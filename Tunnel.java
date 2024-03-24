@@ -73,7 +73,7 @@ public class Tunnel extends SuperActor {
 		if (DEBUG_SHOW_BOUNDING_RECT) {
 			graphics.setBackground(new java.awt.Color(0, 0, 128, 128));
 		} else {
-			graphics.setBackground(new java.awt.Color(0, 0, 128, 0));
+			graphics.setBackground(new java.awt.Color(0, 0, 0, 0));
 		}
 		graphics.setStroke(BORDER_STROKE);
 		setRotation(0.0);

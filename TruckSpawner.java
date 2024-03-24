@@ -35,6 +35,8 @@ public class TruckSpawner extends RandomSpawner {
 		Truck.Color color;
 		if (roll == 0) {
 			color = Truck.Color.BROWN;
+		} else if (roll == 1) {
+			color = Truck.Color.BLUE;
 		} else {
 			color = Truck.Color.GREEN;
 		}

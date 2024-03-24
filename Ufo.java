@@ -15,10 +15,10 @@ public class Ufo extends Wanderer {
 	public static final BufferedImage NORMAL_IMAGE = new GreenfootImage("images/ufo-normal.png").getAwtImage();
 	public static final BufferedImage SCARED_IMAGE = new GreenfootImage("images/ufo-scared.png").getAwtImage();
 
-	public static final int MIN_X = -NORMAL_IMAGE.getWidth();
-	public static final int MAX_X = SimulationWorld.WIDTH + NORMAL_IMAGE.getWidth();
-	public static final int MIN_Y = -NORMAL_IMAGE.getHeight();
-	public static final int MAX_Y = SimulationWorld.HEIGHT + NORMAL_IMAGE.getHeight();
+	public static final double MIN_X = -NORMAL_IMAGE.getWidth();
+	public static final double MAX_X = SimulationWorld.WIDTH + NORMAL_IMAGE.getWidth();
+	public static final double MIN_Y = -NORMAL_IMAGE.getHeight();
+	public static final double MAX_Y = SimulationWorld.HEIGHT + NORMAL_IMAGE.getHeight();
 
 	public static final double MIN_SPEED = 2.0;
 	public static final double MAX_SPEED = 3.0;

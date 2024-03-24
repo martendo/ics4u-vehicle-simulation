@@ -49,12 +49,15 @@ public abstract class Payload extends PathTraveller {
 		image = GraphicsUtilities.createCompatibleTranslucentImage(TRUCK_BED_LENGTH + 8, TRUCK_BED_WIDTH + 8);
 		graphics = image.createGraphics();
 		graphics.addRenderingHints(SimulationWorld.RENDERING_HINTS);
+		graphics.setBackground(new java.awt.Color(0, 0, 0, 0));
 		graphics.translate(4, 4); // Padding
 		graphics.setStroke(BORDER_STROKE);
 		drawImage();
 	}
 
 	public void drawImage() {
+		graphics.clearRect(0, 0, image.getWidth(), image.getHeight());
+
 		// Draw truck bed
 		graphics.setColor(TRUCK_BED_COLOR);
 		graphics.fillRect(0, 0, TRUCK_BED_LENGTH, TRUCK_BED_WIDTH);

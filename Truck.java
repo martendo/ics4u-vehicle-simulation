@@ -22,6 +22,7 @@ public class Truck extends PathTraveller {
 	// All types of trucks with different images
 	public enum Color {
 		GREEN("images/truck-green.png"),
+		BLUE("images/truck-blue.png"),
 		BROWN("images/truck-brown.png");
 
 		public final BufferedImage image;
