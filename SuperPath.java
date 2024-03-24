@@ -175,6 +175,9 @@ public class SuperPath {
 	 */
 	public void addedToWorld(SimulationWorld world) {
 		this.world = world;
+		int layer = world.getPathIndex(this);
+		startTunnel.setLayer(layer);
+		endTunnel.setLayer(layer);
 		world.addActor(startTunnel);
 		world.addActor(endTunnel);
 	}

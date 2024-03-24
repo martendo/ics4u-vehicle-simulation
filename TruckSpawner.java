@@ -39,6 +39,7 @@ public class TruckSpawner extends RandomSpawner {
 			color = Truck.Color.GREEN;
 		}
 		Truck truck = new Truck(color);
+		truck.setLayer(world.getPathIndex(path));
 		path.addTraveller(truck, laneNum);
 		world.addActor(truck);
 		// Spawn the payload following this truck at a later time
@@ -59,6 +60,7 @@ public class TruckSpawner extends RandomSpawner {
 				} else {
 					payload = new Candy(truck);
 				}
+				payload.setLayer(world.getPathIndex(path));
 				path.addTraveller(payload, truck.getLaneNumber());
 				world.addActor(payload);
 				truck.attachPayload(payload);

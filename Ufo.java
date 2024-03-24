@@ -83,7 +83,10 @@ public class Ufo extends Wanderer {
 
 		if (!isScared) {
 			// Pick up any payloads on the path under this UFO
-			SuperPath underPath = getWorld().getPathUnderPoint(getCenterX(), getCenterY());
+			if (getLayer() < 0) {
+				return;
+			}
+			SuperPath underPath = getWorld().getPathUnderPoint(getCenterX(), getCenterY(), getLayer());
 			if (underPath == null) {
 				return;
 			}

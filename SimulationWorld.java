@@ -530,6 +530,44 @@ public class SimulationWorld extends World {
 	}
 
 	/**
+	 * Get all actors in this world of the specified class on or below the given
+	 * layer.
+	 *
+	 * @param cls the class of the actors to retrieve
+	 * @param layer the index of the topmost layer to retrieve actors from
+	 * @return a list of all actors of the class on or below the given layer in this world
+	 */
+	public <T extends SuperActor> List<T> getActors(Class<T> cls, int layer) {
+		List<T> result = new ArrayList<T>();
+		for (SuperActor actor : actors) {
+			if (cls.isInstance(actor) && actor.getLayer() <= layer) {
+				result.add(cls.cast(actor));
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Get the topmost path in this world that touches the given point on or
+	 * below the given layer.
+	 *
+	 * @param x the x-coordinate of the point to test
+	 * @param y the y-coordinate of the point to test
+	 * @param fromLayer the index of the topmost path to test
+	 * @return the visually-topmost SuperPath object under the point on or below the given layer, or null if there is no path there
+	 */
+	public SuperPath getPathUnderPoint(double x, double y, int fromLayer) {
+		// Iterate backwards through paths because later paths appear on top
+		for (ListIterator<SuperPath> iter = paths.listIterator(fromLayer + 1); iter.hasPrevious();) {
+			SuperPath path = iter.previous();
+			if (path.isPointTouching(x, y)) {
+				return path;
+			}
+		}
+		return null;
+	}
+
+	/**
 	 * Get the topmost path in this world that touches the given point.
 	 *
 	 * @param x the x-coordinate of the point to test
@@ -537,13 +575,6 @@ public class SimulationWorld extends World {
 	 * @return the visually-topmost SuperPath object under the point, or null if there is no path there
 	 */
 	public SuperPath getPathUnderPoint(double x, double y) {
-		// Iterate backwards through paths because later paths appear on top
-		for (ListIterator<SuperPath> iter = paths.listIterator(paths.size()); iter.hasPrevious();) {
-			SuperPath path = iter.previous();
-			if (path.isPointTouching(x, y)) {
-				return path;
-			}
-		}
-		return null;
+		return getPathUnderPoint(x, y, paths.size() - 1);
 	}
 }

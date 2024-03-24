@@ -72,9 +72,12 @@ public class Bird extends Wanderer {
 	 */
 	private void findTargetFood() {
 		targetFood = null;
+		if (getLayer() < 0) {
+			return;
+		}
 		// Find the closest food actor that has its food item
 		double minDistance = 0.0;
-		for (Food food : getWorld().getActors(Food.class)) {
+		for (Food food : getWorld().getActors(Food.class, getLayer())) {
 			if (!food.hasItem()) {
 				continue;
 			}
