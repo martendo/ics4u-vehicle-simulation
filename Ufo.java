@@ -21,7 +21,7 @@ public class Ufo extends Wanderer {
 	public static final double MAX_Y = SimulationWorld.HEIGHT + NORMAL_IMAGE.getHeight();
 
 	public static final double MIN_SPEED = 2.0;
-	public static final double MAX_SPEED = 3.0;
+	public static final double MAX_SPEED = 4.0;
 	public static final double SCARED_SPEED = 10.0;
 
 	public static final double IMAGE_ROTATION_SPEED = Math.PI * 2.0 / 180.0;
