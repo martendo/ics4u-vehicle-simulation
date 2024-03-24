@@ -20,6 +20,7 @@ public class Bird extends Wanderer {
 	private static final double MAX_Y = SimulationWorld.HEIGHT + IMAGE.getHeight() / 2.0;
 
 	private static final double ANGLE_INTERPOLATION_FACTOR = 0.1;
+	private static final double RANDOM_ANGLE_INTERPOLATION_FACTOR = 0.01;
 
 	// The angle of rotation of this bird required to reach the closest food actor
 	private double targetAngle;
@@ -125,13 +126,16 @@ public class Bird extends Wanderer {
 			findTargetFood();
 		}
 		// When there is no food available or this bird has already been fed, move randomly
+		double t;
 		if (targetFood == null || isFed) {
 			randomTargetChangeTimer.act();
+			t = RANDOM_ANGLE_INTERPOLATION_FACTOR;
 		} else {
 			updateTargetAngle();
+			t = ANGLE_INTERPOLATION_FACTOR;
 		}
 		// Interpolate towards the target angle
-		setRotation(getRotation() + (targetAngle - getRotation()) * ANGLE_INTERPOLATION_FACTOR);
+		setRotation(getRotation() + (targetAngle - getRotation()) * t);
 
 		// Move
 		super.act();
