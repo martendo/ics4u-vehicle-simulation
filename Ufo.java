@@ -91,8 +91,18 @@ public class Ufo extends Wanderer {
 				return;
 			}
 			for (Payload payload : underPath.getTravellers(Payload.class)) {
+				if (!payload.hasItem()) {
+					continue;
+				}
 				if (getHitShape().contains(payload.getItemX(), payload.getItemY())) {
 					payload.removeItem();
+				}
+			}
+
+			// Pick up any birds under this UFO
+			for (Bird bird : getWorld().getActors(Bird.class, getLayer())) {
+				if (getHitShape().contains(bird.getX(), bird.getY())) {
+					bird.die();
 				}
 			}
 		}
