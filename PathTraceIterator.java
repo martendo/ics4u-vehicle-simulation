@@ -10,8 +10,7 @@ import java.awt.geom.Point2D;
  * @version March 2024
  */
 public class PathTraceIterator {
-	// Suggested flatness to create PathIterators with for tracing
-	// (e.g., used by SuperPath#getPathTraceIterator())
+	// Flatness to create PathIterators with for tracing
 	public static final double FLATNESS = 1.0;
 
 	// Tools to work with the original path
@@ -61,16 +60,6 @@ public class PathTraceIterator {
 	 */
 	public boolean isDone() {
 		return originalpi.isDone();
-	}
-
-	/**
-	 * Get the winding rule for determining the interior of the path.
-	 *
-	 * @return the winding rule
-	 * @see java.awt.geom.PathIterator#getWindingRule()
-	 */
-	public int getWindingRule() {
-		return originalpi.getWindingRule();
 	}
 
 	/**
