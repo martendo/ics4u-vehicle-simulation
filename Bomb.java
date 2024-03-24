@@ -47,6 +47,12 @@ public class Bomb extends Payload {
 				traveller.dieAndKillLinked();
 			}
 		}
+		// Kill all birds in range on or below this explosion's layer
+		for (Bird bird : getWorld().getActors(Bird.class, getLayer())) {
+			if (explosion.getHitShape().contains(bird.getX(), bird.getY())) {
+				bird.die();
+			}
+		}
 
 		// Scare all UFOs away
 		for (Ufo ufo : getWorld().getActors(Ufo.class)) {
