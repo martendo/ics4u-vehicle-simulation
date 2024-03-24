@@ -57,6 +57,8 @@ public class TruckSpawner extends RandomSpawner {
 				Payload payload;
 				if (roll == 0) {
 					payload = new Bomb(truck);
+				} else if (roll == 1) {
+					payload = new Poison(truck);
 				} else {
 					payload = new Candy(truck);
 				}
