@@ -147,6 +147,24 @@ public abstract class PathTraveller extends SuperActor {
 
 		// Update position
 		setLocation(coords[0], coords[1]);
+
+		// Crash into any other intersecting travellers on this path
+		boolean hit = false;
+		for (PathTraveller traveller : path.getTravellers()) {
+			// Impossible to crash into itself or linked actors
+			if (traveller == this || traveller.getLinkedActors().contains(this)) {
+				continue;
+			}
+			// NOTE: This only tests a single point for collision for the sake of speed
+			// (intersection of two transformed shapes causes noticeable slowdown)
+			if (traveller.getHitShape().contains(getX(), getY())) {
+				traveller.dieAndKillLinked();
+				hit = true;
+			}
+		}
+		if (hit) {
+			dieAndKillLinked();
+		}
 	}
 
 	/**

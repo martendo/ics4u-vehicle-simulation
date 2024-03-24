@@ -13,7 +13,7 @@ import java.awt.geom.Rectangle2D;
  * @version March 2024
  */
 public class Truck extends PathTraveller {
-	public static final double MIN_SPEED = 0.5;
+	public static final double MIN_SPEED = 1.5;
 	public static final double MAX_SPEED = 3.0;
 
 	// Number of acts to wait after changing lanes before changing again
@@ -69,23 +69,7 @@ public class Truck extends PathTraveller {
 	@Override
 	public void act() {
 		super.act();
-
-		// Crash into any other intersecting travellers on this path
-		boolean hit = false;
-		for (PathTraveller traveller : getPath().getTravellers()) {
-			// Impossible to crash into itself or linked actors
-			if (traveller == this || traveller.getLinkedActors().contains(this)) {
-				continue;
-			}
-			// NOTE: This only tests a single point for collision for the sake of speed
-			// (intersection of two transformed shapes causes noticeable slowdown)
-			if (traveller.getHitShape().contains(getX(), getY())) {
-				traveller.dieAndKillLinked();
-				hit = true;
-			}
-		}
-		if (hit) {
-			dieAndKillLinked();
+		if (isDead()) {
 			return;
 		}
 

@@ -1,24 +1,24 @@
 /**
- * A specialized spawner to spawn truck actors, then payload actors at a later
- * time in order to provide the visual effect of the trucks leading the
- * payloads.
+ * A specialized spawner to spawn all types of PathTraveller objects,
+ * particularly spawning truck actors followed by payload actors at a later time
+ * in order to provide the visual effect of the trucks leading the payloads.
  *
  * @author Martin Baldwin
  * @version March 2024
  */
-public class TruckSpawner extends RandomSpawner {
+public class TravellerSpawner extends RandomSpawner {
 	private final SimulationWorld world;
 	private final SuperPath path;
 	private final int laneNum;
 
 	/**
-	 * Create a new payload spawner.
+	 * Create a new path traveller spawner.
 	 *
 	 * @param world the world to spawn actors into
 	 * @param path the path to attach actors to
 	 * @param laneNum the index of the lane in the given path to attach actors to
 	 */
-	public TruckSpawner(SimulationWorld world, SuperPath path, int laneNum) {
+	public TravellerSpawner(SimulationWorld world, SuperPath path, int laneNum) {
 		super(120, 480);
 		this.path = path;
 		this.world = world;
@@ -26,10 +26,17 @@ public class TruckSpawner extends RandomSpawner {
 	}
 
 	/**
-	 * Spawn a new truck then payload.
+	 * Spawn a new path traveller (truck then payload or zapper).
 	 */
 	@Override
 	public void run() {
+		if ((int) (Math.random() * 10) == 0) {
+			Zapper zapper = new Zapper();
+			zapper.setLayer(world.getPathIndex(path));
+			path.addTraveller(zapper, laneNum);
+			world.addActor(zapper);
+			return;
+		}
 		int roll = (int) (Math.random() * 5);
 		// First spawn a truck to lead the new payload
 		Truck.Color color;

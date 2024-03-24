@@ -10,7 +10,7 @@ import java.awt.geom.AffineTransform;
  * @author Martin Baldwin
  * @version March 2024
  */
-public class Explosion extends SuperActor {
+public class Explosion extends Effect {
 	public static final BufferedImage IMAGE = new GreenfootImage("images/explosion.png").getAwtImage();
 
 	// Number of acts to keep an explosion on-screen
@@ -19,19 +19,8 @@ public class Explosion extends SuperActor {
 	// The shape defining the area where actors will be killed from an explosion
 	private static final Ellipse2D HIT_SHAPE = new Ellipse2D.Double(-100, -100, 200, 200);
 
-	// Number of acts left until this explosion is removed
-	private int timer;
-
 	public Explosion() {
-		super();
-		timer = LIFESPAN;
-	}
-
-	@Override
-	public void act() {
-		if (--timer <= 0) {
-			die();
-		}
+		super(LIFESPAN);
 	}
 
 	@Override

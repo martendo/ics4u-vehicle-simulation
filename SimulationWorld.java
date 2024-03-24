@@ -44,7 +44,7 @@ public class SimulationWorld extends World {
 	private static final BufferedImage BACKGROUND_PATTERN = createBackgroundPattern();
 
 	// The order to draw actor types that are not linked to paths, appearing from bottom to top
-	private static final Class[] NONPATH_ACTOR_DRAW_ORDER = {Explosion.class, Bird.class, Ufo.class};
+	private static final Class[] NONPATH_ACTOR_DRAW_ORDER = {Explosion.class, Bird.class, Ufo.class, Zap.class};
 
 	// Mouse actions can correspond to different path-editing actions depending on the selected button
 	public enum PathEditMode {
@@ -283,6 +283,13 @@ public class SimulationWorld extends World {
 	 */
 	public int getPathIndex(SuperPath path) {
 		return paths.indexOf(path);
+	}
+
+	/**
+	 * Get the number of paths (layers) in this world.
+	 */
+	public int getPathCount() {
+		return paths.size();
 	}
 
 	/**
