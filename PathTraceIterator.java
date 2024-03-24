@@ -81,6 +81,11 @@ public class PathTraceIterator {
 	 * @throws UnsupportedOperationException if any segment type from the original PathIterator other than SEG_MOVETO and SEG_LINETO is encountered
 	 */
 	public void next(double distance) {
+		if (distance < 0.0) {
+			throw new IllegalArgumentException("Cannot trace a path backwards");
+		} else if (distance == 0.0) {
+			return;
+		}
 		double[] coords = new double[6];
 		// Loop through segments in case one alone cannot cover the requested distance
 		double distRemain = distance;

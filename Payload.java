@@ -79,6 +79,11 @@ public abstract class Payload extends PathTraveller {
 
 	@Override
 	public void act() {
+		// If this payload has travelled too far (e.g. truck spawned with a
+		// higher speed than when the payload spawner went off), wait
+		if (!attachedTruck.isDead() && getDistanceTravelled() > attachedTruck.getDistanceTravelled() - attachedTruck.getImage().getWidth()) {
+			return;
+		}
 		super.act();
 		// Update image to reflect angle change
 		drawImage();

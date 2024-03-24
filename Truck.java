@@ -105,7 +105,9 @@ public class Truck extends PathTraveller {
 			if (newLane != -1) {
 				moveToLane(newLane);
 				// Wait until making another lane change
-				laneChangeTimer = LANE_CHANGE_TIMEOUT;
+				if (getLaneNumber() == newLane) {
+					laneChangeTimer = LANE_CHANGE_TIMEOUT;
+				}
 			}
 		}
 	}
@@ -177,9 +179,15 @@ public class Truck extends PathTraveller {
 	 */
 	@Override
 	public void moveToLane(int newLane) {
-		super.moveToLane(newLane);
+		// If this truck's payload would be moved to part of the path that doesn't exist
+		// (negative distance), don't make the lane change
+		double newDistance = getPath().getAdjacentDistanceInLane(getLaneNumber(), getDistanceTravelled(), newLane);
+		if (attachedPayload != null && newDistance - getImage().getWidth() < 0.0) {
+			return;
+		}
+		super.moveToLane(newLane, newDistance);
 		if (attachedPayload != null) {
-			attachedPayload.moveToLane(newLane, getDistanceTravelled() - color.image.getWidth());
+			attachedPayload.moveToLane(newLane, getDistanceTravelled() - getImage().getWidth());
 		}
 	}
 

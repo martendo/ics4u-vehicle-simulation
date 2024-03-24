@@ -116,11 +116,14 @@ public abstract class PathTraveller extends SuperActor {
 	}
 
 	/**
-	 * Move this traveller along its path, and
+	 * Move this traveller along its path and update its rotation to reflect its motion.
 	 */
 	@Override
 	public void act() {
 		// Move along the path a distance equal to traveller speed
+		if (speed == 0.0) {
+			return;
+		}
 		pathIter.next(speed);
 		if (pathIter.isDone()) {
 			endTravel();
