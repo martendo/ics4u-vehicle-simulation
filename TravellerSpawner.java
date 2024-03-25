@@ -19,7 +19,7 @@ public class TravellerSpawner extends RandomSpawner {
 	 * @param laneNum the index of the lane in the given path to attach actors to
 	 */
 	public TravellerSpawner(SimulationWorld world, SuperPath path, int laneNum) {
-		super(120, 480);
+		super(90, 300);
 		this.path = path;
 		this.world = world;
 		this.laneNum = laneNum;
@@ -30,7 +30,7 @@ public class TravellerSpawner extends RandomSpawner {
 	 */
 	@Override
 	public void run() {
-		if ((int) (Math.random() * 10) == 0) {
+		if ((int) (Math.random() * 16) == 0) {
 			Zapper zapper = new Zapper();
 			zapper.setLayer(world.getPathIndex(path));
 			path.addTraveller(zapper, laneNum);

@@ -118,6 +118,9 @@ import java.util.ListIterator;
  *  10. Background ambience
  *  11. Path edit button click (UI)
  *
+ * A note on the background sounds: it's supposed to be various vehicle noises
+ * plus bird noises. Like all of the sounds, it is Nintendo Game Boy 8-bit audio.
+ *
  *
  *
  * (iv) CREDITS
@@ -479,6 +482,9 @@ public class SimulationWorld extends World {
 			}
 		});
 
+		// Reset invasion effect state
+		AlienInvasion.init();
+
 		// Draw initial background image so this world isn't blank on reset
 		updateImage();
 	}
@@ -609,7 +615,7 @@ public class SimulationWorld extends World {
 	 */
 	@Override
 	public void stopped() {
-		BACKGROUND_SOUND.stop();
+		BACKGROUND_SOUND.pause();
 		AlienInvasion.pauseSound();
 		SoundEffect.pauseAllSounds();
 	}

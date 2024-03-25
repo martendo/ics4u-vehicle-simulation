@@ -130,6 +130,15 @@ public class AlienInvasion extends Effect {
 	}
 
 	/**
+	 * Reset the invasion effect state, for when the reset button is pressed in
+	 * Greenfoot.
+	 */
+	public static void init() {
+		isActive = false;
+		wasSoundPaused = false;
+	}
+
+	/**
 	 * Test if there is currently an alien invasion.
 	 */
 	public static boolean isActive() {
