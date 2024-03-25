@@ -286,13 +286,6 @@ public class SimulationWorld extends World {
 	}
 
 	/**
-	 * Get the number of paths (layers) in this world.
-	 */
-	public int getPathCount() {
-		return paths.size();
-	}
-
-	/**
 	 * Shift all actors on or above the given layer down to the layer below,
 	 * effectively removing the given layer.
 	 *

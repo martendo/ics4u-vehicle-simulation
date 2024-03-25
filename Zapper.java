@@ -40,14 +40,19 @@ public class Zapper extends PathTraveller {
 		if (zapTimer > 0) {
 			zapTimer--;
 		}
-		if (zapTimer != 0 || getWorld().getPathUnderPoint(getX(), getY()) != getPath()) {
+		if (zapTimer != 0) {
 			return;
 		}
 		// Find the closest UFO to zap it
 		Ufo closestUfo = null;
 		double minDistance = 0.0;
 		for (Ufo ufo : getWorld().getActors(Ufo.class)) {
+			// Don't consider this UFO if it is just outside of the world
 			if (ufo.getX() < 0 || ufo.getX() > SimulationWorld.WIDTH || ufo.getY() < 0 || ufo.getY() > SimulationWorld.HEIGHT) {
+				continue;
+			}
+			// When there is a path in between this UFO and this zapper on the Z axis, can't zap
+			if (getWorld().getPathUnderPoint(getX(), getY(), ufo.getLayer()) != getPath()) {
 				continue;
 			}
 			double distance = Math.hypot(ufo.getX() - getX(), ufo.getY() - getY());
@@ -66,7 +71,7 @@ public class Zapper extends PathTraveller {
 		double centerX = getX() - IMAGE.getWidth() / 2.0 * Math.cos(getRotation());
 		double centerY = getY() - IMAGE.getWidth() / 2.0 * Math.sin(getRotation());
 		Zap zap = new Zap(centerX, centerY, closestUfo.getX(), closestUfo.getY());
-		zap.setLayer(getWorld().getPathCount() - 1);
+		zap.setLayer(closestUfo.getLayer());
 		getWorld().addActor(zap);
 		// Reset the timer
 		zapTimer = ZAP_INTERVAL;
