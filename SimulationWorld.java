@@ -10,6 +10,213 @@ import java.util.ListIterator;
 
 /**
  * ICS4U Vehicle Simulation
+ * Martin Baldwin
+ *
+ * Welcome to a jumbled up and twisted land where birds and aliens don't quite
+ * get along, and maybe we should introduce some city planning regulations.
+ *
+ * CONTENTS
+ *
+ * (i)   DESCRIPTION OF INTERACTIONS
+ * (ii)  OVERVIEW OF SPECIAL FEATURES
+ * (iii) LIST OF SIMULATION ELEMENTS
+ * (iv)  CREDITS
+ * (v)   KNOWN BUGS
+ * (vi)  EXTRA INFORMATION
+ *
+ *
+ *
+ * (i) DESCRIPTION OF INTERACTIONS
+ *
+ * - Vehicles drive along paths, and most of them carry items. When a vehicle
+ *   gets stuck behind another slower vehicle, it will attempt to change to an
+ *   adjacent lane.
+ *   - Vehicles can crash into each other (try drawing a looped road!)
+ *   - Vehicles can be blown up by Explosions
+ *   - Vehicles speed up during an Alien Invasion
+ *   - Vehicles can be abducted by UFOs during an Alien Invasion
+ *   - Rarity from most common to most rare: Candy, Poison = Bomb, Zapper
+ * - Birds fly around the world (at a constant speed) while targeting the
+ *   closest food item (Candy or Poison) carried by specific types of vehicles.
+ *   - When a Bird eats a Candy, it speeds up and flies in a happy random path (image change)
+ *   - When a Bird eats a Poison, it slows down and flies in a miserable random path (image change)
+ *   - Birds can be blown up by Explosions
+ *   - Birds are scared away during an Alien Invasion
+ * - UFOs fly from one edge of the world to the opposite edge in a straight line
+ *   while moving in a spiral-like motion. They abduct any items and any Birds
+ *   directly underneath them.
+ *   - UFOs are scared away by Explosions (image change)
+ *   - UFOs additionally abduct vehicles during an Alien Invasion (image change)
+ *   - UFOS spawn more frequently during an Alien Invasion
+ * - Zappers are a rare and slow type of vehicle that will periodically zap the
+ *   closest UFO, destroying it.
+ *
+ *
+ *
+ * (ii) OVERVIEW OF SPECIAL FEATURES
+ *
+ * 1. Free-hand vehicle path drawing
+ *
+ * Create custom paths for vehicles to follow by drawing freely with the mouse.
+ * The number of parallel lanes to draw in each path can be set using the plus
+ * and minus buttons at the bottom of the world.
+ *
+ * Roads are created by fitting quadratic curves between points recorded from
+ * the mouse, which are then offset a certain distance to create parallel curves
+ * for lanes.
+ *
+ * 2. Z layers
+ *
+ * All actors exist on a layer that is tied to the paths that exist in the
+ * world. Examples of how this comes into play: "Wanderers" (Pedestrians) can
+ * only interact with actors on a layer on or below their own (as both types are
+ * flying objects). Zappers can only zap UFOs when there is no path between it
+ * and its target UFO on the Z axis. Vehicles do not interact with vehicles on
+ * other layers, etc.
+ *
+ * 3. Graphics
+ *
+ * Since Greenfoot's built-in graphics manipulation capabilities are
+ * insufficient for this program, I almost exclusively use Java AWT's Graphics2D
+ * to create the visuals in the world. This gives me the ability to make use of
+ * dashed curves (lane separator lines) or thick-stroked lines (roads), for
+ * example.
+ *
+ *
+ *
+ * (iii) LIST OF SIMULATION ELEMENTS
+ *
+ * so it's clear how I mean to fulfill the requirements
+ *
+ * - Vehicles:
+ *   1. Candy, feeds Birds
+ *   2. Poison, sickens Birds
+ *   3. Bomb, explodes after some time
+ *   4. Zapper, kills UFOs
+ *
+ * Lane change decision-making code present in Truck class
+ *
+ * - Pedestrians:
+ *   1. Bird, flies while targeting food (Candy and Poison), can get fed or sick
+ *   2. UFO, flies across world, abducting any items or Birds (or vehicles) underneath
+ *
+ * - Local effect:
+ *      bomb explodes, killing vehicles and birds in range
+ * - Worldwide effect:
+ *      alien invasion (see (i) for description)
+ *
+ * - Sound effects:
+ *   1. Vehicle honking horn when changing lanes (Vehicle)
+ *   2. Zapper zapping UFO (Vehicle)
+ *   3. Vehicle to vehicle collision (Vehicle)
+ *   4. Bird getting fed (Pedestrian)
+ *   5. Bird getting sick (Pedestrian)
+ *   6. UFO abducting (Pedestrian)
+ *   7. UFO getting scared (Pedestrian)
+ *   8. Alien invasion (Worldwide effect)
+ *   9. Bomb explosion (Local effect)
+ *  10. Background ambience
+ *  11. Path edit button click (UI)
+ *
+ *
+ *
+ * (iv) CREDITS
+ *
+ * Formula for calculating the intersection of two line segments in
+ * SuperPath.getLineIntersection() adapted from Wikipedia:
+ *     <https://en.wikipedia.org/wiki/Line-line_intersection#Given_two_points_on_each_line_segment>
+ *
+ * Everything else original by Martin Baldwin
+ *
+ * All images created with GIMP:
+ *     <https://gimp.org>
+ *
+ * All sounds created with Game Boy Tracker by Stephane Hockenhull:
+ *     <https://www.vgmpf.com/Wiki/index.php/Game_Boy_Tracker>
+ *
+ * All sounds recorded from bgb emulator by Bas Steendijk:
+ *     <https://bgb.bircd.org>
+ *
+ * Sound editing done in Audacity:
+ *     <https://audacityteam.org>
+ *
+ *
+ *
+ * (v) KNOWN BUGS
+ *
+ * Not a bug, but...
+ *
+ * For smoother (less "glitchy"-looking) roads, it is recommended that you
+ * reduce the act speed when drawing. Paths can become extremely messy when they
+ * are creating lanes that are offset between points that are very close
+ * together, which leads to vehicles following the spiky and weird paths that
+ * this creates. Basically, it's your fault for drawing ugly roads. (Though with
+ * a lot of work, the program could be made to fix it for you... that's too
+ * complicated for me.)
+ *
+ * Try setting SuperPath.DEBUG_SHOW_LANE_PATHS to true to have a clearer look.
+ *
+ * Also not a bug, but...
+ *
+ * Self-intersecting roads are hard to deal with. The OffsetPathCollection class
+ * automatically removes "knots" from paths in order to have lanes that make
+ * sense (see (vi), #2 Knots), but there are times where it's hard to judge when
+ * to do so, leading to having only some lanes "taking a shortcut" across loops
+ * but not others.
+ *
+ * Try adjusting OffsetPathCollection.KNOT_TEST_DISTANCE to see the difference.
+ *
+ *
+ *
+ * (vi) EXTRA INFORMATION
+ *
+ * Noteworthy obstacles (some fairly technical details)
+ *
+ * 1. Parallel curves
+ *
+ * Every path is made up of a series of quadratic Bezier curves, but the true
+ * offset curve of a Bezier curve cannot be represented exactly by another
+ * Bezier curve. So, the offset curves are actually just approximate curves made
+ * by offsetting the control polygon's legs and creating a curve using the
+ * offsetted control polygon.
+ *
+ * Relevant code: OffsetPathCollection.offsetQuadTo()
+ *
+ * 2. Knots
+ *
+ * Since a curve parallel to another curve may naturally contain cusps and
+ * overlapping sections where the curvature of the original curve is sharp (see
+ * <https://commons.wikimedia.org/wiki/File:Offset-curves-of-sinus-curve.svg>
+ * for an example), it is necessary to remove these sections from paths. All
+ * lane paths are tested for self-intersection and any "knots" that are found
+ * are spliced from the path.
+ *
+ * Relevant code: OffsetPathCollection.updatePathTail(), SuperPath.getShapeIntersection()
+ *
+ * 3. Lane changing, hard mode
+ *
+ * Because of that splicing, lanes are not the same length. So, in order to
+ * figure out where to position a vehicle when changing lanes, I have to find
+ * the point that is offset by the lane width in the direction of the normal to
+ * the path at the current point and trace the target lane to find where that
+ * point can be reached. This could theoretically fail in extremely rare cases,
+ * but it appears to work well enough.
+ *
+ * Relevant code: Truck.canMoveToLane(), SuperPath.getAdjacentDistanceInLane()
+ *
+ * 4. Rendering
+ *
+ * Normally, Greenfoot will paint the world on its own, separately from running
+ * the simulation. However, since I need to control the graphics myself, I'm
+ * doing nearly all of the painting during the act cycle. This can be quite
+ * slow (if you bring the speed slider up all the way, it might actually not
+ * speed up at all).
+ *
+ * One technique that I employ in order to help mitigate this issue slightly is
+ * cropping images, particularly those of paths (but also Tunnels).
+ *
+ * Relevant code: Try setting SuperPath.DEBUG_SHOW_BOUNDING_RECT and
+ * Tunnel.DEBUG_SHOW_BOUNDING_RECT to true
  *
  * @author Martin Baldwin
  * @version March 2024
