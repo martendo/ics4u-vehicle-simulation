@@ -232,17 +232,17 @@ public class SimulationWorld extends World {
 	public static final int HEIGHT = 768;
 
 	// Map of rendering hints to be used in all graphics contexts
-	public static final RenderingHints RENDERING_HINTS;
+	public static final RenderingHints renderingHints;
 
 	static {
 		// Turning on antialiasing gives smoother-looking graphics
-		RENDERING_HINTS = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		renderingHints = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		// Allow drawing images with subpixel accuracy (for precise positioning and rotation)
-		RENDERING_HINTS.put(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+		renderingHints.put(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 		// Set all other applicable hints to prefer speed
-		RENDERING_HINTS.put(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
-		RENDERING_HINTS.put(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_SPEED);
-		RENDERING_HINTS.put(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_DISABLE);
+		renderingHints.put(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
+		renderingHints.put(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_SPEED);
+		renderingHints.put(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_DISABLE);
 	}
 
 	private static final int DEFAULT_DRAW_LANE_COUNT = 2;
@@ -315,7 +315,7 @@ public class SimulationWorld extends World {
 		GreenfootImage background = getBackground();
 		canvas = background.getAwtImage();
 		graphics = canvas.createGraphics();
-		graphics.addRenderingHints(RENDERING_HINTS);
+		graphics.addRenderingHints(renderingHints);
 		graphics.setBackground(new java.awt.Color(0, 0, 0, 0));
 
 		// Initialize path editing variables

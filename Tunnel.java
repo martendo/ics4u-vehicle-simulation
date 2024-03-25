@@ -70,7 +70,7 @@ public class Tunnel extends SuperActor {
 		fullImage = GraphicsUtilities.createCompatibleTranslucentImage(size, size);
 		croppedImage = fullImage;
 		graphics = fullImage.createGraphics();
-		graphics.addRenderingHints(SimulationWorld.RENDERING_HINTS);
+		graphics.addRenderingHints(SimulationWorld.renderingHints);
 		if (DEBUG_SHOW_BOUNDING_RECT) {
 			graphics.setBackground(new java.awt.Color(0, 0, 128, 128));
 		} else {

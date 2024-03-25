@@ -50,7 +50,7 @@ public class AlienInvasion extends Effect {
 		// Initialize image
 		image = GraphicsUtilities.createCompatibleTranslucentImage(SimulationWorld.WIDTH, SimulationWorld.HEIGHT);
 		graphics = image.createGraphics();
-		graphics.addRenderingHints(SimulationWorld.RENDERING_HINTS);
+		graphics.addRenderingHints(SimulationWorld.renderingHints);
 		graphics.setBackground(new java.awt.Color(0, 0, 0, 0));
 		size = (int) (Math.hypot(image.getWidth(), image.getHeight()));
 		imageX = image.getWidth() / 2 - size / 2;

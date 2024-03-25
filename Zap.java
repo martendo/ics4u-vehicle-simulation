@@ -23,7 +23,7 @@ public class Zap extends Effect {
 		// Initialize image
 		image = GraphicsUtilities.createCompatibleTranslucentImage((int) Math.hypot(x2 - x1, y2 - y1), THICKNESS);
 		Graphics2D graphics = image.createGraphics();
-		graphics.addRenderingHints(SimulationWorld.RENDERING_HINTS);
+		graphics.addRenderingHints(SimulationWorld.renderingHints);
 		graphics.setColor(COLOR);
 		graphics.fillRoundRect(0, 0, image.getWidth(), THICKNESS, THICKNESS, THICKNESS);
 

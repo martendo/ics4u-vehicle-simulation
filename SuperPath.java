@@ -145,7 +145,7 @@ public class SuperPath {
 		fullImage = GraphicsUtilities.createCompatibleTranslucentImage(SimulationWorld.WIDTH, SimulationWorld.HEIGHT);
 		croppedImage = fullImage;
 		graphics = fullImage.createGraphics();
-		graphics.addRenderingHints(SimulationWorld.RENDERING_HINTS);
+		graphics.addRenderingHints(SimulationWorld.renderingHints);
 		if (DEBUG_SHOW_BOUNDING_RECT) {
 			graphics.setBackground(new java.awt.Color(0, 0, 0, 128));
 		} else {
