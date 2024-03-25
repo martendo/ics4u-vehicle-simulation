@@ -13,6 +13,8 @@ import java.awt.geom.AffineTransform;
 public abstract class PathTraveller extends SuperActor {
 	private static final double ANGLE_INTERPOLATION_FACTOR = 0.1;
 
+	private static final SoundEffect CRASH_SOUND = new SoundEffect("sounds/crash.wav");
+
 	private SuperPath path = null;
 	// The iterator used to progressively travel along this traveller's path
 	private PathTraceIterator pathIter = null;
@@ -168,6 +170,7 @@ public abstract class PathTraveller extends SuperActor {
 		}
 		if (hit) {
 			dieAndKillLinked();
+			CRASH_SOUND.play();
 		}
 	}
 
