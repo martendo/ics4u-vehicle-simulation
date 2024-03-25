@@ -3,6 +3,7 @@ import greenfoot.util.GraphicsUtilities;
 import java.awt.image.BufferedImage;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.Composite;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.ListIterator;
@@ -46,6 +47,8 @@ public class SimulationWorld extends World {
 	private static final BufferedImage BACKGROUND_PATTERN = createBackgroundPattern();
 
 	// The order to draw actor types that are not linked to paths, appearing from bottom to top
+	// Any actors that are not linked to a path (instanceof PathTraveller or Tunnel) and that are
+	// not an instance of a class included here are drawn on top of the world, above everything else
 	private static final Class[] NONPATH_ACTOR_DRAW_ORDER = {Explosion.class, Bird.class, Ufo.class, Zap.class};
 
 	// Mouse actions can correspond to different path-editing actions depending on the selected button
@@ -243,16 +246,15 @@ public class SimulationWorld extends World {
 		spawners.add(new RandomSpawner(120, 300) {
 			@Override
 			public void run() {
-				Ufo ufo = new Ufo();
-				if (!paths.isEmpty()) {
-					ufo.setLayer((int) (Math.random() * paths.size()));
-				}
-				addActor(ufo);
+				spawnUfo();
 			}
 		});
 		spawners.add(new RandomSpawner(60, 180) {
 			@Override
 			public void run() {
+				if (AlienInvasion.isActive()) {
+					return;
+				}
 				Bird bird = new Bird();
 				if (!paths.isEmpty()) {
 					bird.setLayer((int) (Math.random() * paths.size()));
@@ -261,7 +263,7 @@ public class SimulationWorld extends World {
 			}
 		});
 		// Create worldwide effect spawner
-		spawners.add(new RandomSpawner(900, 1200) {
+		spawners.add(new RandomSpawner(1800, 2400) {
 			@Override
 			public void run() {
 				addActor(new AlienInvasion());
@@ -340,6 +342,17 @@ public class SimulationWorld extends World {
 	 */
 	public void removeSpawner(Spawner spawner) {
 		spawners.remove(spawner);
+	}
+
+	/**
+	 * Create and add a new UFO actor to this world.
+	 */
+	public void spawnUfo() {
+		Ufo ufo = new Ufo();
+		if (!paths.isEmpty()) {
+			ufo.setLayer((int) (Math.random() * paths.size()));
+		}
+		addActor(ufo);
 	}
 
 	/**
@@ -497,6 +510,10 @@ public class SimulationWorld extends World {
 				}
 			}
 		}
+		// Draw remaining actors on top of the world
+		for (SuperActor actor : actorsToDraw) {
+			drawActor(actor);
+		}
 	}
 
 	/**
@@ -504,6 +521,7 @@ public class SimulationWorld extends World {
 	 * actor's image location.
 	 */
 	private void drawActor(SuperActor actor) {
+		graphics.setComposite(actor.getImageComposite());
 		graphics.drawImage(actor.getImage(), actor.getImageTransform(), null);
 	}
 

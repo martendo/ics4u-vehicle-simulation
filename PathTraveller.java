@@ -142,7 +142,11 @@ public abstract class PathTraveller extends SuperActor {
 		} else if (Math.abs(targetAngle - angle) > Math.abs(targetAngle - (angle + Math.PI * 2.0))) {
 			angle += Math.PI * 2.0;
 		}
-		angle += (targetAngle - angle) * ANGLE_INTERPOLATION_FACTOR;
+		double t = ANGLE_INTERPOLATION_FACTOR;
+		if (AlienInvasion.isActive()) {
+			t *= AlienInvasion.TRAVELLER_SPEED_FACTOR;
+		}
+		angle += (targetAngle - angle) * t;
 		setRotation(angle);
 
 		// Update position

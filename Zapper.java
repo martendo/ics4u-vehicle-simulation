@@ -10,7 +10,7 @@ import java.awt.geom.Rectangle2D;
  * @author Martin Baldwin
  * @version March 2024
  */
-public class Zapper extends PathTraveller {
+public class Zapper extends Driver {
 	public static final BufferedImage image = new GreenfootImage("images/zapper.png").getAwtImage();
 
 	public static final double SPEED = 0.5;
@@ -26,7 +26,7 @@ public class Zapper extends PathTraveller {
 	private int zapTimer;
 
 	public Zapper() {
-		super(SPEED);
+		super(AlienInvasion.isActive() ? SPEED * AlienInvasion.TRAVELLER_SPEED_FACTOR : SPEED);
 		zapTimer = ZAP_INTERVAL;
 	}
 

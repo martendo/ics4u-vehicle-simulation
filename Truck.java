@@ -12,7 +12,7 @@ import java.awt.geom.Rectangle2D;
  * @author Martin Baldwin
  * @version March 2024
  */
-public class Truck extends PathTraveller {
+public class Truck extends Driver {
 	public static final double MIN_SPEED = 1.5;
 	public static final double MAX_SPEED = 3.0;
 
@@ -58,6 +58,10 @@ public class Truck extends PathTraveller {
 	public Truck(Color color) {
 		super(Math.random() * (MAX_SPEED - MIN_SPEED) + MIN_SPEED);
 		originalSpeed = getSpeed();
+		if (AlienInvasion.isActive()) {
+			originalSpeed *= AlienInvasion.TRAVELLER_SPEED_FACTOR;
+			setSpeed(originalSpeed);
+		}
 		this.color = color;
 		limitingTraveller = null;
 		attachedPayload = null;

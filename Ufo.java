@@ -14,6 +14,7 @@ import java.awt.geom.Ellipse2D;
 public class Ufo extends Wanderer {
 	public static final BufferedImage normalImage = new GreenfootImage("images/ufo-normal.png").getAwtImage();
 	public static final BufferedImage scaredImage = new GreenfootImage("images/ufo-scared.png").getAwtImage();
+	public static final BufferedImage invasionImage = new GreenfootImage("images/ufo-invasion.png").getAwtImage();
 
 	public static final double MIN_X = -normalImage.getWidth();
 	public static final double MAX_X = SimulationWorld.WIDTH + normalImage.getWidth();
@@ -110,6 +111,15 @@ public class Ufo extends Wanderer {
 					COLLECT_SOUND.play();
 				}
 			}
+			// Pick up any path travellers under this UFO during an alien invasion
+			if (AlienInvasion.isActive()) {
+				for (PathTraveller traveller : getWorld().getActors(PathTraveller.class, getLayer())) {
+					if (getHitShape().contains(traveller.getX(), traveller.getY())) {
+						traveller.dieAndKillLinked();
+						COLLECT_SOUND.play();
+					}
+				}
+			}
 		}
 	}
 
@@ -147,7 +157,9 @@ public class Ufo extends Wanderer {
 
 	@Override
 	public BufferedImage getImage() {
-		if (isScared) {
+		if (AlienInvasion.isActive()) {
+			return invasionImage;
+		} else if (isScared) {
 			return scaredImage;
 		}
 		return normalImage;

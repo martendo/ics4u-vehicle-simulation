@@ -1,6 +1,8 @@
 import java.awt.image.BufferedImage;
 import java.awt.geom.AffineTransform;
 import java.awt.Shape;
+import java.awt.Composite;
+import java.awt.AlphaComposite;
 import java.util.Set;
 import java.util.HashSet;
 
@@ -210,6 +212,15 @@ public abstract class SuperActor {
 		transform.rotate(angle);
 		transform.translate(-getImage().getWidth(), -getImage().getHeight() / 2.0);
 		return transform;
+	}
+
+	/**
+	 * Get the composite to use when drawing this actor's image.
+	 *
+	 * By default, return {@link java.awt.AlphaComposite#SrcOver}.
+	 */
+	public Composite getImageComposite() {
+		return AlphaComposite.SrcOver;
 	}
 
 	/**

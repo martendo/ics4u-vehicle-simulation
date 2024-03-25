@@ -19,6 +19,8 @@ public class Bird extends Wanderer {
 	private static final double RANDOM_ANGLE_INTERPOLATION_FACTOR = 0.01;
 	private static final double SICK_ANGLE_INTERPOLATION_FACTOR = 0.;
 
+	private static final double SCARED_SPEED = 10.0;
+
 	private static final SoundEffect FED_SOUND = new SoundEffect("sounds/bird-fed.wav");
 	private static final SoundEffect SICK_SOUND = new SoundEffect("sounds/bird-sick.wav");
 
@@ -43,6 +45,8 @@ public class Bird extends Wanderer {
 	private Food targetFood;
 	// The current state of this bird that defines its behaviour
 	private BirdState state;
+	// Whether or not this bird is scared and flying away
+	private boolean isScared;
 
 	// Timer that will periodically change this bird's target angle randomly when there is no food available
 	private Spawner randomTargetChangeTimer;
@@ -66,6 +70,7 @@ public class Bird extends Wanderer {
 		setLocation(x, y);
 
 		state = BirdState.HUNGRY;
+		isScared = false;
 		setSpeed(state.speed);
 		setRotation(Math.atan2(SimulationWorld.HEIGHT / 2.0 - y, SimulationWorld.WIDTH / 2.0 - x));
 		randomTargetChangeTimer = new RandomSpawner(10, 30) {
@@ -145,6 +150,12 @@ public class Bird extends Wanderer {
 
 	@Override
 	public void act() {
+		if (isScared) {
+			// Just move and do nothing else
+			super.act();
+			return;
+		}
+
 		// Find a new food actor to target when this bird doesn't have a valid target and it is hungry
 		if (state == BirdState.HUNGRY && !isValidTarget(targetFood)) {
 			findTargetFood();
@@ -181,6 +192,15 @@ public class Bird extends Wanderer {
 			setSpeed(state.speed);
 			targetFood = null;
 		}
+	}
+
+	/**
+	 * Start making this bird fly away from the center of the world.
+	 */
+	public void scareAway() {
+		setRotation(Math.atan2(getY() - SimulationWorld.HEIGHT / 2.0, getX() - SimulationWorld.WIDTH / 2.0));
+		setSpeed(SCARED_SPEED);
+		isScared = true;
 	}
 
 	@Override
