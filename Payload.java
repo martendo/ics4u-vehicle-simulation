@@ -56,6 +56,20 @@ public abstract class Payload extends PathTraveller {
 		drawImage();
 	}
 
+	@Override
+	public void addedToPath(SuperPath path, int laneNum) {
+		super.addedToPath(path, laneNum);
+		// In case truck has since sped up, fix position
+		double dist = attachedTruck.getDistanceTravelled() - attachedTruck.getImage().getWidth();
+		if (dist > 0.0) {
+			// Move to the correct position
+			setSpeed(dist);
+			super.act();
+			setSpeed(attachedTruck.getSpeed());
+		}
+	}
+
+
 	public void drawImage() {
 		graphics.clearRect(0, 0, image.getWidth(), image.getHeight());
 

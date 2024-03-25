@@ -59,8 +59,7 @@ public class Truck extends Driver {
 		super(Math.random() * (MAX_SPEED - MIN_SPEED) + MIN_SPEED);
 		originalSpeed = getSpeed();
 		if (AlienInvasion.isActive()) {
-			originalSpeed *= AlienInvasion.TRAVELLER_SPEED_FACTOR;
-			setSpeed(originalSpeed);
+			setSpeed(originalSpeed * AlienInvasion.TRAVELLER_SPEED_FACTOR);
 		}
 		this.color = color;
 		limitingTraveller = null;
@@ -148,9 +147,15 @@ public class Truck extends Driver {
 		if (limitingTraveller != null) {
 			// This truck is stuck behind a slower traveller
 			setSpeed(limitingTraveller.getSpeed());
-		} else if (getSpeed() < originalSpeed) {
-			// There is no traveller ahead and this truck can go faster
-			setSpeed(originalSpeed);
+		} else {
+			double targetSpeed = originalSpeed;
+			if (AlienInvasion.isActive()) {
+				targetSpeed *= AlienInvasion.TRAVELLER_SPEED_FACTOR;
+			}
+			if (getSpeed() < targetSpeed) {
+				// There is no traveller ahead and this truck can go faster
+				setSpeed(targetSpeed);
+			}
 		}
 	}
 

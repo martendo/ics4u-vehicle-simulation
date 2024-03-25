@@ -104,16 +104,17 @@ public class Ufo extends Wanderer {
 				}
 			}
 
+			int underPathLayer = getWorld().getPathIndex(underPath);
 			// Pick up any birds under this UFO
 			for (Bird bird : getWorld().getActors(Bird.class, getLayer())) {
-				if (getHitShape().contains(bird.getX(), bird.getY())) {
+				if (bird.getLayer() >= underPathLayer && getHitShape().contains(bird.getX(), bird.getY())) {
 					bird.die();
 					COLLECT_SOUND.play();
 				}
 			}
 			// Pick up any path travellers under this UFO during an alien invasion
 			if (AlienInvasion.isActive()) {
-				for (PathTraveller traveller : getWorld().getActors(PathTraveller.class, getLayer())) {
+				for (PathTraveller traveller : underPath.getTravellers(PathTraveller.class)) {
 					if (getHitShape().contains(traveller.getX(), traveller.getY())) {
 						traveller.dieAndKillLinked();
 						COLLECT_SOUND.play();

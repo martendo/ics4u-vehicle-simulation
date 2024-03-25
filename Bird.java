@@ -150,6 +150,11 @@ public class Bird extends Wanderer {
 
 	@Override
 	public void act() {
+		// When out of bounds of the world, kill this bird
+		if (getX() < MIN_X || getX() > MAX_X || getY() < MIN_Y || getY() > MAX_Y) {
+			die();
+			return;
+		}
 		if (isScared) {
 			// Just move and do nothing else
 			super.act();
@@ -175,11 +180,7 @@ public class Bird extends Wanderer {
 		// Move
 		super.act();
 
-		// When out of bounds of the world, kill this bird
-		if (getX() < MIN_X || getX() > MAX_X || getY() < MIN_Y || getY() > MAX_Y) {
-			die();
-			return;
-		} else if (state == BirdState.HUNGRY && targetFood != null && targetFood.getHitShape().contains(getX(), getY())) {
+		if (state == BirdState.HUNGRY && targetFood != null && targetFood.getHitShape().contains(getX(), getY())) {
 			// This bird has reached its target food -> eat it
 			targetFood.removeItem();
 			if (targetFood instanceof Poison) {
