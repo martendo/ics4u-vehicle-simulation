@@ -37,6 +37,8 @@ public class SimulationWorld extends World {
 		RENDERING_HINTS.put(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_DISABLE);
 	}
 
+	private static final int DEFAULT_DRAW_LANE_COUNT = 2;
+
 	// Background pattern visual parameters
 	private static final int BACKGROUND_PATTERN_WIDTH = 128;
 	private static final java.awt.Color BACKGROUND_PATTERN_COLOR_1 = new java.awt.Color(94, 175, 86);
@@ -115,30 +117,14 @@ public class SimulationWorld extends World {
 		actors = new ArrayList<SuperActor>();
 		spawners = new ArrayList<Spawner>();
 
-		// Create wanderer spawners
-		spawners.add(new RandomSpawner(120, 300) {
-			@Override
-			public void run() {
-				Ufo ufo = new Ufo();
-				if (!paths.isEmpty()) {
-					ufo.setLayer((int) (Math.random() * paths.size()));
-				}
-				addActor(ufo);
-			}
-		});
-		spawners.add(new RandomSpawner(60, 180) {
-			@Override
-			public void run() {
-				Bird bird = new Bird();
-				if (!paths.isEmpty()) {
-					bird.setLayer((int) (Math.random() * paths.size()));
-				}
-				addActor(bird);
-			}
-		});
-
+		/*
+		 * Create the data structures holding this world's widgets, including
+		 * buttons and other widgets, create the widgets themselves, and set up the
+		 * default widget configuration.
+		 */
 		// Set up path-editing buttons
 		buttons = new SelectButton[BUTTON_COUNT];
+		// Draw button that switches to path drawing mode when clicked
 		buttons[BUTTON_INDEX_DRAW] = new SelectButton(new GreenfootImage("images/pencil.png"), true) {
 			@Override
 			public void clicked() {
@@ -166,6 +152,7 @@ public class SimulationWorld extends World {
 				hideWidget(buttons[BUTTON_INDEX_DELETE]);
 			}
 		};
+		// Select button that switches to path selection mode when clicked
 		buttons[BUTTON_INDEX_SELECT] = new SelectButton(new GreenfootImage("images/select.png"), false) {
 			@Override
 			public void clicked() {
@@ -182,6 +169,7 @@ public class SimulationWorld extends World {
 				hideWidget(buttons[BUTTON_INDEX_LANE_PLUS]);
 			}
 		};
+		// Delete button that deletes the currently selected path, if any
 		buttons[BUTTON_INDEX_DELETE] = new SelectButton(new GreenfootImage("images/trash.png"), false) {
 			@Override
 			public void clicked() {
@@ -195,12 +183,14 @@ public class SimulationWorld extends World {
 				hideWidget(buttons[BUTTON_INDEX_DELETE]);
 			}
 		};
+		// Minus button that decrements the current lane drawing count
 		buttons[BUTTON_INDEX_LANE_MINUS] = new SelectButton(new GreenfootImage("images/minus.png"), false) {
 			@Override
 			public void clicked() {
 				setDrawLaneCount(drawLaneCount - 1);
 			}
 		};
+		// Plus button that increments the current lane drawing count
 		buttons[BUTTON_INDEX_LANE_PLUS] = new SelectButton(new GreenfootImage("images/plus.png"), false) {
 			@Override
 			public void clicked() {
@@ -210,8 +200,8 @@ public class SimulationWorld extends World {
 
 		// Set up other widgets
 		otherWidgets = new Widget[OTHER_WIDGET_COUNT];
+		// Lane drawing count that displays the number of lanes to draw new paths with
 		otherWidgets[WIDGET_INDEX_LANE_COUNT] = new Widget(null);
-		setDrawLaneCount(2);
 
 		// Display initial widgets
 		shownWidgets = new ArrayList<Widget>();
@@ -221,6 +211,8 @@ public class SimulationWorld extends World {
 		shownWidgets.add(otherWidgets[WIDGET_INDEX_LANE_COUNT]);
 		shownWidgets.add(buttons[BUTTON_INDEX_LANE_PLUS]);
 		displayWidgets();
+
+		setDrawLaneCount(DEFAULT_DRAW_LANE_COUNT);
 
 		if (INIT_DEFAULT_PATH) {
 			// Create one default path to start with
@@ -242,6 +234,39 @@ public class SimulationWorld extends World {
 			defaultPath.addPoint(750, 775);
 			defaultPath.complete();
 		}
+
+		/*
+		 * Create and add to the world the spawners that it uses throughout the
+		 * entire simulation.
+		 */
+		// Create wanderer spawners
+		spawners.add(new RandomSpawner(120, 300) {
+			@Override
+			public void run() {
+				Ufo ufo = new Ufo();
+				if (!paths.isEmpty()) {
+					ufo.setLayer((int) (Math.random() * paths.size()));
+				}
+				addActor(ufo);
+			}
+		});
+		spawners.add(new RandomSpawner(60, 180) {
+			@Override
+			public void run() {
+				Bird bird = new Bird();
+				if (!paths.isEmpty()) {
+					bird.setLayer((int) (Math.random() * paths.size()));
+				}
+				addActor(bird);
+			}
+		});
+		// Create worldwide effect spawner
+		spawners.add(new RandomSpawner(900, 1200) {
+			@Override
+			public void run() {
+				addActor(new AlienInvasion());
+			}
+		});
 
 		// Draw initial background image so this world isn't blank on reset
 		updateImage();
