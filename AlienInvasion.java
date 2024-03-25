@@ -39,6 +39,7 @@ public class AlienInvasion extends Effect {
 	private final int imageX;
 	private final int imageY;
 
+	// An additional spawner for spawning UFOs in the world more frequently
 	private final Spawner ufoSpawner;
 	// The offset of the positions of each ring
 	private int offset;
@@ -73,7 +74,7 @@ public class AlienInvasion extends Effect {
 	@Override
 	public void addedToWorld(SimulationWorld world) {
 		// Enact effects
-		for (Driver driver : world.getActors(Driver.class)) {
+		for (PathTraveller driver : world.getActors(Driver.class)) {
 			driver.setSpeed(driver.getSpeed() * TRAVELLER_SPEED_FACTOR);
 		}
 		for (Bird bird : world.getActors(Bird.class)) {
@@ -91,13 +92,13 @@ public class AlienInvasion extends Effect {
 		}
 		getWorld().removeSpawner(ufoSpawner);
 		SOUND.stop();
+		isActive = false;
 	}
 
 	@Override
 	public void act() {
 		super.act();
 		if (isDead()) {
-			isActive = false;
 			return;
 		}
 
