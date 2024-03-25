@@ -1,4 +1,5 @@
 import greenfoot.util.GraphicsUtilities;
+import greenfoot.GreenfootSound;
 import java.awt.image.BufferedImage;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
@@ -23,6 +24,9 @@ public class AlienInvasion extends Effect {
 	private static final java.awt.Color PATTERN_COLOR_2 = new java.awt.Color(138, 105, 191);
 	// Width of each segment of the visual pattern
 	private static final int RING_WIDTH = 60;
+
+	private static final GreenfootSound SOUND = new GreenfootSound("sounds/invasion.wav");
+	private static boolean wasSoundPaused = false;
 
 	// Whether or not there currently exists an AlienInvasion object
 	private static boolean isActive;
@@ -63,6 +67,7 @@ public class AlienInvasion extends Effect {
 
 		// Signal that an alien invasion has begun
 		isActive = true;
+		SOUND.playLoop();
 	}
 
 	@Override
@@ -85,9 +90,7 @@ public class AlienInvasion extends Effect {
 			driver.setSpeed(driver.getSpeed() / TRAVELLER_SPEED_FACTOR);
 		}
 		getWorld().removeSpawner(ufoSpawner);
-	}
-
-	private void uneffect() {
+		SOUND.stop();
 	}
 
 	@Override
@@ -125,7 +128,27 @@ public class AlienInvasion extends Effect {
 		return AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f);
 	}
 
+	/**
+	 * Test if there is currently an alien invasion.
+	 */
 	public static boolean isActive() {
 		return isActive;
+	}
+
+	/**
+	 * Pause the invasion sound if it is currently playing.
+	 */
+	public static void pauseSound() {
+		wasSoundPaused = SOUND.isPlaying();
+		SOUND.pause();
+	}
+
+	/**
+	 * Resume the invasion sound if it was previously playing.
+	 */
+	public static void resumeSound() {
+		if (wasSoundPaused) {
+			SOUND.playLoop();
+		}
 	}
 }

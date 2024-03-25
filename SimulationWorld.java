@@ -396,18 +396,20 @@ public class SimulationWorld extends World {
 	}
 
 	/**
-	 * Pause any currently playing sound effects.
+	 * Pause any background sounds and any currently playing sound effects.
 	 */
 	@Override
 	public void stopped() {
+		AlienInvasion.pauseSound();
 		SoundEffect.pauseAllSounds();
 	}
 
 	/**
-	 * Resume any previously paused sound effects.
+	 * Resume any background sounds and any previously paused sound effects.
 	 */
 	@Override
 	public void started() {
+		AlienInvasion.resumeSound();
 		SoundEffect.resumeAllSounds();
 	}
 
