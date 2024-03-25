@@ -19,8 +19,11 @@ public class Bird extends Wanderer {
 	private static final double RANDOM_ANGLE_INTERPOLATION_FACTOR = 0.01;
 	private static final double SICK_ANGLE_INTERPOLATION_FACTOR = 0.;
 
+	private static final SoundEffect FED_SOUND = new SoundEffect("sounds/bird-fed.wav");
+	private static final SoundEffect SICK_SOUND = new SoundEffect("sounds/bird-sick.wav");
+
 	// Different states of a bird with different images and speeds
-	public enum BirdState {
+	private enum BirdState {
 		HUNGRY("images/bird-hungry.png", 4.0),
 		FED("images/bird-fed.png", 8.0),
 		SICK("images/bird-sick.png", 1.0);
@@ -165,15 +168,18 @@ public class Bird extends Wanderer {
 		if (getX() < MIN_X || getX() > MAX_X || getY() < MIN_Y || getY() > MAX_Y) {
 			die();
 			return;
-		} else if (targetFood != null && targetFood.getHitShape().contains(getX(), getY())) {
+		} else if (state == BirdState.HUNGRY && targetFood != null && targetFood.getHitShape().contains(getX(), getY())) {
 			// This bird has reached its target food -> eat it
 			targetFood.removeItem();
 			if (targetFood instanceof Poison) {
 				state = BirdState.SICK;
+				SICK_SOUND.play();
 			} else {
 				state = BirdState.FED;
+				FED_SOUND.play();
 			}
 			setSpeed(state.speed);
+			targetFood = null;
 		}
 	}
 

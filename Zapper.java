@@ -17,6 +17,8 @@ public class Zapper extends PathTraveller {
 
 	private static final Rectangle2D HIT_RECT = new Rectangle2D.Double(-IMAGE.getWidth(), -IMAGE.getHeight() / 2.0, IMAGE.getWidth(), IMAGE.getHeight());
 
+	private static final SoundEffect ZAP_SOUND = new SoundEffect("sounds/zap.wav");
+
 	// Number of acts to wait between zapping UFOs
 	private static final int ZAP_INTERVAL = 600;
 
@@ -59,6 +61,7 @@ public class Zapper extends PathTraveller {
 		}
 		// Zap this UFO
 		closestUfo.die();
+		ZAP_SOUND.play();
 		// Create the zap effect
 		double centerX = getX() - IMAGE.getWidth() / 2.0 * Math.cos(getRotation());
 		double centerY = getY() - IMAGE.getWidth() / 2.0 * Math.sin(getRotation());

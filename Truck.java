@@ -39,6 +39,8 @@ public class Truck extends PathTraveller {
 	// The area of a truck, with its midright point at the origin
 	private static final Rectangle2D HIT_RECT = new Rectangle2D.Double(-35, -29 / 2.0, 35, 29);
 
+	private static final SoundEffect HORN_SOUND = new SoundEffect("sounds/horn.wav");
+
 	// The default or target speed of this truck
 	private double originalSpeed;
 	// The color of this truck, determining what image to use
@@ -91,6 +93,7 @@ public class Truck extends PathTraveller {
 				moveToLane(newLane);
 				// Wait until making another lane change
 				if (getLaneNumber() == newLane) {
+					HORN_SOUND.play();
 					laneChangeTimer = LANE_CHANGE_TIMEOUT;
 				}
 			}

@@ -365,6 +365,22 @@ public class SimulationWorld extends World {
 	}
 
 	/**
+	 * Pause any currently playing sound effects.
+	 */
+	@Override
+	public void stopped() {
+		SoundEffect.pauseAllSounds();
+	}
+
+	/**
+	 * Resume any previously paused sound effects.
+	 */
+	@Override
+	public void started() {
+		SoundEffect.resumeAllSounds();
+	}
+
+	/**
 	 * Update the paths in this world based on mouse events, allowing the user to draw.
 	 */
 	private void updatePathEditing() {

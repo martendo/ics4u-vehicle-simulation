@@ -12,6 +12,8 @@ public abstract class SelectButton extends Widget {
 	private static final Color BORDER_COLOR = Color.BLACK;
 	private static final int BORDER_WIDTH = 3;
 
+	private static final SoundEffect CLICK_SOUND = new SoundEffect("sounds/select.wav", 1);
+
 	/**
 	 * States that buttons may be in, with different background colors to match.
 	 *
@@ -20,7 +22,7 @@ public abstract class SelectButton extends Widget {
 	 * ACTIVE: The mouse cursor is on top of this button and a mouse button is currently pressed ("click")
 	 * SELECTED: The button is marked as "selected" (state controlled by select() and deselect() methods)
 	 */
-	public enum ButtonState {
+	private enum ButtonState {
 		NORMAL(new Color(224, 224, 224)),
 		HOVER(new Color(200, 200, 200)),
 		ACTIVE(new Color(176, 176, 176)),
@@ -96,6 +98,7 @@ public abstract class SelectButton extends Widget {
 				if (Greenfoot.mouseClicked(this)) {
 					if (isClicking) {
 						clicked();
+						CLICK_SOUND.play();
 						// End the active state (effect takes place in next if block)
 						isClicking = false;
 					}

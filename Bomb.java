@@ -10,6 +10,8 @@ import java.awt.image.BufferedImage;
 public class Bomb extends Payload {
 	public static final BufferedImage SPRITE = new GreenfootImage("images/bomb.png").getAwtImage();
 
+	private static final SoundEffect EXPLOSION_SOUND = new SoundEffect("sounds/explosion.wav");
+
 	// Number of acts left until explosion
 	private int timer;
 
@@ -40,6 +42,8 @@ public class Bomb extends Payload {
 		Explosion explosion = new Explosion();
 		explosion.setLayer(getWorld().getPathIndex(getPath()));
 		explosion.setLocation(getX(), getY());
+
+		EXPLOSION_SOUND.play();
 
 		// Kill all travellers within the range of the explosion shape (circle of radius 100)
 		for (PathTraveller traveller : getPath().getTravellers()) {

@@ -28,6 +28,9 @@ public class Ufo extends Wanderer {
 
 	private static final Ellipse2D HIT_SHAPE = new Ellipse2D.Double(14, 14, 100, 100);
 
+	private static final SoundEffect COLLECT_SOUND = new SoundEffect("sounds/ufo-collect.wav");
+	private static final SoundEffect SCARED_SOUND = new SoundEffect("sounds/ufo-scared.wav", 1);
+
 	// The angle at which this UFO is moving, which differs from its angle of rotation
 	private double movementAngle;
 
@@ -96,6 +99,7 @@ public class Ufo extends Wanderer {
 				}
 				if (getHitShape().contains(payload.getItemX(), payload.getItemY())) {
 					payload.removeItem();
+					COLLECT_SOUND.play();
 				}
 			}
 
@@ -103,6 +107,7 @@ public class Ufo extends Wanderer {
 			for (Bird bird : getWorld().getActors(Bird.class, getLayer())) {
 				if (getHitShape().contains(bird.getX(), bird.getY())) {
 					bird.die();
+					COLLECT_SOUND.play();
 				}
 			}
 		}
@@ -137,6 +142,7 @@ public class Ufo extends Wanderer {
 			setRotation(0.0);
 		}
 		setSpeed(SCARED_SPEED);
+		SCARED_SOUND.play();
 	}
 
 	@Override
