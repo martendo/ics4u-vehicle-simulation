@@ -8,7 +8,7 @@ import java.awt.image.BufferedImage;
  * @version March 2024
  */
 public class Candy extends Food {
-	public static final BufferedImage SPRITE = new GreenfootImage("images/candy.png").getAwtImage();
+	private static final BufferedImage sprite = new GreenfootImage("images/candy.png").getAwtImage();
 
 	public Candy(Truck truck) {
 		super(truck);
@@ -16,6 +16,6 @@ public class Candy extends Food {
 
 	@Override
 	protected BufferedImage getSprite() {
-		return SPRITE;
+		return sprite;
 	}
 }

@@ -11,11 +11,11 @@ import java.awt.geom.Rectangle2D;
  * @version March 2024
  */
 public class Zapper extends PathTraveller {
-	public static final BufferedImage IMAGE = new GreenfootImage("images/zapper.png").getAwtImage();
+	public static final BufferedImage image = new GreenfootImage("images/zapper.png").getAwtImage();
 
 	public static final double SPEED = 0.5;
 
-	private static final Rectangle2D HIT_RECT = new Rectangle2D.Double(-IMAGE.getWidth(), -IMAGE.getHeight() / 2.0, IMAGE.getWidth(), IMAGE.getHeight());
+	private static final Shape HIT_SHAPE = new Rectangle2D.Double(-image.getWidth(), -image.getHeight() / 2.0, image.getWidth(), image.getHeight());
 
 	private static final SoundEffect ZAP_SOUND = new SoundEffect("sounds/zap.wav");
 
@@ -68,8 +68,8 @@ public class Zapper extends PathTraveller {
 		closestUfo.die();
 		ZAP_SOUND.play();
 		// Create the zap effect
-		double centerX = getX() - IMAGE.getWidth() / 2.0 * Math.cos(getRotation());
-		double centerY = getY() - IMAGE.getWidth() / 2.0 * Math.sin(getRotation());
+		double centerX = getX() - image.getWidth() / 2.0 * Math.cos(getRotation());
+		double centerY = getY() - image.getWidth() / 2.0 * Math.sin(getRotation());
 		Zap zap = new Zap(centerX, centerY, closestUfo.getX(), closestUfo.getY());
 		zap.setLayer(closestUfo.getLayer());
 		getWorld().addActor(zap);
@@ -79,13 +79,13 @@ public class Zapper extends PathTraveller {
 
 	@Override
 	public BufferedImage getImage() {
-		return IMAGE;
+		return image;
 	}
 
 	@Override
 	public Shape getHitShape() {
 		AffineTransform transform = AffineTransform.getTranslateInstance(getX(), getY());
 		transform.rotate(getRotation());
-		return transform.createTransformedShape(HIT_RECT);
+		return transform.createTransformedShape(HIT_SHAPE);
 	}
 }

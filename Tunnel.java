@@ -4,6 +4,7 @@ import java.awt.Graphics2D;
 import java.awt.BasicStroke;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
+import java.awt.Shape;
 
 /**
  * The visual object representing the beginnings and ends of paths. They cover
@@ -30,7 +31,7 @@ public class Tunnel extends SuperActor {
 	private static final BasicStroke BORDER_STROKE = new BasicStroke(3.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 
 	// The rectangle containing this entire tunnel, before translation and rotation, for image cropping
-	private final Rectangle2D boundsShape;
+	private final Shape boundsShape;
 
 	// The image that is drawn onto, uncropped
 	private final BufferedImage fullImage;
@@ -141,7 +142,7 @@ public class Tunnel extends SuperActor {
 	 * Create the rectangle that contains this entire tunnel, before translation
 	 * and rotation, for image cropping.
 	 */
-	private Rectangle2D createBoundsShape() {
+	private Shape createBoundsShape() {
 		Rectangle2D bounds = new Rectangle2D.Double();
 		if (forwards) {
 			bounds.setRect(-length + POSITION_OFFSET, -width / 2.0, length + ROOF_LENGTH, width);

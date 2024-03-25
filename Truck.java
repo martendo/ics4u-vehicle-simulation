@@ -37,7 +37,7 @@ public class Truck extends PathTraveller {
 	public static final int LENGTH = Payload.TRUCK_BED_LENGTH + Color.GREEN.image.getWidth() + 24;
 
 	// The area of a truck, with its midright point at the origin
-	private static final Rectangle2D HIT_RECT = new Rectangle2D.Double(-35, -29 / 2.0, 35, 29);
+	private static final Shape HIT_SHAPE = new Rectangle2D.Double(-35, -29 / 2.0, 35, 29);
 
 	private static final SoundEffect HORN_SOUND = new SoundEffect("sounds/horn.wav");
 
@@ -188,6 +188,6 @@ public class Truck extends PathTraveller {
 	public Shape getHitShape() {
 		AffineTransform transform = AffineTransform.getTranslateInstance(getX(), getY());
 		transform.rotate(getRotation());
-		return transform.createTransformedShape(HIT_RECT);
+		return transform.createTransformedShape(HIT_SHAPE);
 	}
 }

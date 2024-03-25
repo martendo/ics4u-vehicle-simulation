@@ -12,13 +12,13 @@ import java.awt.geom.Ellipse2D;
  * @version March 2024
  */
 public class Ufo extends Wanderer {
-	public static final BufferedImage NORMAL_IMAGE = new GreenfootImage("images/ufo-normal.png").getAwtImage();
-	public static final BufferedImage SCARED_IMAGE = new GreenfootImage("images/ufo-scared.png").getAwtImage();
+	public static final BufferedImage normalImage = new GreenfootImage("images/ufo-normal.png").getAwtImage();
+	public static final BufferedImage scaredImage = new GreenfootImage("images/ufo-scared.png").getAwtImage();
 
-	public static final double MIN_X = -NORMAL_IMAGE.getWidth();
-	public static final double MAX_X = SimulationWorld.WIDTH + NORMAL_IMAGE.getWidth();
-	public static final double MIN_Y = -NORMAL_IMAGE.getHeight();
-	public static final double MAX_Y = SimulationWorld.HEIGHT + NORMAL_IMAGE.getHeight();
+	public static final double MIN_X = -normalImage.getWidth();
+	public static final double MAX_X = SimulationWorld.WIDTH + normalImage.getWidth();
+	public static final double MIN_Y = -normalImage.getHeight();
+	public static final double MAX_Y = SimulationWorld.HEIGHT + normalImage.getHeight();
 
 	public static final double MIN_SPEED = 2.0;
 	public static final double MAX_SPEED = 4.0;
@@ -26,7 +26,7 @@ public class Ufo extends Wanderer {
 
 	public static final double IMAGE_ROTATION_SPEED = Math.PI * 2.0 / 180.0;
 
-	private static final Ellipse2D HIT_SHAPE = new Ellipse2D.Double(14, 14, 100, 100);
+	private static final Shape HIT_SHAPE = new Ellipse2D.Double(14, 14, 100, 100);
 
 	private static final SoundEffect COLLECT_SOUND = new SoundEffect("sounds/ufo-collect.wav");
 	private static final SoundEffect SCARED_SOUND = new SoundEffect("sounds/ufo-scared.wav", 1);
@@ -148,9 +148,9 @@ public class Ufo extends Wanderer {
 	@Override
 	public BufferedImage getImage() {
 		if (isScared) {
-			return SCARED_IMAGE;
+			return scaredImage;
 		}
-		return NORMAL_IMAGE;
+		return normalImage;
 	}
 
 	@Override

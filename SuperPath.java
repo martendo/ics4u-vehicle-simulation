@@ -58,8 +58,8 @@ public class SuperPath {
 	}
 
 	// Special state textures
-	private static final BufferedImage HOVER_TEXTURE = createHoverTexture();
-	private static final BufferedImage SELECTED_TEXTURE = createSelectedTexture();
+	private static final BufferedImage hoverTexture = createHoverTexture();
+	private static final BufferedImage selectedTexture = createSelectedTexture();
 
 	// Anchor rectangles for special state texture paints, shifted as animation
 	private static double textureRectX = 0;
@@ -816,8 +816,8 @@ public class SuperPath {
 	 */
 	public static void updatePaints() {
 		// Make texture paints from the current anchor rectangle positions
-		hoverPaint = new TexturePaint(HOVER_TEXTURE, hoverTextureRect);
-		selectedPaint = new TexturePaint(SELECTED_TEXTURE, selectedTextureRect);
+		hoverPaint = new TexturePaint(hoverTexture, hoverTextureRect);
+		selectedPaint = new TexturePaint(selectedTexture, selectedTextureRect);
 		// Shift the anchor rectangles and wrap around when the ends of the patterns are reached
 		textureRectX = (textureRectX + 0.5) % 16.0;
 		hoverTextureRect.setRect(textureRectX, 0.0, 16.0, 16.0);

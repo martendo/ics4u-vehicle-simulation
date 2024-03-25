@@ -8,7 +8,7 @@ import java.awt.image.BufferedImage;
  * @version March 2024
  */
 public class Bomb extends Payload {
-	public static final BufferedImage SPRITE = new GreenfootImage("images/bomb.png").getAwtImage();
+	private static final BufferedImage sprite = new GreenfootImage("images/bomb.png").getAwtImage();
 
 	private static final SoundEffect EXPLOSION_SOUND = new SoundEffect("sounds/explosion.wav");
 
@@ -68,6 +68,6 @@ public class Bomb extends Payload {
 
 	@Override
 	protected BufferedImage getSprite() {
-		return SPRITE;
+		return sprite;
 	}
 }
