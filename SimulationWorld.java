@@ -46,6 +46,8 @@ public class SimulationWorld extends World {
 	private static final java.awt.Color BACKGROUND_PATTERN_COLOR_2 = new java.awt.Color(87, 165, 80);
 	private static final BufferedImage BACKGROUND_PATTERN = createBackgroundPattern();
 
+	private static final GreenfootSound BACKGROUND_SOUND = new GreenfootSound("sounds/background.wav");
+
 	// The order to draw actor types that are not linked to paths, appearing from bottom to top
 	// Any actors that are not linked to a path (instanceof PathTraveller or Tunnel) and that are
 	// not an instance of a class included here are drawn on top of the world, above everything else
@@ -400,6 +402,7 @@ public class SimulationWorld extends World {
 	 */
 	@Override
 	public void stopped() {
+		BACKGROUND_SOUND.stop();
 		AlienInvasion.pauseSound();
 		SoundEffect.pauseAllSounds();
 	}
@@ -409,6 +412,7 @@ public class SimulationWorld extends World {
 	 */
 	@Override
 	public void started() {
+		BACKGROUND_SOUND.playLoop();
 		AlienInvasion.resumeSound();
 		SoundEffect.resumeAllSounds();
 	}
